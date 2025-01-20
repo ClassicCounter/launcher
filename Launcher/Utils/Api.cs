@@ -32,8 +32,8 @@ namespace Launcher.Utils
         Task<string> GetFullGameValidate();
 
         [Headers("User-Agent: ClassicCounter Launcher")]
-        [Get("/game/full?discord_id={discordId}")]
-        Task<FullGameDownloadResponse> GetFullGameDownload(string discordId);
+        [Get("/game/full?steam_id={recentSteamID}")]
+        Task<FullGameDownloadResponse> GetFullGameDownload(string recentSteamID);
     }
 
     public static class Api

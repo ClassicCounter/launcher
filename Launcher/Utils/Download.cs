@@ -126,7 +126,8 @@ namespace Launcher.Utils
         {
             try
             {
-                if (string.IsNullOrEmpty(Discord.CurrentUserId))
+                await Steam.GetRecentLoggedInSteamID();
+                if (string.IsNullOrEmpty(Steam.recentSteamID))
                 {
                     Terminal.Error("Discord not connected. Please make sure Discord is running.");
                     Terminal.Error("Closing launcher in 5 seconds...");
@@ -135,8 +136,8 @@ namespace Launcher.Utils
                     return;
                 }
 
-                // pass discord id to api
-                var gameFiles = await Api.ClassicCounter.GetFullGameDownload(Discord.CurrentUserId);
+                // pass steam id to api
+                var gameFiles = await Api.ClassicCounter.GetFullGameDownload(Steam.recentSteamID);
 
                 int totalFiles = gameFiles.Files.Count;
                 int completedFiles = 0;
