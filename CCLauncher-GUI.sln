@@ -24,6 +24,7 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+		StartupProject = CCLauncher-GUI.Desktop
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {285F53A3-1558-4CCB-A37B-CFE05B634941}
