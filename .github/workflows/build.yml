@@ -31,4 +31,4 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: launcher
-        path: Launcher/bin/Release/net8.0-windows7.0/win-x64/publish/launcher.exe
+        path: CCLauncher-GUI.Desktop/bin/Release/net8.0/win-x64/publish/launcher.exe

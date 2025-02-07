@@ -10,7 +10,13 @@
     <TargetFramework>net8.0</TargetFramework>
     <PlatformTarget>x64</PlatformTarget>
     <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+    <AssemblyName>launcher</AssemblyName> <!-- launcher.exe name -->
+
+    <PublishSingleFile>true</PublishSingleFile>
+    <IncludeAllContentForSelfExtract>true</IncludeAllContentForSelfExtract>
+    <SelfContained>true</SelfContained>
   </PropertyGroup>
+
   <PropertyGroup Label="Avalonia">
     <AvaloniaXamlVerboseExceptions>False</AvaloniaXamlVerboseExceptions>
   </PropertyGroup>
