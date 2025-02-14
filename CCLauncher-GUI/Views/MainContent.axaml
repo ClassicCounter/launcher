@@ -1,8 +1,10 @@
 <UserControl xmlns="https://github.com/avaloniaui"
               xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             
               xmlns:vm="clr-namespace:CCLauncher_GUI.ViewModels"
               x:Class="CCLauncher_GUI.Views.MainContent"
               x:DataType="vm:MainContentViewModel"
+             
               MinWidth="800"
               MinHeight="600">
 
@@ -30,7 +32,8 @@
       <!-- Play Button -->
       <Button Classes="sidebar-button"
               Click="OnPlayButtonClick"
-              ToolTip.Tip="Play">
+              ToolTip.Tip="Play"
+              Padding="0,-2,3,0">
         <Viewbox Width="26" Height="26">
           <Path Data="M3.24182 2.32181C3.3919 2.23132 3.5784 2.22601 3.73338 2.30781L12.7334 7.05781C12.8974 7.14436 13 7.31457 13 7.5C13 7.68543 12.8974 7.85564 12.7334 7.94219L3.73338 12.6922C3.5784 12.774 3.3919 12.7687 3.24182 12.6782C3.09175 12.5877 3 12.4252 3 12.25V2.75C3 2.57476 3.09175 2.4123 3.24182 2.32181ZM4 3.57925V11.4207L11.4288 7.5L4 3.57925Z"
                 Fill="White"/>
@@ -58,7 +61,8 @@
       <!-- Settings Button -->
       <Button Classes="sidebar-button"
               Click="OnSettingsButtonClick"
-              ToolTip.Tip="Settings">
+              ToolTip.Tip="Settings"
+              Padding="0,-2,0,0">
         <Viewbox Width="25" Height="24">
           <Path Data="M3.5 2h-1v5h1V2zm6.1 5H6.4L6 6.45v-1L6.4 5h3.2l.4.5v1l-.4.5zm-5 3H1.4L1 9.5v-1l.4-.5h3.2l.4.5v1l-.4.5zm3.9-8h-1v2h1V2zm-1 6h1v6h-1V8zm-4 3h-1v3h1v-3zm7.9 0h3.19l.4-.5v-.95l-.4-.5H11.4l-.4.5v.95l.4.5zm2.1-9h-1v6h1V2zm-1 10h1v2h-1v-2z"
                 Fill="White"/>
@@ -82,7 +86,7 @@
           <ScrollViewer>
             <StackPanel Margin="20">
               <!-- News content here -->
-              <TextBlock Text="News Content" FontSize="24"/>
+              <TextBlock Text="News Panel" FontSize="24"/>
             </StackPanel>
           </ScrollViewer>
         </TabItem>
@@ -91,7 +95,7 @@
           <ScrollViewer>
             <StackPanel Margin="20">
               <!-- Play content here -->
-              <TextBlock Text="Play Content" FontSize="24"/>
+              <TextBlock Text="Matchmaking" FontSize="24"/>
             </StackPanel>
           </ScrollViewer>
         </TabItem>
@@ -100,7 +104,7 @@
           <ScrollViewer>
             <StackPanel Margin="20">
               <!-- Servers content here -->
-              <TextBlock Text="Servers Content" FontSize="24"/>
+              <TextBlock Text="Servers" FontSize="24"/>
             </StackPanel>
           </ScrollViewer>
         </TabItem>
@@ -109,7 +113,7 @@
           <ScrollViewer>
             <StackPanel Margin="20">
               <!-- Settings content here -->
-              <TextBlock Text="Settings Content" FontSize="24"/>
+              <TextBlock Text="Settings" FontSize="24"/>
             </StackPanel>
           </ScrollViewer>
         </TabItem>
@@ -144,9 +148,9 @@
                         FontWeight="SemiBold"
                         FontSize="15"/>
               <StackPanel Orientation="Horizontal" Spacing="20">
-                <TextBlock Text="Version 1.0.0"
+                <TextBlock Text="Version 1.35.3.102"
                           Foreground="#999999"/>
-                <TextBlock Text="Status: Online"
+                <TextBlock Text="Status: Updated"
                           Foreground="#4CAF50"/>
               </StackPanel>
             </StackPanel>

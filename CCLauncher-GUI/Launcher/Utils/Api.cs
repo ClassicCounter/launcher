@@ -1,4 +1,9 @@
-﻿using Refit;
+﻿/*
+ *  Utils/Api.cs
+ */
+
+using Refit;
+using Newtonsoft.Json;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 

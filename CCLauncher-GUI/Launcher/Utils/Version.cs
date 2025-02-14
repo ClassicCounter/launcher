@@ -1,4 +1,8 @@
-﻿using Newtonsoft.Json.Linq;
+﻿/*
+ *  Utils/Version.cs
+ */
+
+using Newtonsoft.Json.Linq;
 using System.Diagnostics;
 using System.Threading.Tasks;
 using System;
@@ -11,8 +15,8 @@ namespace Launcher.Utils
 
         public async static Task<string> GetLatestVersion()
         {
-            /*if (Debug.Enabled())
-                Terminal.Debug("Getting latest version.");*/
+            if (Debug.Enabled())
+                Terminal.Debug("Getting latest version.");
 
             try
             {
@@ -24,10 +28,15 @@ namespace Launcher.Utils
 
                 return (string?)responseJson["tag_name"] ?? Current;
             }
-            catch
+            catch (Exception ex)
             {
-                /*if (Debug.Enabled())
-                    Terminal.Debug("Couldn't get latest version.");*/
+                if (Debug.Enabled())
+                {
+                    Terminal.Debug("Couldn't get latest version.");
+                    Terminal.Debug($"Error details: {ex.Message}");
+                    if (ex.InnerException != null)
+                        Terminal.Debug($"Inner error: {ex.InnerException.Message}");
+                }
             }
 
             return Current;

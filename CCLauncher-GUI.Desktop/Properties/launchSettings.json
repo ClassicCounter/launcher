@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "CCLauncher-GUI.Desktop": {
+      "commandName": "Project",
+      "commandLineArgs": "--debug-mode"
+    }
+  }
+}

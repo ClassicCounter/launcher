@@ -46,5 +46,6 @@ namespace CCLauncher_GUI.ViewModels
                 _ => 0
             };
         }
+        // TABS OVER
     }
 }

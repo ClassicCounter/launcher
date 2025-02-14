@@ -1,13 +1,18 @@
 <Window xmlns="https://github.com/avaloniaui"
        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        
        xmlns:vm="clr-namespace:CCLauncher_GUI.ViewModels"
        xmlns:views="clr-namespace:CCLauncher_GUI.Views"
+        
        x:Class="CCLauncher_GUI.MainWindow"
        x:DataType="vm:MainWindowViewModel"
-       Title="ClassicCounter Launcher"
+        
+       Title="{Binding WindowTitle}"
        Icon="avares://CCLauncher-GUI/Assets/cc.ico"
+        
        MinWidth="800"
        MinHeight="600">
+  
   <Grid>
     <!-- Main Content -->
     <views:MainContent IsVisible="{Binding !IsLoading}"/>
