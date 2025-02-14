@@ -10,11 +10,19 @@ namespace CCLauncher_GUI.ViewModels;
 
 public class MainWindowViewModel : ReactiveObject
 {
+    
     private string _statusMessage = "Checking for updates...";
     public string StatusMessage
     {
         get => _statusMessage;
         set => this.RaiseAndSetIfChanged(ref _statusMessage, value);
+    }
+
+    private bool _isLoading = true;
+    public bool IsLoading
+    {
+        get => _isLoading;
+        set => this.RaiseAndSetIfChanged(ref _isLoading, value);
     }
 
     public async Task Initialize()
@@ -29,11 +37,11 @@ public class MainWindowViewModel : ReactiveObject
         }
 
         StatusMessage = "Ready!";
+        IsLoading = false;
     }
 
     private async Task UpdateLauncher(string version)
     {
-        // Your existing update logic here
         string updaterPath = $"{Directory.GetCurrentDirectory()}/updater.exe";
         //await DownloadManager.DownloadUpdater(updaterPath);
 

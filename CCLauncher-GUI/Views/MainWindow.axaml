@@ -1,12 +1,21 @@
 <Window xmlns="https://github.com/avaloniaui"
        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
        xmlns:vm="clr-namespace:CCLauncher_GUI.ViewModels"
+       xmlns:views="clr-namespace:CCLauncher_GUI.Views"
        x:Class="CCLauncher_GUI.MainWindow"
        x:DataType="vm:MainWindowViewModel"
        Title="ClassicCounter Launcher"
-       Icon="avares://CCLauncher-GUI/Assets/cc.ico">
+       Icon="avares://CCLauncher-GUI/Assets/cc.ico"
+       MinWidth="800"
+       MinHeight="600">
   <Grid>
-    <Grid Name="LoadingOverlay" Background="#1a1a1a">
+    <!-- Main Content -->
+    <views:MainContent IsVisible="{Binding !IsLoading}"/>
+
+    <!-- Loading Overlay -->
+    <Grid Name="LoadingOverlay"
+          Background="#1a1a1a"
+          IsVisible="{Binding IsLoading}">
       <Grid.RowDefinitions>
         <RowDefinition Height="*"/>
         <RowDefinition Height="Auto"/>
@@ -15,8 +24,9 @@
       <StackPanel Grid.Row="1" HorizontalAlignment="Center" Spacing="20">
         <Image Source="avares://CCLauncher-GUI/Assets/cc-logo-hires-white-crop.png"
                RenderOptions.BitmapInterpolationMode="MediumQuality"
-               Width="200"
-               Height="130"/>
+               Width="150"
+               Height="100"
+               Margin="10"/>
         <ProgressBar IsIndeterminate="True"
                      Width="300"
                      Foreground="Green"/>

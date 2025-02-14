@@ -1,0 +1,208 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+              xmlns:vm="clr-namespace:CCLauncher_GUI.ViewModels"
+              x:Class="CCLauncher_GUI.Views.MainContent"
+              x:DataType="vm:MainContentViewModel"
+              MinWidth="800"
+              MinHeight="600">
+
+  <Grid>
+    <Grid.ColumnDefinitions>
+      <ColumnDefinition Width="60"/>
+      <ColumnDefinition Width="*"/>
+    </Grid.ColumnDefinitions>
+
+    <!-- Sidebar -->
+    <StackPanel Grid.Column="0"
+                Background="#232323"
+                Spacing="10"
+                Margin="0">
+      <!-- Logo/News Button -->
+      <Button Classes="sidebar-button"
+              Click="OnNewsButtonClick"
+              ToolTip.Tip="News"
+              Margin="0,7,0,0">
+        <Image Source="avares://CCLauncher-GUI/Assets/cc-logo-hires-white-crop.png"
+                Width="40"
+                Height="40"/>
+      </Button>
+
+      <!-- Play Button -->
+      <Button Classes="sidebar-button"
+              Click="OnPlayButtonClick"
+              ToolTip.Tip="Play">
+        <Viewbox Width="26" Height="26">
+          <Path Data="M3.24182 2.32181C3.3919 2.23132 3.5784 2.22601 3.73338 2.30781L12.7334 7.05781C12.8974 7.14436 13 7.31457 13 7.5C13 7.68543 12.8974 7.85564 12.7334 7.94219L3.73338 12.6922C3.5784 12.774 3.3919 12.7687 3.24182 12.6782C3.09175 12.5877 3 12.4252 3 12.25V2.75C3 2.57476 3.09175 2.4123 3.24182 2.32181ZM4 3.57925V11.4207L11.4288 7.5L4 3.57925Z"
+                Fill="White"/>
+        </Viewbox>
+      </Button>
+
+      <!-- Servers Button -->
+      <Button Classes="sidebar-button"
+              Click="OnServersButtonClick"
+              ToolTip.Tip="Servers">
+        <Viewbox Width="20">
+          <Canvas Width="16" Height="16">
+            <Path Data="M3 3.25a.75.75 0 01.75-.75h.5a.75.75 0 010 1.5h-.5A.75.75 0 013 3.25z"
+                  Fill="White"/>
+            <Path Data="M2.25 0A2.25 2.25 0 000 2.25v2.5A2.25 2.25 0 002.25 7h11.5A2.25 2.25 0 0016 4.75v-2.5A2.25 2.25 0 0013.75 0H2.25zM1.5 2.25a.75.75 0 01.75-.75h11.5a.75.75 0 01.75.75v2.5a.75.75 0 01-.75.75H2.25a.75.75 0 01-.75-.75v-2.5z"
+                  Fill="White"/>
+            <Path Data="M3.75 11.5a.75.75 0 000 1.5h.5a.75.75 0 000-1.5h-.5z"
+                  Fill="White"/>
+            <Path Data="M2.25 9A2.25 2.25 0 000 11.25v2.5A2.25 2.25 0 002.25 16h11.5A2.25 2.25 0 0016 13.75v-2.5A2.25 2.25 0 0013.75 9H2.25zm-.75 2.25a.75.75 0 01.75-.75h11.5a.75.75 0 01.75.75v2.5a.75.75 0 01-.75.75H2.25a.75.75 0 01-.75-.75v-2.5z"
+                  Fill="White"/>
+          </Canvas>
+        </Viewbox>
+      </Button>
+
+      <!-- Settings Button -->
+      <Button Classes="sidebar-button"
+              Click="OnSettingsButtonClick"
+              ToolTip.Tip="Settings">
+        <Viewbox Width="25" Height="24">
+          <Path Data="M3.5 2h-1v5h1V2zm6.1 5H6.4L6 6.45v-1L6.4 5h3.2l.4.5v1l-.4.5zm-5 3H1.4L1 9.5v-1l.4-.5h3.2l.4.5v1l-.4.5zm3.9-8h-1v2h1V2zm-1 6h1v6h-1V8zm-4 3h-1v3h1v-3zm7.9 0h3.19l.4-.5v-.95l-.4-.5H11.4l-.4.5v.95l.4.5zm2.1-9h-1v6h1V2zm-1 10h1v2h-1v-2z"
+                Fill="White"/>
+        </Viewbox>
+      </Button>
+    </StackPanel>
+
+    <!-- Main Content and Footer -->
+    <Grid Grid.Column="1">
+      <Grid.RowDefinitions>
+        <RowDefinition Height="*"/>
+        <RowDefinition Height="60"/>
+      </Grid.RowDefinitions>
+
+      <!-- Tab Control -->
+      <TabControl Grid.Row="0"
+                  Margin="0"
+                  x:Name="MainTabControl"
+                  Background="Transparent">
+        <TabItem Header="News" IsVisible="False">
+          <ScrollViewer>
+            <StackPanel Margin="20">
+              <!-- News content here -->
+              <TextBlock Text="News Content" FontSize="24"/>
+            </StackPanel>
+          </ScrollViewer>
+        </TabItem>
+
+        <TabItem Header="Play" IsVisible="False">
+          <ScrollViewer>
+            <StackPanel Margin="20">
+              <!-- Play content here -->
+              <TextBlock Text="Play Content" FontSize="24"/>
+            </StackPanel>
+          </ScrollViewer>
+        </TabItem>
+
+        <TabItem Header="Servers" IsVisible="False">
+          <ScrollViewer>
+            <StackPanel Margin="20">
+              <!-- Servers content here -->
+              <TextBlock Text="Servers Content" FontSize="24"/>
+            </StackPanel>
+          </ScrollViewer>
+        </TabItem>
+
+        <TabItem Header="Settings" IsVisible="False">
+          <ScrollViewer>
+            <StackPanel Margin="20">
+              <!-- Settings content here -->
+              <TextBlock Text="Settings Content" FontSize="24"/>
+            </StackPanel>
+          </ScrollViewer>
+        </TabItem>
+      </TabControl>
+
+      <!-- Footer Section -->
+      <Grid Grid.Row="1" Background="#1E1E1E">
+        <!-- Separator at the top of footer -->
+        <Separator VerticalAlignment="Top"
+                  Background="#333333"
+                  Height="1"
+                  Margin="0"/>
+
+        <!-- Footer Content -->
+        <Grid Margin="20,10">
+          <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="Auto"/>
+          </Grid.ColumnDefinitions>
+
+          <!-- Left side footer content -->
+          <StackPanel Grid.Column="0"
+                      Orientation="Horizontal"
+                      Spacing="20"
+                      VerticalAlignment="Center">
+
+            <Image Source="avares://CCLauncher-GUI/Assets/cc.ico"/>
+
+            <StackPanel Orientation="Vertical" Spacing="4">
+              <TextBlock Text="ClassicCounter"
+                        Foreground="White"
+                        FontWeight="SemiBold"
+                        FontSize="15"/>
+              <StackPanel Orientation="Horizontal" Spacing="20">
+                <TextBlock Text="Version 1.0.0"
+                          Foreground="#999999"/>
+                <TextBlock Text="Status: Online"
+                          Foreground="#4CAF50"/>
+              </StackPanel>
+            </StackPanel>
+
+          </StackPanel>
+
+          <!-- Launch button on right -->
+          <Button Grid.Column="1"
+                  HorizontalAlignment="Right"
+                  Padding="20,10"
+                  Background="Green">
+            <StackPanel Orientation="Horizontal">
+              <Viewbox Width="14" Height="14" Margin="-7,0,7,0">
+                <Path Data="m.001 1.165v21.669c.052.661.601 1.177 1.271 1.177.225 0 .436-.058.62-.16l-.006.003 21.442-10.8c.4-.192.671-.593.671-1.058s-.271-.867-.664-1.055l-.007-.003-21.442-10.8c-.177-.099-.388-.157-.613-.157-.672 0-1.223.521-1.27 1.181v.004z"
+                      Fill="White"/>
+              </Viewbox>
+              <TextBlock Text="Launch ClassicCounter"
+                        VerticalAlignment="Center"/>
+            </StackPanel>
+          </Button>
+
+        </Grid>
+      </Grid>
+    </Grid>
+  </Grid>
+
+  <UserControl.Styles>
+    <Style Selector="Button.sidebar-button">
+      <Setter Property="Width" Value="50"/>
+      <Setter Property="Height" Value="50"/>
+      <Setter Property="Margin" Value="5,0"/>
+      <Setter Property="Background" Value="Transparent"/>
+      <Setter Property="BorderThickness" Value="0"/>
+      <Setter Property="Padding" Value="5"/>
+      <Setter Property="CornerRadius" Value="5"/>
+      <Setter Property="VerticalAlignment" Value="Center"/>
+      <Setter Property="HorizontalAlignment" Value="Center"/>
+    </Style>
+
+    <Style Selector="Button.sidebar-button:pointerover">
+      <Setter Property="Background" Value="#333333"/>
+    </Style>
+
+    <Style Selector="TabControl">
+      <Setter Property="Padding" Value="0"/>
+      <Setter Property="BorderThickness" Value="0"/>
+    </Style>
+
+    <Style Selector="TabItem">
+      <Setter Property="Padding" Value="0"/>
+      <Setter Property="Margin" Value="0"/>
+    </Style>
+
+    <Style Selector="Path">
+      <Setter Property="Fill" Value="White"/>
+    </Style>
+  </UserControl.Styles>
+
+</UserControl>
