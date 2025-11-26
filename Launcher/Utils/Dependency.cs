@@ -3,7 +3,6 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Spectre.Console;
 using System.Diagnostics;
-using System.Text.Json.Serialization;
 
 namespace Launcher.Utils
 {
@@ -31,13 +30,6 @@ namespace Launcher.Utils
 
             [JsonProperty(PropertyName = "value")]
             public required string Value { get; set; }
-            
-            public Registry(string Path, string Key, string Value)
-            {
-                this.Path = Path;
-                this.Key = Key;
-                this.Value = Value;
-            }
         }
     }
 
@@ -98,30 +90,14 @@ namespace Launcher.Utils
         public async static Task<Boolean> Install(StatusContext ctx, Dependencies dependencies)
         {
             _process = new Process();
-            Boolean success = false;
-            foreach (var dependency in dependencies.LocalDependencies)
-            {
-                if (Debug.Enabled())
-                    Terminal.Debug($"Executing dependency installer: {dependency.Name}");
-                _process.StartInfo.FileName = $"{directory}{dependency.Path}";
-                _process.StartInfo.UseShellExecute = true;
-                _process.StartInfo.Verb = "runas";
-                try
-                {
-                    _process.Start();
-                    await _process.WaitForExitAsync();
-                    if (Debug.Enabled())
-                        Terminal.Debug($"Dependency installer {dependency.Name} has exited with status code {_process.ExitCode}");
-                    success = true;
-                }
-                catch
-                {
-                    if (Debug.Enabled())
-                        Terminal.Debug($"Couldn't execute setup for dependency: {dependency.Name}");
-                    success = false;
-                }
-            }
-            foreach (var dependency in dependencies.RemoteDependencies)
+            bool success = false;
+
+            List<Dependency> allDependencies = new List<Dependency>(
+                dependencies.LocalDependencies.Count +
+                dependencies.RemoteDependencies.Count);
+            allDependencies.AddRange(dependencies.LocalDependencies);
+            allDependencies.AddRange(dependencies.RemoteDependencies);
+            foreach (Dependency dependency in allDependencies)
             {
                 if (Debug.Enabled())
                     Terminal.Debug($"Executing dependency installer: {dependency.Name}");
