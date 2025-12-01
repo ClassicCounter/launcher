@@ -8,7 +8,7 @@ namespace Launcher.Utils
         private static string _prefix = "[orange1]Classic[/][blue]Counter[/]";
         private static string _grey = "grey82";
         private static string _seperator = "[grey50]|[/]";
-        private static Stream? stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("Launcher.assets.steamhappy.txt");
+        private static Stream? stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("Launcher.Assets.steamhappy.txt");
         private static string steamhappy = new StreamReader(stream).ReadToEnd();
         public static void Init()
         {

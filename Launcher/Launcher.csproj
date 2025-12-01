@@ -22,21 +22,21 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Remove="assets\steamhappy.txt" />
+    <None Remove="Assets\steamhappy.txt" />
   </ItemGroup>
 
   <ItemGroup>
-    <EmbeddedResource Include="assets\steamhappy.txt" />
+    <EmbeddedResource Include="Assets\steamhappy.txt" />
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="CSGSI" Version="1.3.1" />
     <PackageReference Include="DiscordRichPresence" Version="1.2.1.24" />
     <PackageReference Include="Downloader" Version="3.2.1" />
+	<PackageReference Include="Gameloop.Vdf" Version="0.6.2" />
     <PackageReference Include="Refit" Version="8.0.0" />
     <PackageReference Include="Refit.Newtonsoft.Json" Version="8.0.0" />
     <PackageReference Include="Spectre.Console" Version="0.49.1" />
-    <PackageReference Include="Gameloop.Vdf" Version="0.6.2" />
   </ItemGroup>
 
 </Project>
