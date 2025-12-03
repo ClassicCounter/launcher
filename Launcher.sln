@@ -7,10 +7,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Launcher", "Launcher\Launch
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{8EC462FD-D22E-90A8-E5CE-7E832BA40C5D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LauncherGUI", "LauncherGUI\LauncherGUI.csproj", "{0FBA4F5A-2A42-D225-0CEC-7DF40F8D8FEA}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LauncherGUI.Desktop", "LauncherGUI.Desktop\LauncherGUI.Desktop.csproj", "{0714C6DE-9EA5-AB39-6179-BCD8AFFECE2A}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,14 +17,6 @@ Global
 		{C52CA2D0-3034-4F68-A523-BD7AED0A7479}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C52CA2D0-3034-4F68-A523-BD7AED0A7479}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C52CA2D0-3034-4F68-A523-BD7AED0A7479}.Release|Any CPU.Build.0 = Release|Any CPU
-		{0FBA4F5A-2A42-D225-0CEC-7DF40F8D8FEA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{0FBA4F5A-2A42-D225-0CEC-7DF40F8D8FEA}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{0FBA4F5A-2A42-D225-0CEC-7DF40F8D8FEA}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{0FBA4F5A-2A42-D225-0CEC-7DF40F8D8FEA}.Release|Any CPU.Build.0 = Release|Any CPU
-		{0714C6DE-9EA5-AB39-6179-BCD8AFFECE2A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{0714C6DE-9EA5-AB39-6179-BCD8AFFECE2A}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{0714C6DE-9EA5-AB39-6179-BCD8AFFECE2A}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{0714C6DE-9EA5-AB39-6179-BCD8AFFECE2A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
