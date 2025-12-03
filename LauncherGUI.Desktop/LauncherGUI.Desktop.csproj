@@ -1,12 +1,14 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <TargetFramework>net8.0</TargetFramework>
+    <TargetFramework>net8.0-windows7.0</TargetFramework>
 	<PublishSingleFile>true</PublishSingleFile>
 	<SelfContained>true</SelfContained>
     <Nullable>enable</Nullable>
     <BuiltInComInteropSupport>true</BuiltInComInteropSupport>
     <ApplicationManifest>app.manifest</ApplicationManifest>
+    <StartupObject>LauncherGUI.Desktop.Program</StartupObject>
+    <AssemblyName>wauncher</AssemblyName>
   </PropertyGroup>
 
   <ItemGroup>

@@ -3,7 +3,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:vm="clr-namespace:LauncherGUI.ViewModels"
-             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             mc:Ignorable="d" d:DesignWidth="480" d:DesignHeight="128"
              x:Class="LauncherGUI.Views.MainView"
              x:DataType="vm:MainViewModel">
   <Design.DataContext>
@@ -11,6 +11,19 @@
          to set the actual DataContext for runtime, set the DataContext property in code (look at App.axaml.cs) -->
     <vm:MainViewModel />
   </Design.DataContext>
-
-  <TextBlock Text="{Binding Greeting}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+	<Border Padding="25 16" Background="{DynamicResource ResourceKey=Background}">
+		<StackPanel Orientation="Vertical" Spacing="32">
+			<StackPanel Orientation="Horizontal">
+				<StackPanel Spacing="8" Orientation="Horizontal">
+					<Ellipse Fill="White" Height="32" Width="32">
+					</Ellipse>
+					<TextBlock Text="Hello, username" Classes="MainText" VerticalAlignment="Center" />
+				</StackPanel>
+			</StackPanel>
+			<StackPanel Spacing="8" Orientation="Horizontal">
+				<TextBlock Text="Game Status:" Classes="MainText" VerticalAlignment="Center" />
+				<TextBlock Text="ok" Classes="MainText" Foreground="Green"/>
+			</StackPanel>
+		</StackPanel>
+	</Border>
 </UserControl>
