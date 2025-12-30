@@ -10,6 +10,7 @@ namespace Launcher.Utils
         private static DiscordRpcClient _client = new DiscordRpcClient(_appId);
         private static RichPresence _presence = new RichPresence();
         public static string? CurrentUserId { get; private set; } // ! DEPRECATED ! for whitelist check
+        public static string? CurrentUserAvatar { get; private set; }
 
         public static void Init()
         {
@@ -58,9 +59,15 @@ namespace Launcher.Utils
         private static void OnReady(object sender, ReadyMessage e)
         {
             CurrentUserId = e.User.ID.ToString(); // ! DEPRECATED ! for passing current uid to api
+            CurrentUserAvatar = e.User.GetAvatarURL(User.AvatarFormat.PNG);
 
             if (Debug.Enabled())
                 Terminal.Debug($"Discord RPC: User is ready => @{e.User.Username} ({e.User.ID})");
+        }
+
+        public static string? GetAvatar()
+        {
+            return CurrentUserAvatar;
         }
     }
 }

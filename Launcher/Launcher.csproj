@@ -19,10 +19,15 @@
     <PublishSingleFile>true</PublishSingleFile>
     <SelfContained>false</SelfContained>
     <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+    <ApplicationIcon>assets\Launcher.ico</ApplicationIcon>
   </PropertyGroup>
 
   <ItemGroup>
     <None Remove="Assets\steamhappy.txt" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="assets\Launcher.ico" />
   </ItemGroup>
 
   <ItemGroup>
