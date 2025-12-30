@@ -3,6 +3,8 @@ using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Data.Core;
 using Avalonia.Data.Core.Plugins;
 using Avalonia.Markup.Xaml;
+using CommunityToolkit.Mvvm.Input;
+using Launcher.Utils;
 using System.Linq;
 using Wauncher.ViewModels;
 using Wauncher.Views;
@@ -14,6 +16,7 @@ namespace Wauncher
         public override void Initialize()
         {
             AvaloniaXamlLoader.Load(this);
+            Discord.Init();
         }
 
         public override void OnFrameworkInitializationCompleted()
@@ -42,6 +45,29 @@ namespace Wauncher
             foreach (var plugin in dataValidationPluginsToRemove)
             {
                 BindingPlugins.DataValidators.Remove(plugin);
+            }
+        }
+
+
+        [RelayCommand]
+        public void TrayIconClicked()
+        {
+            var window = new MainWindow();
+
+            window.Show();
+        }
+
+        [RelayCommand]
+        public void ExitApplication()
+        {
+            switch (ApplicationLifetime)
+            {
+                case IClassicDesktopStyleApplicationLifetime desktopLifetime:
+                    desktopLifetime.TryShutdown();
+                    break;
+                case IControlledApplicationLifetime controlledLifetime:
+                    controlledLifetime.Shutdown();
+                    break;
             }
         }
     }
