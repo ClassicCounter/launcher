@@ -1,6 +1,7 @@
 ﻿using DiscordRPC;
 using DiscordRPC.Logging;
 using DiscordRPC.Message;
+using System;
 
 namespace Launcher.Utils
 {
@@ -11,6 +12,7 @@ namespace Launcher.Utils
         private static RichPresence _presence = new RichPresence();
         public static string? CurrentUserId { get; private set; } // ! DEPRECATED ! for whitelist check
         public static string? CurrentUserAvatar { get; private set; }
+        public static string? CurrentUserUsername { get; private set; }
 
         public static void Init()
         {
@@ -60,14 +62,15 @@ namespace Launcher.Utils
         {
             CurrentUserId = e.User.ID.ToString(); // ! DEPRECATED ! for passing current uid to api
             CurrentUserAvatar = e.User.GetAvatarURL(User.AvatarFormat.PNG);
+            CurrentUserUsername = e.User.Username;
+            OnAvatarUpdate?.Invoke(CurrentUserAvatar);
+            OnUsernameUpdate?.Invoke(CurrentUserUsername);
 
             if (Debug.Enabled())
                 Terminal.Debug($"Discord RPC: User is ready => @{e.User.Username} ({e.User.ID})");
         }
 
-        public static string? GetAvatar()
-        {
-            return CurrentUserAvatar;
-        }
+        public static event Action<string?>? OnAvatarUpdate;
+        public static event Action<string?>? OnUsernameUpdate;
     }
 }
