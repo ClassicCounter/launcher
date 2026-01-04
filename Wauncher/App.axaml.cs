@@ -52,13 +52,14 @@ namespace Wauncher
         [RelayCommand]
         public void TrayIconClicked()
         {
-            var window = new MainWindow();
-
-            window.Show();
+            if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop && desktop.MainWindow != null)
+            {
+                desktop.MainWindow.Show();
+                desktop.MainWindow.Activate();
+            }
         }
 
-        [RelayCommand]
-        public void ExitApplication()
+        public void ExitApplication_Click(object? sender, System.EventArgs e)
         {
             switch (ApplicationLifetime)
             {

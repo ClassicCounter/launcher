@@ -1,45 +1,73 @@
-<Window xmlns="https://github.com/avaloniaui"
-		xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-		xmlns:vm="using:Wauncher.ViewModels"
-		xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-		xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" mc:Ignorable="d" d:DesignWidth="480" d:DesignHeight="128" x:Class="Wauncher.Views.MainWindow" x:DataType="vm:MainWindowViewModel" Icon="/Assets/Wauncher.ico" Title="ClassicCounter Wauncher"
-		xmlns:svg="clr-namespace:Avalonia.Svg.Controls;assembly=Avalonia.Svg.Skia"
-		xmlns:asyncImageLoader="clr-namespace:AsyncImageLoader;assembly=AsyncImageLoader.Avalonia"
-		Width="480"
-		Height="128">
+<Window
+	x:Class="Wauncher.Views.MainWindow"
+	xmlns="https://github.com/avaloniaui"
+	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+	xmlns:asyncImageLoader="clr-namespace:AsyncImageLoader;assembly=AsyncImageLoader.Avalonia"
+	xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+	xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+	xmlns:svg="clr-namespace:Avalonia.Svg.Controls;assembly=Avalonia.Svg.Skia"
+	xmlns:vm="using:Wauncher.ViewModels"
+	Title="ClassicCounter Wauncher"
+	Width="480"
+	Height="128"
+	d:DesignHeight="128"
+	d:DesignWidth="480"
+	x:DataType="vm:MainWindowViewModel"
+	Icon="/Assets/Wauncher.ico"
+	mc:Ignorable="d">
 
 	<Design.DataContext>
-		<!-- This only sets the DataContext for the previewer in an IDE,
-             to set the actual DataContext for runtime, set the DataContext property in code (look at App.axaml.cs) -->
-		<vm:MainWindowViewModel/>
+		<vm:MainWindowViewModel />
 	</Design.DataContext>
 	<Grid Background="Black">
-		<Grid VerticalAlignment="Top" Margin="25 16">
+		<Grid Margin="25,16" VerticalAlignment="Top">
 			<StackPanel Orientation="Horizontal" Spacing="8">
-				<Border Width="32" Height="32" Background="White"
-						CornerRadius="16" ClipToBounds="True">
+				<Border
+					Width="32"
+					Height="32"
+					Background="White"
+					ClipToBounds="True"
+					CornerRadius="16">
 					<Image asyncImageLoader:ImageLoader.Source="{Binding ProfilePicture}" Stretch="UniformToFill" />
 				</Border>
-				<TextBlock Text="Hello, username" Foreground="White" FontFamily="Segoe UI" FontWeight="600" FontSize="16" LetterSpacing="-0.25" Margin="0" VerticalAlignment="Center"/>
+				<TextBlock Classes="h1" Text="{Binding UsernameGreeting}" />
 			</StackPanel>
-			<StackPanel Orientation="Horizontal" VerticalAlignment="Center" Spacing="8" HorizontalAlignment="Right">
-				<Ellipse Width="8" Height="8" Fill="{Binding WhitelistStatus}"></Ellipse>
-				<TextBlock Text="Unknown" TextAlignment="Right" Foreground="White" FontFamily="Segoe UI" FontWeight="600" FontSize="16" LetterSpacing="-0.25" Margin="0" />
+			<StackPanel
+				HorizontalAlignment="Right"
+				VerticalAlignment="Center"
+				Orientation="Horizontal"
+				Spacing="8">
+				<Ellipse
+					Width="8"
+					Height="8"
+					Fill="{Binding WhitelistStatus}" />
+				<TextBlock
+					Classes="h1"
+					Text="Unknown"
+					TextAlignment="Right" />
+				<Button
+					Classes="info"
+					Click="Button_Info">
+					<TextBlock Classes="h2">
+						?
+					</TextBlock>
+				</Button>
 			</StackPanel>
 		</Grid>
-		<Grid VerticalAlignment="Bottom" Margin="25 16">
-			<TextBlock Text="{Binding GameStatus}" Foreground="White" FontFamily="Segoe UI" FontWeight="600" FontSize="16" LetterSpacing="-0.25" Margin="0" VerticalAlignment="Center" />
-			<Button Margin="0" HorizontalAlignment="Right" Height="40" Background="DarkGreen" Padding="16 8" Opacity="0.7" Click="Button_Click">
+		<Grid Margin="25,16" VerticalAlignment="Bottom">
+			<TextBlock Classes="h1" Text="{Binding GameStatus}" />
+			<Button
+				Classes="launch"
+				Click="Button_Click">
 				<StackPanel Orientation="Horizontal" Spacing="8">
-					<Svg Path="/Assets/CS-logo.svg" Width="17" Height="23" />
-					<TextBlock FontFamily="Segoe UI" Foreground="White" FontWeight="600" FontSize="14" VerticalAlignment="Center">Launch Game</TextBlock>
+					<Svg
+						Width="17"
+						Height="23"
+						Path="/Assets/CS-logo.svg" />
+					<TextBlock Classes="h2">
+						Launch Game
+					</TextBlock>
 				</StackPanel>
-				<Button.Styles>
-					<Style Selector="Button:pointerover /template/ ContentPresenter">
-						<Setter Property="Background" Value="Green" />
-						<Setter Property="Opacity" Value="1" />
-					</Style>
-				</Button.Styles>
 			</Button>
 		</Grid>
 	</Grid>
