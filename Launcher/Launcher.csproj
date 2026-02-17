@@ -6,7 +6,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <Company>ClassicCounter Team</Company>
-    <Version>2.2.6.1</Version>
+    <Version>2.2.6.2</Version>
     <AssemblyVersion>$(Version)</AssemblyVersion>
 	  <FileVersion>$(Version)</FileVersion> 
     <AssemblyName>launcher</AssemblyName>
