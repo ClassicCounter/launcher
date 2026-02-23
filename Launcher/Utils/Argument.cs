@@ -11,7 +11,8 @@
             "--patch-only",
             "--gc",
             "--disable-rpc",
-            "--install-dependencies"
+            "--install-dependencies",
+            "--protocol-command"
         };
 
         private static List<string> _additionalArguments = new();
@@ -39,7 +40,19 @@
             List<string> gameArguments = new();
 
             foreach (string arg in launcherArguments)
-                if ((passLauncherArguments || !_launcherArguments.Contains(arg.ToLowerInvariant()))
+                if (arg.StartsWith("cc://"))
+                {
+                    string protocolArgument = arg.Replace("cc://", "");
+                    string[] protocolArguments = protocolArgument.Split('/');
+                    switch (protocolArguments[0])
+                    {
+                        case "connect":
+                            gameArguments.Add("+" + protocolArguments[0]);
+                            gameArguments.Add(protocolArguments[1]);
+                            break;
+                    }
+                }
+                else if ((passLauncherArguments || !_launcherArguments.Contains(arg.ToLowerInvariant()))
                     && !arg.EndsWith(".exe"))
                     gameArguments.Add(arg.ToLowerInvariant());
 

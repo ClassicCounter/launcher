@@ -39,6 +39,7 @@ bld/
 
 # Visual Studio 2017 auto generated files
 Generated\ Files/
+launchSettings.json
 
 # MSTest test Results
 [Tt]est[Rr]esult*/
@@ -450,7 +451,9 @@ $RECYCLE.BIN/
 .vscode/*
 !.vscode/settings.json
 !.vscode/tasks.json
-!.vscode/launch.json
 !.vscode/extensions.json
+
+## Additions
+Wauncher/Properties/launchSettings.json
 /Launcher/Properties/launchSettings.json
 /.vscode/launch.json

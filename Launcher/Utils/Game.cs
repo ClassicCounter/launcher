@@ -37,6 +37,7 @@ namespace Launcher.Utils
                 _listener.NewGameState += OnNewGameState;
                 _listener.Start();
 
+                try {
                 await File.WriteAllTextAsync(gameStatePath,
 @"""ClassicCounter""
 {
@@ -61,6 +62,11 @@ namespace Launcher.Utils
 	}
 }"
                 );
+                }
+                catch
+                {
+                    Terminal.Error($"(!) \"/csgo/cfg/gamestate_integration_cc.cfg\" not found in the current directory!");
+                }
             }
             else if (File.Exists(gameStatePath)) File.Delete(gameStatePath);
 
@@ -74,7 +80,15 @@ namespace Launcher.Utils
             _process.StartInfo.FileName = $"{directory}\\{gameExe}";
             _process.StartInfo.Arguments = string.Join(" ", arguments);
 
+            if (!File.Exists(_process.StartInfo.FileName))
+            {
+                Terminal.Error($"(!) {gameExe} not found in the current directory!");
+                ConsoleManager.ShowError($"{gameExe} not found in the current directory!\n\nPlease make sure the launcher and game files are in the same folder.");
+                return false;
+            }
+
             return _process.Start();
+
         }
 
         public static async Task Monitor()

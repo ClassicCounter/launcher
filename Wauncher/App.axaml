@@ -13,6 +13,7 @@
   
     <Application.Styles>
         <FluentTheme />
+		<StyleInclude Source="/Assets/Styles.axaml"/>
     </Application.Styles>
 
 	<TrayIcon.Icons>
@@ -22,7 +23,7 @@
 					<NativeMenu>
 						<NativeMenuItem Header="Discord RPC is running" IsEnabled="False"/>
 						<NativeMenuItemSeparator />
-						<NativeMenuItem Header="E_xit" Command="{Binding ExitApplicationCommand}"/>
+						<NativeMenuItem Header="E_xit" Click="ExitApplication_Click"/>
 					</NativeMenu>
 				</TrayIcon.Menu>
 			</TrayIcon>

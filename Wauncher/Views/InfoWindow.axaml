@@ -1,0 +1,93 @@
+<Window
+	x:Class="Wauncher.InfoWindow"
+	xmlns="https://github.com/avaloniaui"
+	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+	xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+	xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+	xmlns:vm="using:Wauncher.ViewModels"
+	Title="Info"
+	Width="480"
+	Height="360"
+	d:DesignHeight="360"
+	d:DesignWidth="480"
+	x:DataType="vm:InfoWindowViewModel"
+	mc:Ignorable="d">
+	<Grid Background="Black">
+		<Grid Margin="25,16" VerticalAlignment="Top">
+			<Grid>
+				<Border HorizontalAlignment="Left">
+					<TextBlock Classes="h1" Text="ClassicCounter Team" />
+				</Border>
+				<Border HorizontalAlignment="Right" VerticalAlignment="Bottom">
+					<TextBlock Classes="h2" Text="Version 3.0.0a" />
+				</Border>
+			</Grid>
+		</Grid>
+		<Grid Margin="25,16" VerticalAlignment="Center">
+			<TextBlock Classes="h1" TextWrapping="Wrap">
+				Thank You for playing ClassicCounter and using Wauncher.<LineBreak />
+				Special thanks to h4rmy, heapy and eddies for maintaining this project.<LineBreak />
+				<LineBreak />
+				Built using:<LineBreak />
+				<Button
+					Classes="HyperlinkButton"
+					Command="{Binding OpenUrlCommand}"
+					CommandParameter="https://github.com/AvaloniaUI/Avalonia">
+					Avalonia UI
+				</Button>
+				and
+				<Button
+					Classes="HyperlinkButton"
+					Command="{Binding OpenUrlCommand}"
+					CommandParameter="https://github.com/CommunityToolkit/dotnet">
+					.NET Community Toolkit
+				</Button>
+				<LineBreak />
+				<Button
+					Classes="HyperlinkButton"
+					Command="{Binding OpenUrlCommand}"
+					CommandParameter="https://github.com/ClassicCounter/Launcher/tree/main">
+					Original Launcher code
+				</Button>
+				by
+				<Button
+					Classes="HyperlinkButton"
+					Command="{Binding OpenUrlCommand}"
+					CommandParameter="https://github.com/heapyxyz">
+					heapy
+				</Button>
+				<LineBreak />
+				<LineBreak />
+				Suggest via
+				<Button
+					Classes="HyperlinkButton"
+					Command="{Binding OpenUrlCommand}"
+					CommandParameter="discord://-/channels/1083325391269281794/1457266926119288944">
+					forum post
+				</Button>
+				or
+				<Button
+					Classes="HyperlinkButton"
+					Command="{Binding OpenUrlCommand}"
+					CommandParameter="mailto://github@koolych.ru">
+					github [at] koolych [dot] ru
+				</Button>
+				<LineBreak />
+				Something is not working? Read
+				<Button
+					Classes="HyperlinkButton"
+					Command="{Binding OpenUrlCommand}"
+					CommandParameter="discord://-/channels/1083325391269281794/1452006085727748229/1452007299718582413">
+					#faq
+				</Button>
+			</TextBlock>
+		</Grid>
+		<Grid
+			Margin="25,16"
+			HorizontalAlignment="Right"
+			VerticalAlignment="Bottom">
+			<TextBlock Classes="h2" Text="©️ 2026" />
+		</Grid>
+	</Grid>
+
+</Window>

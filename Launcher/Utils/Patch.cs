@@ -1,5 +1,6 @@
 ﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using System.Collections.Concurrent;
 using System.Security.Cryptography;
 
 namespace Launcher.Utils
@@ -152,23 +153,31 @@ namespace Launcher.Utils
                         needPak01Update = true;
                     }
 
-                    if (needPak01Update)
+                    if (!needPak01Update)
                     {
                         patches.Remove(dirPatch);
                     }
                 }
 
-                foreach (Patch patch in patches)
+                var concurrentMissing = new ConcurrentBag<Patch>();
+                var concurrentOutdated = new ConcurrentBag<Patch>();
+
+                var parallelOptions = new ParallelOptions
+                {
+                    MaxDegreeOfParallelism = 4
+                };
+
+                await Parallel.ForEachAsync(patches, parallelOptions, async (patch, cancellationToken) =>
                 {
                     string originalFileName = GetOriginalFileName(patch.File);
 
                     // skip dir file (we already checked it)
                     if (originalFileName.Contains("pak01_dir.vpk"))
-                        continue;
+                        return;
 
                     // are you a pak01 file?
                     bool isPak01File = originalFileName.Contains("pak01_");
-                    string path = $"{Directory.GetCurrentDirectory()}/{originalFileName}";
+                    string path = Path.Combine(Directory.GetCurrentDirectory(), originalFileName);
 
                     if (isPak01File && !needPak01Update && !Argument.Exists("--validate-all"))
                     {
@@ -177,14 +186,14 @@ namespace Launcher.Utils
                             if (Debug.Enabled())
                                 Terminal.Debug($"Missing: {originalFileName}");
 
-                            missing.Add(patch);
-                            continue;
+                            concurrentMissing.Add(patch);
+                            return;
                         }
 
                         if (Debug.Enabled())
                             Terminal.Debug($"Skipping hash check for: {originalFileName} (pak01_dir.vpk up to date)");
 
-                        continue;
+                        return;
                     }
 
                     if (!File.Exists(path))
@@ -192,8 +201,8 @@ namespace Launcher.Utils
                         if (Debug.Enabled())
                             Terminal.Debug($"Missing: {originalFileName}");
 
-                        missing.Add(patch);
-                        continue;
+                        concurrentMissing.Add(patch);
+                        return;
                     }
 
                     if (Debug.Enabled())
@@ -206,9 +215,12 @@ namespace Launcher.Utils
                             Terminal.Debug($"Outdated: {originalFileName}");
 
                         File.Delete(path);
-                        outdated.Add(patch);
+                        concurrentOutdated.Add(patch);
                     }
-                }
+                });
+
+                missing.AddRange(concurrentMissing);
+                outdated.AddRange(concurrentOutdated);
 
                 // if pak01_dir.vpk needs update, move it to end of lists
                 if (needPak01Update && dirPatch != null)
