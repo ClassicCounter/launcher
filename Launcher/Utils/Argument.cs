@@ -12,7 +12,8 @@
             "--gc",
             "--disable-rpc",
             "--install-dependencies",
-            "--protocol-command"
+            "--protocol-command",
+            "--ssl-bypass"
         };
 
         private static List<string> _additionalArguments = new();

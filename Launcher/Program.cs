@@ -87,6 +87,9 @@ string directory = Directory.GetCurrentDirectory();
 
 Dependencies dependenciesToInstall = new Dependencies(false, new List<Dependency>(), new List<Dependency>());
 
+if (Argument.Exists("--ssl-bypass"))
+    Terminal.Warning("Bypassing certificate authority validations...");
+
 if (Argument.Exists("--install-dependencies"))
 {
     bool success = new Boolean();
