@@ -1,4 +1,4 @@
-﻿using Microsoft.Win32;
+using Microsoft.Win32;
 using Gameloop.Vdf;
 
 namespace Launcher.Utils
@@ -32,21 +32,33 @@ namespace Launcher.Utils
                 await Task.Delay(5000);
                 Environment.Exit(1);
             }
-            var loginUsersPath = Path.Combine(steamPath, "config", "loginusers.vdf");
-            dynamic loginUsers = VdfConvert.Deserialize(File.ReadAllText(loginUsersPath));
-            foreach (var user in loginUsers.Value)
+            
+            try
             {
-                var mostRecent = user.Value.MostRecent.Value;
-                if (mostRecent == "1")
+                var loginUsersPath = Path.Combine(steamPath, "config", "loginusers.vdf");
+                dynamic loginUsers = VdfConvert.Deserialize(File.ReadAllText(loginUsersPath));
+                foreach (var user in loginUsers.Value)
                 {
-                    recentSteamID64 = user.Key;
-                    recentSteamID2 = ConvertToSteamID2(user.Key);
+                    var mostRecent = user.Value.MostRecent.Value;
+                    if (mostRecent == "1")
+                    {
+                        recentSteamID64 = user.Key;
+                        recentSteamID2 = ConvertToSteamID2(user.Key);
+                    }
+                }
+                
+                if (Debug.Enabled() && !string.IsNullOrEmpty(recentSteamID64))
+                {
+                    Terminal.Debug($"Most recent Steam account (SteamID64): {recentSteamID64}");
+                    Terminal.Debug($"Most recent Steam account (SteamID2): {recentSteamID2}");
                 }
             }
-            if (Debug.Enabled() && !string.IsNullOrEmpty(recentSteamID64))
+            catch (Exception ex)
             {
-                Terminal.Debug($"Most recent Steam account (SteamID64): {recentSteamID64}");
-                Terminal.Debug($"Most recent Steam account (SteamID2): {recentSteamID2}");
+                if (Debug.Enabled())
+                    Terminal.Debug($"Failed to read Steam user data: {ex.Message}");
+                
+                Terminal.Warning("Could not detect Steam account automatically.");
             }
         }
 
