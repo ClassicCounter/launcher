@@ -9,3 +9,25 @@
 - Profile background holder on eddies.cc has been updated to a lower opacity gradient, making backgrounds more visible.
 - Fixed broken or invalid item IDs in player inventories.
 - Bug fixes and security improvements.
+
+# NOVAGANG Collection Update
+
+## What's Changed
+
+- Added NOVAGANG Sticker Capsule
+- Added Dysocjacja by Exodus1900
+- Added Inure+Idyllic by Exodus1900
+- Added bits and pieces by gv1nn
+- Added FREE GEEK by gv1nn
+- Added Atticus by Ways
+- Added You Lose Forever by Ways
+- Added [x]"TheDevilMayCry!" by prblm
+- Added Veire Dawf by prblm
+- Added ｓｏｎａｔａ░ｄｅ░ｌｌｕｖｉａ　（卸ぬマ）（卸ぬマ） by Trauma
+- Added Vai S.//3 バロック by Trauma
+- Added 760 by Zephrxd
+- Added THE HELLSING CONSPIRACY by Zephrxd
+- Added No Body by Zootzie
+- Added Terminal Z by Zootzie
+- Added H.T.N.G by NOVAGANG
+- Added H.T.N.G. VOL. 2: JUDGEMENT DAY by NOVAGANG
