@@ -1,5 +1,4 @@
 # Anniversary Update
-
 ## What's Changed
 - Donors now permanently get an extra drop at the end of each match, on top of the extra drop during this month's event. We're grateful for your support!
 - NOVAGANG Collection drops have been reverted back to normal rates.
@@ -11,9 +10,7 @@
 - Bug fixes and security improvements.
 
 # NOVAGANG Collection Update
-
 ## What's Changed
-
 - Added NOVAGANG Sticker Capsule
 - Added Dysocjacja by Exodus1900
 - Added Inure+Idyllic by Exodus1900
