@@ -1,3 +1,13 @@
+# Patch Notes 03/08/2026
+## What's Changed
+- Updated appearance of the "Edit Profile" page on eddies.cc
+- Profiles on eddies.cc are now limited to a maximum level of 6,199
+- Profile vanity URLs on eddies.cc are now limited to a minimum of three characters
+- Image hosts used for eddies.cc profiles are now whitelist only
+- Added an information tab to the "Edit Profile" page on eddies.cc that lists whitelisted image hosts
+- Groups on eddies.cc can now have a custom URL set, directing to the desired Steam group URL instead of the vanity URL that matches the group name
+- Groups on eddies.cc will direct to the vanity URL that matches the group name if no custom group URL is set when editing profile
+
 # Anniversary Update 03/14/2026
 ## What's Changed
 - Donors now permanently get an extra drop at the end of each match, on top of the extra drop during this month's event. We're grateful for your support!
@@ -37,4 +47,5 @@
 - Added Terminal Z by Zootzie
 - Added H.T.N.G by NOVAGANG
 - Added H.T.N.G. VOL. 2: JUDGEMENT DAY by NOVAGANG
+
 
