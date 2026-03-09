@@ -1,4 +1,4 @@
-# Patch Notes 03/08/2026
+# Hotfix 03/08/2026
 ## What's Changed
 - Updated appearance of the "Edit Profile" page on eddies.cc
 - Profiles on eddies.cc are now limited to a maximum level of 6,199
@@ -47,5 +47,6 @@
 - Added Terminal Z by Zootzie
 - Added H.T.N.G by NOVAGANG
 - Added H.T.N.G. VOL. 2: JUDGEMENT DAY by NOVAGANG
+
 
 
