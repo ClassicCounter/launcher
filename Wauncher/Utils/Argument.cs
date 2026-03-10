@@ -2,21 +2,8 @@ namespace Wauncher.Utils
 {
     public static class Argument
     {
-        private static List<string> _launcherArguments = new()
-        {
-            "--debug-mode",
-            "--skip-updates",
-            "--skip-validating",
-            "--validate-all",
-            "--patch-only",
-            "--gc",
-            "--disable-rpc",
-            "--install-dependencies",
-            "--protocol-command",
-            "--ssl-bypass"
-        };
+        private static readonly List<string> _additionalArguments = new();
 
-        private static List<string> _additionalArguments = new();
         public static void AddArgument(string argument)
         {
             if (!_additionalArguments.Any(a => string.Equals(a, argument, StringComparison.OrdinalIgnoreCase)))
@@ -28,41 +15,36 @@ namespace Wauncher.Utils
             _additionalArguments.Clear();
         }
 
-        public static bool Exists(string argument)
-        {
-            IEnumerable<string> arguments = Environment.GetCommandLineArgs();
+        public static bool HasProtocolCommand() =>
+            Environment.GetCommandLineArgs().Any(arg =>
+                arg.StartsWith("cc://", StringComparison.OrdinalIgnoreCase));
 
-            foreach (string arg in arguments)
-                if (arg.ToLowerInvariant() == argument) return true;
-
-            return false;
-        }
-
-        public static List<string> GenerateGameArguments(bool passLauncherArguments = false)
+        public static List<string> GenerateGameArguments()
         {
             IEnumerable<string> launcherArguments = Environment.GetCommandLineArgs();
             List<string> gameArguments = new();
 
             foreach (string arg in launcherArguments)
-                if (arg.StartsWith("cc://"))
+            {
+                if (!arg.StartsWith("cc://", StringComparison.OrdinalIgnoreCase))
+                    continue;
+
+                string protocolArgument = arg.Replace("cc://", "", StringComparison.OrdinalIgnoreCase);
+                string[] protocolArguments = protocolArgument.Split('/');
+                if (protocolArguments.Length < 2)
+                    continue;
+
+                switch (protocolArguments[0])
                 {
-                    string protocolArgument = arg.Replace("cc://", "");
-                    string[] protocolArguments = protocolArgument.Split('/');
-                    switch (protocolArguments[0])
-                    {
-                        case "connect":
-                            gameArguments.Add("+" + protocolArguments[0]);
-                            gameArguments.Add(protocolArguments[1]);
-                            break;
-                    }
+                    case "connect":
+                        gameArguments.Add("+connect");
+                        gameArguments.Add(protocolArguments[1]);
+                        break;
                 }
-                else if ((passLauncherArguments || !_launcherArguments.Contains(arg.ToLowerInvariant()))
-                    && !arg.EndsWith(".exe"))
-                    gameArguments.Add(arg.ToLowerInvariant());
+            }
 
             gameArguments.AddRange(_additionalArguments);
             return gameArguments;
         }
     }
 }
-

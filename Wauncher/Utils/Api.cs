@@ -1,4 +1,4 @@
-using Refit;
+﻿using Refit;
 using Newtonsoft.Json;
 
 namespace Wauncher.Utils
@@ -140,19 +140,9 @@ namespace Wauncher.Utils
 
     public static class Api
     {
-        private static HttpClientHandler _httpClientHandler = new HttpClientHandler()
-        {
-            ServerCertificateCustomValidationCallback = (message, cert, chain, sslErrors) => true
-        };
-        private static HttpClient ClassicCounterApiHttpClient = new HttpClient(_httpClientHandler)
-        {
-            BaseAddress = new Uri("https://classiccounter.cc/api")
-        };
         private static RefitSettings _settings = new RefitSettings(new NewtonsoftJsonContentSerializer());
         public static IGitHub GitHub = RestService.For<IGitHub>("https://api.github.com", _settings);
-        public static IClassicCounter ClassicCounter = Argument.Exists("--ssl-bypass")
-            ? RestService.For<IClassicCounter>(ClassicCounterApiHttpClient, _settings)
-            : RestService.For<IClassicCounter>("https://classiccounter.cc/api", _settings); // THIS IS NOT IDEAL, CHANGE THE WORLD OF TRUSTED CERTIFICATES
+        public static IClassicCounter ClassicCounter = RestService.For<IClassicCounter>("https://classiccounter.cc/api", _settings);
         public static IEddies Eddies = RestService.For<IEddies>("https://eddies.cc/api", _settings);
 
         public static List<FriendInfo> ParseFriendsPayload(string? json)

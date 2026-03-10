@@ -565,6 +565,7 @@
 								<Button x:Name="ArrowButton" Grid.Column="2" Classes="launchBtn" Classes.updating="{Binding IsUpdatingOrInstalling}" HorizontalContentAlignment="Center" VerticalContentAlignment="Center">
 								<Button.Flyout>
 									<MenuFlyout Placement="Top">
+										<MenuItem Header="Verify Game Files" Click="VerifyGameFiles_Click" />
 										<MenuItem Header="Open Game Folder" Click="OpenGameFolder_Click" />
 									</MenuFlyout>
 								</Button.Flyout>

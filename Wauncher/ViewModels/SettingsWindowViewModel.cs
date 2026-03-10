@@ -16,9 +16,6 @@ namespace Wauncher.ViewModels
         [ObservableProperty]
         private bool _skipUpdates = false;
 
-        [ObservableProperty]
-        private string _launchOptions = string.Empty;
-
         public SettingsWindowViewModel()
         {
             Load();
@@ -26,7 +23,6 @@ namespace Wauncher.ViewModels
 
         partial void OnMinimizeToTrayChanged(bool value) => Save();
         partial void OnSkipUpdatesChanged(bool value) => Save();
-        partial void OnLaunchOptionsChanged(string value) => Save();
 
         partial void OnDiscordRpcChanged(bool value)
         {
@@ -55,7 +51,6 @@ namespace Wauncher.ViewModels
                         case "MinimizeToTray": MinimizeToTray = value.Trim() == "true"; break;
                         case "DiscordRpc":     DiscordRpc     = value.Trim() == "true"; break;
                         case "SkipUpdates":    SkipUpdates    = value.Trim() == "true"; break;
-                        case "LaunchOptions":  LaunchOptions  = value; break;
                     }
                 }
             }
@@ -71,7 +66,6 @@ namespace Wauncher.ViewModels
                     $"MinimizeToTray={MinimizeToTray.ToString().ToLower()}",
                     $"DiscordRpc={DiscordRpc.ToString().ToLower()}",
                     $"SkipUpdates={SkipUpdates.ToString().ToLower()}",
-                    $"LaunchOptions={LaunchOptions}",
                 });
             }
             catch { }

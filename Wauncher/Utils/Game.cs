@@ -20,18 +20,16 @@ namespace Wauncher.Utils
         {
             List<string> arguments = Argument.GenerateGameArguments();
             if (arguments.Count > 0) Terminal.Print($"Arguments: {string.Join(" ", arguments)}");
+            var settings = ViewModels.SettingsWindowViewModel.LoadGlobal();
 
             string directory = Directory.GetCurrentDirectory();
             Terminal.Print($"Directory: {directory}");
 
             string gameStatePath = $"{directory}/csgo/cfg/gamestate_integration_cc.cfg";
             
-            if (!Argument.Exists("--disable-rpc"))
+            if (settings.DiscordRpc)
             {
                 _port = GeneratePort();
-
-                if (Argument.Exists("--debug-mode"))
-                    Terminal.Debug($"Starting Game State Integration with TCP port {_port}.");
 
                 _listener = new($"http://localhost:{_port}/");
                 _listener.NewGameState += OnNewGameState;
@@ -71,12 +69,8 @@ namespace Wauncher.Utils
             else if (File.Exists(gameStatePath)) File.Delete(gameStatePath);
 
             _process = new Process();
-            bool useGC = Argument.Exists("--gc");
 
-            if (Argument.Exists("--debug-mode"))
-                Terminal.Debug($"Launching the game with{(useGC ? "" : "out")} Game Coordinator...");
-
-            string gameExe = useGC ? "cc.exe" : "csgo.exe";
+            string gameExe = "csgo.exe";
             _process.StartInfo.FileName = $"{directory}\\{gameExe}";
             _process.StartInfo.Arguments = string.Join(" ", arguments);
 

@@ -1,4 +1,4 @@
-using System.IO;
+﻿using System.IO;
 using System.Net.Http;
 using System.Linq;
 using System.Net.NetworkInformation;
@@ -121,9 +121,6 @@ namespace Wauncher.Views
                     : null;
 
                 if (bitmaps == null || bitmaps.Count == 0)
-                    bitmaps = LoadEmbeddedCarouselImages();
-
-                if (bitmaps.Count == 0)
                 {
                     if (offlinePanel != null)
                         offlinePanel.IsVisible = true;
@@ -263,23 +260,6 @@ namespace Wauncher.Views
         {
             while (_zoomCts.Count < count)
                 _zoomCts.Add(null);
-        }
-
-        private static List<Bitmap> LoadEmbeddedCarouselImages()
-        {
-            var bitmaps = new List<Bitmap>();
-            string[] files = { "carousel_0.png", "carousel_1.png", "carousel_2.png", "carousel_3.png" };
-            foreach (var file in files)
-            {
-                try
-                {
-                    var uri = new Uri("avares://Wauncher/Assets/" + file);
-                    using var stream = AssetLoader.Open(uri);
-                    bitmaps.Add(new Bitmap(stream));
-                }
-                catch { }
-            }
-            return bitmaps;
         }
 
         private void RotateCarousel()
@@ -427,13 +407,6 @@ namespace Wauncher.Views
 
                 Argument.AddArgument("-novid");
 
-                if (!_settings.DiscordRpc)
-                    Argument.AddArgument("--disable-rpc");
-
-                if (!string.IsNullOrWhiteSpace(_settings.LaunchOptions))
-                    foreach (var arg in ParseLaunchOptions(_settings.LaunchOptions))
-                        Argument.AddArgument(arg);
-
                 var selected = vm?.SelectedServer;
                 if (selected != null && !selected.IsNone && !string.IsNullOrEmpty(selected.IpPort))
                 {
@@ -503,6 +476,19 @@ namespace Wauncher.Views
             });
         }
 
+        private void VerifyGameFiles_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+        {
+            if (DataContext is not MainWindowViewModel vm)
+                return;
+
+            if (vm.IsCheckingUpdates || vm.IsUpdating || vm.IsInstalling || vm.IsNeedingInstall)
+                return;
+
+            _forceValidateAllOnce = true;
+            _cachedPatches = null;
+            Button_Update(sender, e);
+        }
+
         // ── Update ─────────────────────────────────────────────────────
         private CancellationTokenSource? _updateCts;
         private Patches? _cachedPatches;
@@ -510,6 +496,7 @@ namespace Wauncher.Views
         private string _selfUpdateDownloadUrl = string.Empty;
         private string _selfUpdateVersion = string.Empty;
         private int _autoSelfUpdateTriggered;
+        private bool _forceValidateAllOnce;
 
         /// <summary>
         /// Called on window open. If csgo.exe is missing, triggers a full CDN install.
@@ -1257,7 +1244,9 @@ exit /b 0
             {
                 // Use the result already computed by CheckForUpdatesAsync when available,
                 // to avoid a redundant full validation on every update click.
-                var patches = _cachedPatches ?? await Task.Run(() => PatchManager.ValidatePatches(), token);
+                bool validateAll = _forceValidateAllOnce;
+                _forceValidateAllOnce = false;
+                var patches = _cachedPatches ?? await Task.Run(() => PatchManager.ValidatePatches(validateAll: validateAll), token);
                 _cachedPatches = null; // consumed — force fresh check next time
                 if (token.IsCancellationRequested) return;
 
@@ -1565,40 +1554,6 @@ exit /b 0
             {
                 return false;
             }
-        }
-
-        // Minimal parser for launch options that supports quoted values.
-        private static IEnumerable<string> ParseLaunchOptions(string options)
-        {
-            if (string.IsNullOrWhiteSpace(options))
-                yield break;
-
-            var current = new StringBuilder();
-            bool inQuotes = false;
-
-            foreach (var ch in options)
-            {
-                if (ch == '"')
-                {
-                    inQuotes = !inQuotes;
-                    continue;
-                }
-
-                if (char.IsWhiteSpace(ch) && !inQuotes)
-                {
-                    if (current.Length > 0)
-                    {
-                        yield return current.ToString();
-                        current.Clear();
-                    }
-                    continue;
-                }
-
-                current.Append(ch);
-            }
-
-            if (current.Length > 0)
-                yield return current.ToString();
         }
 
     }

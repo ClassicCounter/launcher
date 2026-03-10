@@ -133,7 +133,7 @@ namespace Wauncher.Utils
                             outdated.Add(dirPatch);
                             needPak01Update = true;
                         }
-                        else if (!Argument.Exists("--validate-all"))
+                        else if (!validateAll)
                         {
                             if (Debug.Enabled())
                                 Terminal.Debug("csgo/pak01_dir.vpk is up to date - will skip pak01 files");
@@ -141,7 +141,7 @@ namespace Wauncher.Utils
                         else
                         {
                             if (Debug.Enabled())
-                                Terminal.Debug("csgo/pak01_dir.vpk is up to date - checking all files anyway due to --validate-all");
+                                Terminal.Debug("csgo/pak01_dir.vpk is up to date - checking all files anyway due to full validation mode");
                         }
                     }
                     else
@@ -179,7 +179,7 @@ namespace Wauncher.Utils
                     bool isPak01File = originalFileName.Contains("pak01_");
                     string path = Path.Combine(Directory.GetCurrentDirectory(), originalFileName);
 
-                    if (isPak01File && !needPak01Update && !Argument.Exists("--validate-all"))
+                    if (isPak01File && !needPak01Update && !validateAll)
                     {
                         if (!File.Exists(path))
                         {
@@ -206,7 +206,7 @@ namespace Wauncher.Utils
                     }
 
                     if (Debug.Enabled())
-                        Terminal.Debug($"Checking hash for: {originalFileName}{(isPak01File && Argument.Exists("--validate-all") ? " (--validate-all)" : "")}");
+                        Terminal.Debug($"Checking hash for: {originalFileName}{(isPak01File && validateAll ? " (full validation)" : "")}");
 
                     string hash = await GetHash(path);
                     if (hash != patch.Hash)

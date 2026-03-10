@@ -13,7 +13,7 @@ namespace Wauncher.Utils
             EnsureKeyExists(Registry.CurrentUser, "Software/Classes/cc", "ClassicCounter");
             SetValue(Registry.CurrentUser, "Software/Classes/cc", "URL Protocol", string.Empty);
             EnsureKeyExists(Registry.CurrentUser, "Software/Classes/cc/DefaultIcon", $"{appCurrentLocation},1");
-            EnsureKeyExists(Registry.CurrentUser, "Software/Classes/cc/shell/open/command", $"\"{appCurrentLocation}\" --protocol-command \"%1\"");
+            EnsureKeyExists(Registry.CurrentUser, "Software/Classes/cc/shell/open/command", $"\"{appCurrentLocation}\" \"%1\"");
         }
 
         private static void SetValue(RegistryKey rootKey, string keys, string valueName, string value)
