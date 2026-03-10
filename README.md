@@ -19,6 +19,11 @@
 - Validation behavior is controlled in the GUI.
 - Use `Verify Game Files` from the launch button drop-up menu when you want a full file check.
 
+## Build / Publish
+- Build: `dotnet build Wauncher/Wauncher.csproj -c Release`
+- Publish: `dotnet publish Wauncher/Wauncher.csproj -c Release -r win-x64 --self-contained false`
+- Quick publish script: `publish.bat` (builds + hashes + optional copy target)
+
 ## Packages Used
 - [CSGSI](https://github.com/rakijah/CSGSI) by [rakijah](https://github.com/rakijah)
 - [DiscordRichPresence](https://github.com/Lachee/discord-rpc-csharp) by [Lachee](https://github.com/Lachee)
