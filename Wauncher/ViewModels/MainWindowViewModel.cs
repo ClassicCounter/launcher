@@ -1,4 +1,4 @@
-﻿using Avalonia.Threading;
+using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using Wauncher.Utils;
 using System.Collections.ObjectModel;
@@ -217,7 +217,7 @@ namespace Wauncher.ViewModels
 
         public MainWindowViewModel()
         {
-            if (Argument.Exists("--protocol-command"))
+            if (Argument.HasProtocolCommand())
                 ProtocolManager = "Ready to Launch!";
 
             _ = LoadSelfProfileAsync();
