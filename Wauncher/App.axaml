@@ -1,32 +1,48 @@
 <Application xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              x:Class="Wauncher.App"
-			 x:CompileBindings="True"
-			 x:DataType="local:App"
+             x:CompileBindings="True"
+             x:DataType="local:App"
              xmlns:local="using:Wauncher"
-             RequestedThemeVariant="Default">
-             <!-- "Default" ThemeVariant follows system theme variant. "Dark" or "Light" are other available options. -->
+             xmlns:themes="using:Avalonia.Styling"
+             xmlns:fluent="using:Avalonia.Themes.Fluent">
 
     <Application.DataTemplates>
         <local:ViewLocator/>
     </Application.DataTemplates>
-  
+
     <Application.Styles>
-        <FluentTheme />
-		<StyleInclude Source="/Assets/Styles.axaml"/>
+        <FluentTheme>
+            <FluentTheme.Palettes>
+                <fluent:ColorPaletteResources x:Key="Light" Accent="#22C55E" />
+                <fluent:ColorPaletteResources x:Key="Dark" Accent="#22C55E" />
+            </FluentTheme.Palettes>
+        </FluentTheme>
+        <StyleInclude Source="/Assets/Styles.axaml"/>
     </Application.Styles>
 
-	<TrayIcon.Icons>
-		<TrayIcons>
-			<TrayIcon Icon="/Assets/Wauncher.ico" ToolTipText="Wauncher" Command="{Binding TrayIconClickedCommand}">
-				<TrayIcon.Menu>
-					<NativeMenu>
-						<NativeMenuItem Header="Discord RPC is running" IsEnabled="False"/>
-						<NativeMenuItemSeparator />
-						<NativeMenuItem Header="E_xit" Click="ExitApplication_Click"/>
-					</NativeMenu>
-				</TrayIcon.Menu>
-			</TrayIcon>
-		</TrayIcons>
-	</TrayIcon.Icons>
+    <Application.Resources>
+        <ResourceDictionary>
+            <SolidColorBrush x:Key="AppTitleBarBrush">#CC3A3A3A</SolidColorBrush>
+            <SolidColorBrush x:Key="AppPrimaryText">White</SolidColorBrush>
+            <SolidColorBrush x:Key="AppMutedText">#88FFFFFF</SolidColorBrush>
+            <SolidColorBrush x:Key="AppSectionLabel">#55FFFFFF</SolidColorBrush>
+            <SolidColorBrush x:Key="AppBodyText">#CCFFFFFF</SolidColorBrush>
+            <SolidColorBrush x:Key="AppBulletText">#AAFFFFFF</SolidColorBrush>
+            <SolidColorBrush x:Key="AppDivider">#22FFFFFF</SolidColorBrush>
+            <SolidColorBrush x:Key="AppDivider2">#33FFFFFF</SolidColorBrush>
+            <SolidColorBrush x:Key="AppInputBg">#33FFFFFF</SolidColorBrush>
+            <SolidColorBrush x:Key="AppServerHover">#22FFFFFF</SolidColorBrush>
+            <SolidColorBrush x:Key="AppServerPressed">#11FFFFFF</SolidColorBrush>
+            <SolidColorBrush x:Key="AppIconBtnBg">#44FFFFFF</SolidColorBrush>
+            <SolidColorBrush x:Key="AppIconBtnHover">#99FFFFFF</SolidColorBrush>
+            <SolidColorBrush x:Key="AppIconBtnPressed">#33FFFFFF</SolidColorBrush>
+            <SolidColorBrush x:Key="AppIconBtnBorder">#22FFFFFF</SolidColorBrush>
+            <SolidColorBrush x:Key="AppRightPanelBg">#223A3A3A</SolidColorBrush>
+            <SolidColorBrush x:Key="AppServerListBg">#FF3A3A3A</SolidColorBrush>
+            <SolidColorBrush x:Key="AppGreetingName">White</SolidColorBrush>
+            <SolidColorBrush x:Key="AppLinkText">#6CB5F5</SolidColorBrush>
+        </ResourceDictionary>
+    </Application.Resources>
+
 </Application>

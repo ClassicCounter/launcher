@@ -1,4 +1,4 @@
-<Window
+﻿<Window
 	x:Class="Wauncher.Views.MainWindow"
 	xmlns="https://github.com/avaloniaui"
 	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -7,71 +7,753 @@
 	xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
 	xmlns:svg="clr-namespace:Avalonia.Svg.Controls;assembly=Avalonia.Svg.Skia"
 	xmlns:vm="using:Wauncher.ViewModels"
+	xmlns:wau="using:Wauncher.Utils"
 	Title="ClassicCounter Wauncher"
-	Width="480"
-	Height="128"
-	d:DesignHeight="128"
-	d:DesignWidth="480"
+	Width="1024"
+	Height="528"
+	MinWidth="1024"
+	MinHeight="528"
+	d:DesignHeight="528"
+	d:DesignWidth="1024"
 	x:DataType="vm:MainWindowViewModel"
 	Icon="/Assets/Wauncher.ico"
+	SystemDecorations="None"
+	TransparencyLevelHint="AcrylicBlur"
+	WindowStartupLocation="CenterScreen"
+	Background="Transparent"
 	mc:Ignorable="d">
+
+	<Window.Transitions>
+		<Transitions>
+			<DoubleTransition Property="Height" Duration="0:0:0.22" Easing="CubicEaseOut" />
+		</Transitions>
+	</Window.Transitions>
+
+	<Window.Styles>
+
+		<!-- ════════════════════════════════════════════════
+		     MINIMIZE — fade to white on hover
+		     ════════════════════════════════════════════════ -->
+		<Style Selector="Button.titleBtn">
+			<Setter Property="Padding" Value="0" />
+			<Setter Property="BorderThickness" Value="0" />
+			<Setter Property="CornerRadius" Value="0" />
+			<Setter Property="Background" Value="Transparent" />
+			<Setter Property="Transitions">
+				<Transitions>
+					<BrushTransition Property="Background" Duration="0:0:0.15" />
+				</Transitions>
+			</Setter>
+			<!-- Custom template bypasses Avalonia's default hover override -->
+			<Setter Property="Template">
+				<ControlTemplate>
+					<Border
+						Width="{TemplateBinding Width}"
+						Height="{TemplateBinding Height}"
+						Background="{TemplateBinding Background}">
+						<ContentPresenter
+							HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+							VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+							Content="{TemplateBinding Content}" />
+					</Border>
+				</ControlTemplate>
+			</Setter>
+		</Style>
+		<Style Selector="Button.titleBtn:pointerover">
+			<Setter Property="Background" Value="#44FFFFFF" />
+		</Style>
+		<Style Selector="Button.titleBtn:pressed">
+			<Setter Property="Background" Value="#22FFFFFF" />
+		</Style>
+
+		<!-- ════════════════════════════════════════════════
+		     CLOSE — straight to red, no grey flash
+		     ════════════════════════════════════════════════ -->
+		<Style Selector="Button.closeBtn">
+			<Setter Property="Padding" Value="0" />
+			<Setter Property="BorderThickness" Value="0" />
+			<Setter Property="CornerRadius" Value="0" />
+			<Setter Property="Background" Value="Transparent" />
+			<Setter Property="Transitions">
+				<Transitions>
+					<BrushTransition Property="Background" Duration="0:0:0.15" />
+				</Transitions>
+			</Setter>
+			<Setter Property="Template">
+				<ControlTemplate>
+					<Border
+						Width="{TemplateBinding Width}"
+						Height="{TemplateBinding Height}"
+						Background="{TemplateBinding Background}">
+						<ContentPresenter
+							HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+							VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+							Content="{TemplateBinding Content}" />
+					</Border>
+				</ControlTemplate>
+			</Setter>
+		</Style>
+		<Style Selector="Button.closeBtn:pointerover">
+			<Setter Property="Background" Value="#CCE53935" />
+		</Style>
+		<Style Selector="Button.closeBtn:pressed">
+			<Setter Property="Background" Value="#FFB71C1C" />
+		</Style>
+
+		<!-- ════════════════════════════════════════════════
+		     ICON BUTTONS (Settings / Info) — frosted circle
+		     Custom template so hover is always respected
+		     ════════════════════════════════════════════════ -->
+		<Style Selector="Button.iconBtn">
+			<Setter Property="BorderThickness" Value="0" />
+			<Setter Property="Background" Value="{DynamicResource AppIconBtnBg}" />
+			<Setter Property="Effect">
+				<DropShadowEffect BlurRadius="8" Color="Black" OffsetX="0" OffsetY="2" Opacity="0.3" />
+			</Setter>
+			<Setter Property="Transitions">
+				<Transitions>
+					<BrushTransition Property="Background" Duration="0:0:0.18" />
+				</Transitions>
+			</Setter>
+			<Setter Property="Template">
+				<ControlTemplate>
+					<Border
+						Width="{TemplateBinding Width}"
+						Height="{TemplateBinding Height}"
+						Background="{TemplateBinding Background}"
+						BorderBrush="{DynamicResource AppIconBtnBorder}"
+						BorderThickness="1"
+						CornerRadius="{TemplateBinding CornerRadius}">
+						<ContentPresenter
+							HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+							VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+							Content="{TemplateBinding Content}" />
+					</Border>
+				</ControlTemplate>
+			</Setter>
+		</Style>
+		<Style Selector="Button.iconBtn:pointerover">
+			<Setter Property="Background" Value="{DynamicResource AppIconBtnHover}" />
+		</Style>
+		<Style Selector="Button.iconBtn:pressed">
+			<Setter Property="Background" Value="{DynamicResource AppIconBtnPressed}" />
+		</Style>
+		<Style Selector="Button.serverSelectorBtn:disabled">
+			<Setter Property="Background" Value="#2A2A2A" />
+			<Setter Property="Opacity" Value="1" />
+		</Style>
+		<Style Selector="Button.serverSelectorBtn:disabled Image">
+			<Setter Property="Opacity" Value="0.5" />
+		</Style>
+
+		<!-- ════════════════════════════════════════════════
+		     LAUNCH BUTTON — green → brighter green
+		     ════════════════════════════════════════════════ -->
+		<Style Selector="Button.launchBtn">
+			<Setter Property="BorderThickness" Value="0" />
+			<Setter Property="Background" Value="#4CAF50" />
+			<Setter Property="Template">
+				<ControlTemplate>
+					<Border
+						x:Name="PART_Border"
+						Background="{TemplateBinding Background}"
+						CornerRadius="{TemplateBinding CornerRadius}"
+						Padding="{TemplateBinding Padding}">
+						<Border.Transitions>
+							<Transitions>
+								<BrushTransition Property="Background" Duration="0:0:0.18" />
+							</Transitions>
+						</Border.Transitions>
+						<ContentPresenter
+							HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+							VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+							Content="{TemplateBinding Content}" />
+					</Border>
+				</ControlTemplate>
+			</Setter>
+		</Style>
+		<Style Selector="Button.launchBtn:pointerover /template/ Border#PART_Border">
+			<Setter Property="Background" Value="#66000000" />
+		</Style>
+		<Style Selector="Button.launchBtn:pressed /template/ Border#PART_Border">
+			<Setter Property="Background" Value="#44000000" />
+		</Style>
+		<!-- Yellow when updating -->
+		<Style Selector="Button.launchBtn.updating">
+			<Setter Property="Background" Value="#FFC107" />
+		</Style>
+
+		<!-- ════════════════════════════════════════════════
+		     SERVER SELECTOR TRIGGER — invisible button chrome
+		     ════════════════════════════════════════════════ -->
+		<Style Selector="Button.serverTrigger">
+			<Setter Property="Padding" Value="0" />
+			<Setter Property="BorderThickness" Value="0" />
+			<Setter Property="Background" Value="Transparent" />
+			<Setter Property="HorizontalContentAlignment" Value="Stretch" />
+			<Setter Property="Cursor" Value="Hand" />
+			<Setter Property="Template">
+				<ControlTemplate>
+					<ContentPresenter
+						Padding="{TemplateBinding Padding}"
+						HorizontalAlignment="Stretch"
+						VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+						Content="{TemplateBinding Content}" />
+				</ControlTemplate>
+			</Setter>
+		</Style>
+
+		<!-- ════════════════════════════════════════════════
+		     SERVER LIST ROWS — hover highlight
+		     ════════════════════════════════════════════════ -->
+		<Style Selector="Button.serverBtn">
+			<Setter Property="Padding" Value="10,9" />
+			<Setter Property="BorderThickness" Value="0" />
+			<Setter Property="Background" Value="Transparent" />
+			<Setter Property="HorizontalAlignment" Value="Stretch" />
+			<Setter Property="HorizontalContentAlignment" Value="Stretch" />
+			<Setter Property="Cursor" Value="Hand" />
+			<Setter Property="Transitions">
+				<Transitions>
+					<BrushTransition Property="Background" Duration="0:0:0.12" />
+				</Transitions>
+			</Setter>
+			<Setter Property="Template">
+				<ControlTemplate>
+					<Border
+						Background="{TemplateBinding Background}"
+						CornerRadius="5"
+						Padding="{TemplateBinding Padding}">
+						<ContentPresenter
+							HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+							VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+							Content="{TemplateBinding Content}" />
+					</Border>
+				</ControlTemplate>
+			</Setter>
+		</Style>
+		<Style Selector="Button.serverBtn:pointerover">
+			<Setter Property="Background" Value="{DynamicResource AppServerHover}" />
+		</Style>
+		<Style Selector="Button.serverBtn:pressed">
+			<Setter Property="Background" Value="{DynamicResource AppServerPressed}" />
+		</Style>
+		<Style Selector="Button.friendMenuBtn">
+			<Setter Property="Padding" Value="0" />
+			<Setter Property="BorderThickness" Value="0" />
+			<Setter Property="Background" Value="Transparent" />
+			<Setter Property="Width" Value="18" />
+			<Setter Property="Height" Value="18" />
+			<Setter Property="HorizontalContentAlignment" Value="Center" />
+			<Setter Property="VerticalContentAlignment" Value="Center" />
+			<Setter Property="Cursor" Value="Hand" />
+			<Setter Property="Template">
+				<ControlTemplate>
+					<ContentPresenter
+						Padding="{TemplateBinding Padding}"
+						HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+						VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+						Content="{TemplateBinding Content}" />
+				</ControlTemplate>
+			</Setter>
+		</Style>
+		<Style Selector="Button.friendMenuBtn:pointerover">
+			<Setter Property="Background" Value="#22FFFFFF" />
+		</Style>
+
+		<!-- Selected label default (no server) -->
+		<Style Selector="TextBlock.selectedlabel">
+			<Setter Property="Foreground" Value="{DynamicResource AppMutedText}" />
+		</Style>
+		<!-- Server not selected: red + slow breathing opacity -->
+		<Style Selector="TextBlock.selectedlabel.noserver">
+			<Setter Property="Foreground" Value="#F44336" />
+			<Style.Animations>
+				<Animation Duration="0:0:2.5" IterationCount="Infinite" PlaybackDirection="Alternate" Easing="SineEaseInOut">
+					<KeyFrame Cue="0%">
+						<Setter Property="Opacity" Value="1.0" />
+					</KeyFrame>
+					<KeyFrame Cue="100%">
+						<Setter Property="Opacity" Value="0.3" />
+					</KeyFrame>
+				</Animation>
+			</Style.Animations>
+		</Style>
+		<!-- Server selected: green -->
+		<Style Selector="TextBlock.selectedlabel.serverselected">
+			<Setter Property="Foreground" Value="#4CAF50" />
+		</Style>
+
+	
+		<!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+		     TAB BUTTONS â€” FRIENDS / PATCH NOTES switcher
+		     â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
+		<Style Selector="Button.tabBtn">
+			<Setter Property="Padding" Value="0,10" />
+			<Setter Property="BorderThickness" Value="0,0,0,2" />
+			<Setter Property="BorderBrush" Value="Transparent" />
+			<Setter Property="Background" Value="Transparent" />
+			<Setter Property="HorizontalAlignment" Value="Stretch" />
+			<Setter Property="HorizontalContentAlignment" Value="Center" />
+			<Setter Property="FontSize" Value="10" />
+			<Setter Property="FontWeight" Value="Bold" />
+			<Setter Property="Foreground" Value="{DynamicResource AppMutedText}" />
+			<Setter Property="Cursor" Value="Hand" />
+			<Setter Property="Template">
+				<ControlTemplate>
+					<Border
+						Background="{TemplateBinding Background}"
+						BorderBrush="{TemplateBinding BorderBrush}"
+						BorderThickness="{TemplateBinding BorderThickness}"
+						Padding="{TemplateBinding Padding}">
+						<ContentPresenter
+							HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+							VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+							Content="{TemplateBinding Content}" />
+					</Border>
+				</ControlTemplate>
+			</Setter>
+		</Style>
+		<Style Selector="Button.tabBtn.tabActive">
+			<Setter Property="Foreground" Value="{DynamicResource AppPrimaryText}" />
+			<Setter Property="BorderBrush" Value="#4CAF50" />
+		</Style>
+		<Style Selector="Button.tabBtn:pointerover">
+			<Setter Property="Background" Value="#11FFFFFF" />
+		</Style>
+
+	</Window.Styles>
 
 	<Design.DataContext>
 		<vm:MainWindowViewModel />
 	</Design.DataContext>
-	<Grid Background="Black">
-		<Grid Margin="25,16" VerticalAlignment="Top">
-			<StackPanel Orientation="Horizontal" Spacing="8">
-				<Border
-					Width="32"
-					Height="32"
-					Background="White"
-					ClipToBounds="True"
-					CornerRadius="16">
-					<Image asyncImageLoader:ImageLoader.Source="{Binding ProfilePicture}" Stretch="UniformToFill" />
-				</Border>
-				<TextBlock Classes="h1" Text="{Binding UsernameGreeting}" />
-			</StackPanel>
+
+	<Grid Background="#3A3A3A">
+		<!-- Static dark background instead of acrylic blur -->
+
+
+
+		<!-- ── Title bar ── -->
+		<Grid
+			x:Name="TitleBar"
+			Height="36"
+			VerticalAlignment="Top"
+			Background="{DynamicResource AppTitleBarBrush}"
+			PointerPressed="TitleBar_PointerPressed">
+			<TextBlock
+				HorizontalAlignment="Left"
+				VerticalAlignment="Center"
+				Margin="12,0,0,0"
+				FontSize="11"
+				FontStyle="Italic"
+				Foreground="{DynamicResource AppPrimaryText}"
+				Text="ALPHA TESTING NOT FINAL">
+				<TextBlock.Effect>
+					<DropShadowEffect BlurRadius="6" Color="Black" OffsetX="0" OffsetY="1" Opacity="0.8" />
+				</TextBlock.Effect>
+			</TextBlock>
+			<Image
+			HorizontalAlignment="Center"
+			VerticalAlignment="Center"
+			Height="22"
+			Source="avares://Wauncher/Assets/logo.png">
+			<Image.Effect>
+				<DropShadowEffect
+					BlurRadius="8"
+					Color="Black"
+					OffsetX="0"
+					OffsetY="1"
+					Opacity="0.8" />
+			</Image.Effect>
+		</Image>
 			<StackPanel
 				HorizontalAlignment="Right"
-				VerticalAlignment="Center"
+				VerticalAlignment="Stretch"
 				Orientation="Horizontal"
-				Spacing="8">
-				<Ellipse
-					Width="8"
-					Height="8"
-					Fill="{Binding WhitelistStatus}" />
-				<TextBlock
-					Classes="h1"
-					Text="Unknown"
-					TextAlignment="Right" />
+				Spacing="0">
 				<Button
-					Classes="info"
-					Click="Button_Info">
-					<TextBlock Classes="h2">
-						?
-					</TextBlock>
+					x:Name="MinimizeButton"
+					Classes="titleBtn"
+					Width="46"
+					Height="36"
+					HorizontalContentAlignment="Center"
+					VerticalContentAlignment="Center"
+					Click="MinimizeButton_Click">
+					<Path
+						Width="10"
+						Height="2"
+						Data="M0,1 L10,1"
+						Stroke="White"
+						StrokeThickness="1.5" />
+				</Button>
+				<Button
+					x:Name="CloseButton"
+					Classes="closeBtn"
+					Width="46"
+					Height="36"
+					HorizontalContentAlignment="Center"
+					VerticalContentAlignment="Center"
+					Click="CloseButton_Click">
+					<Path
+						Width="10"
+						Height="10"
+						Data="M0,0 L10,10 M10,0 L0,10"
+						Stroke="White"
+						StrokeThickness="1.5" />
 				</Button>
 			</StackPanel>
 		</Grid>
-		<Grid Margin="25,16" VerticalAlignment="Bottom">
-			<StackPanel>
-				<TextBlock Classes="h1" Text="{Binding GameStatus}" />
-				<TextBlock Classes="h1" Text="{Binding ProtocolManager}" />
-			</StackPanel>
-			<Button
-				Classes="launch"
-				Click="Button_Click">
-				<StackPanel Orientation="Horizontal" Spacing="8">
-					<Svg
-						Width="17"
-						Height="23"
-						Path="/Assets/CS-logo.svg" />
-					<TextBlock Classes="h2">
-						Launch Game
-					</TextBlock>
-				</StackPanel>
-			</Button>
+
+		<!-- ── Main content: left column + right panel ── -->
+		<!-- Outer grid: two columns separated by a vertical divider -->
+			<!-- â”€â”€ Main content â”€â”€ -->
+	<Grid Margin="0,38,0,0">
+		<Grid.ColumnDefinitions>
+			<ColumnDefinition Width="*" />
+			<ColumnDefinition Width="Auto" />
+			<ColumnDefinition Width="300" />
+		</Grid.ColumnDefinitions>
+
+		<!-- â”€â”€ LEFT COLUMN: carousel + bottom bar â”€â”€ -->
+		<Grid Grid.Column="0">
+			<Grid.RowDefinitions>
+				<RowDefinition Height="*" />
+				<RowDefinition Height="Auto" />
+			</Grid.RowDefinitions>
+
+			<!-- â”€â”€ CAROUSEL â”€â”€ -->
+			<Border Grid.Row="0" Margin="0" Background="#000000" BorderThickness="0" ClipToBounds="True">
+				<Grid x:Name="CarouselContainer">
+					<Border
+						x:Name="CarouselOfflinePanel"
+						IsVisible="False"
+						Background="#66000000">
+						<StackPanel
+							HorizontalAlignment="Center"
+							VerticalAlignment="Center"
+							Spacing="8">
+							<TextBlock
+								FontSize="18"
+								FontWeight="Bold"
+								Foreground="{DynamicResource AppPrimaryText}"
+								HorizontalAlignment="Center"
+								Text="No internet connection" />
+							<TextBlock
+								x:Name="CarouselOfflineSubText"
+								FontSize="12"
+								Foreground="{DynamicResource AppMutedText}"
+								HorizontalAlignment="Center"
+								Text="Connect to Wi-Fi or Ethernet to load the carousel." />
+						</StackPanel>
+					</Border>
+				</Grid>
+			</Border>
+
+			<!-- Server dropdown list -->
+			<Border
+				x:Name="ServerListPanel"
+				Grid.Row="0"
+				MaxHeight="0"
+				Margin="0,0,0,0"
+				HorizontalAlignment="Right"
+				VerticalAlignment="Bottom"
+				Width="360"
+				Background="{DynamicResource AppServerListBg}"
+				BorderBrush="{DynamicResource AppDivider}"
+				BorderThickness="1"
+				ClipToBounds="True"
+				CornerRadius="7"
+				ZIndex="20">
+				<Border.Transitions>
+					<Transitions>
+						<DoubleTransition Easing="CubicEaseOut" Property="MaxHeight" Duration="0:0:0.22" />
+					</Transitions>
+				</Border.Transitions>
+				<ItemsControl Margin="6" ItemsSource="{Binding Servers}">
+					<ItemsControl.ItemTemplate>
+						<DataTemplate x:DataType="vm:ServerInfo">
+							<Button Classes="serverBtn" Click="ServerItem_Click" Tag="{Binding}">
+								<Grid ColumnDefinitions="14,*,120,60">
+									<Ellipse Grid.Column="0" Width="7" Height="7" VerticalAlignment="Center" Fill="{Binding DotColor}" />
+									<TextBlock Grid.Column="1" Margin="8,0,0,0" VerticalAlignment="Center" FontSize="13" Foreground="{Binding NameColor}" Text="{Binding Name}" />
+									<TextBlock Grid.Column="2" Margin="8,0,8,0" VerticalAlignment="Center" FontSize="11" FontFamily="Consolas,monospace" Foreground="{DynamicResource AppSectionLabel}" Text="{Binding MapDisplay}" />
+									<TextBlock Grid.Column="3" VerticalAlignment="Center" FontSize="12" FontFamily="Consolas,monospace" Foreground="{DynamicResource AppMutedText}" Text="{Binding PlayerCount}" />
+								</Grid>
+							</Button>
+						</DataTemplate>
+					</ItemsControl.ItemTemplate>
+				</ItemsControl>
+			</Border>
+
+			<!-- BOTTOM BAR -->
+			<Border
+				Grid.Row="1"
+				Background="{DynamicResource AppRightPanelBg}"
+				BorderBrush="{DynamicResource AppDivider}"
+				BorderThickness="0,1,0,0"
+				Padding="14,10">
+				<Grid>
+					<Grid.RowDefinitions>
+						<RowDefinition Height="Auto" />
+						<RowDefinition Height="Auto" />
+					</Grid.RowDefinitions>
+
+					<!-- Update status row -->
+					<StackPanel
+						Grid.Row="0"
+						IsVisible="{Binding IsCheckingOrUpdating}"
+						Spacing="3"
+						Margin="0,0,4,8"
+						HorizontalAlignment="Right"
+						Width="260">
+						<TextBlock IsVisible="{Binding IsCheckingUpdates}" FontSize="10" Foreground="{DynamicResource AppSectionLabel}" FontStyle="Italic" Text="Checking for updates..." HorizontalAlignment="Center" />
+						<TextBlock
+							IsVisible="{Binding IsUpdatingOrInstalling}"
+							FontSize="10"
+							Foreground="{DynamicResource AppBodyText}"
+							Text="{Binding UpdateStatusFile}"
+							TextTrimming="CharacterEllipsis"
+							HorizontalAlignment="Center"
+							ToolTip.Tip="{Binding UpdateStatusFile}" />
+						<ProgressBar IsVisible="{Binding IsUpdatingOrInstalling}" Height="4" CornerRadius="2" Minimum="0" Maximum="100" Value="{Binding UpdateProgress}" IsIndeterminate="{Binding UpdateIndeterminate}" Foreground="#FFC107" Background="{DynamicResource AppDivider}" />
+						<TextBlock IsVisible="{Binding IsUpdatingOrInstalling}" FontSize="10" Foreground="#77FFFFFF" Text="{Binding UpdateStatusSpeed}" HorizontalAlignment="Center" />
+					</StackPanel>
+
+					<!-- Profile left + buttons right -->
+					<StackPanel Grid.Row="1" HorizontalAlignment="Left" VerticalAlignment="Center" Orientation="Horizontal" Spacing="10">
+						<Border Width="36" Height="36" Background="{DynamicResource AppInputBg}" ClipToBounds="True" CornerRadius="18">
+							<Image asyncImageLoader:ImageLoader.Source="{Binding ProfilePicture}" Stretch="UniformToFill" />
+						</Border>
+						<StackPanel VerticalAlignment="Center" Spacing="2">
+							<TextBlock FontSize="13" FontWeight="Bold" Foreground="{DynamicResource AppPrimaryText}" Text="{Binding UsernameGreeting}" />
+							<StackPanel Orientation="Horizontal" Spacing="5">
+								<Ellipse Width="6" Height="6" VerticalAlignment="Center" Fill="{Binding WhitelistDotColor}" />
+								<TextBlock FontSize="11" Foreground="{DynamicResource AppBulletText}" Text="{Binding WhitelistText}" />
+							</StackPanel>
+							<TextBlock FontSize="11" Classes="selectedlabel" Classes.noserver="{Binding IsNoServerSelected}" Classes.serverselected="{Binding IsServerSelected}" Text="{Binding SelectedLabel}" />
+						</StackPanel>
+					</StackPanel>
+
+					<StackPanel Grid.Row="1" HorizontalAlignment="Right" VerticalAlignment="Center" Orientation="Horizontal" Spacing="8">
+						<!-- Info -->
+						<Button Classes="iconBtn" Width="36" Height="36" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Click="Button_Info" CornerRadius="18">
+							<StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="3">
+								<Ellipse Width="3" Height="3" Fill="White" HorizontalAlignment="Center" />
+								<Rectangle Width="3" Height="7" Fill="White" HorizontalAlignment="Center" RadiusX="1" RadiusY="1" />
+							</StackPanel>
+						</Button>
+						<!-- Settings -->
+						<Button Classes="iconBtn" Width="36" Height="36" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Click="Button_Settings" CornerRadius="18">
+							<Image Width="18" Height="18" Source="avares://Wauncher/Assets/settings.png" />
+						</Button>
+						<!-- Server selector -->
+						<Button Classes="iconBtn serverSelectorBtn" Width="36" Height="36" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Click="ToggleServerDropdown" CornerRadius="18" IsEnabled="{Binding IsOnlineMode}" ToolTip.Tip="Select Server">
+							<Image Width="18" Height="18" Source="avares://Wauncher/Assets/server.png" />
+						</Button>
+						<!-- Launch button -->
+						<Border CornerRadius="5" ClipToBounds="True" x:Name="LaunchButtonGlow" BoxShadow="0 0 18 2 #554CAF50">
+							<Grid ColumnDefinitions="*,1,32">
+								<Button x:Name="LaunchUpdateButton" Grid.Column="0" Classes="launchBtn" Classes.updating="{Binding IsUpdatingOrInstalling}" Padding="16,10" MinWidth="120" HorizontalContentAlignment="Center" Click="LaunchUpdate_Click">
+									<StackPanel Orientation="Vertical" Spacing="4" HorizontalAlignment="Center" VerticalAlignment="Center">
+										<StackPanel Orientation="Horizontal" Spacing="10" HorizontalAlignment="Center">
+											<Svg Width="15" Height="20" VerticalAlignment="Center" Path="/Assets/CS-logo.svg" IsVisible="{Binding \!IsUpdatingOrInstalling}" />
+											<TextBlock FontSize="13" FontWeight="Bold" Foreground="{DynamicResource AppPrimaryText}" VerticalAlignment="Center" Text="{Binding LaunchButtonText}" />
+										</StackPanel>
+									</StackPanel>
+								</Button>
+								<Rectangle Grid.Column="1" Fill="#40000000" />
+								<Button x:Name="ArrowButton" Grid.Column="2" Classes="launchBtn" Classes.updating="{Binding IsUpdatingOrInstalling}" HorizontalContentAlignment="Center" VerticalContentAlignment="Center">
+								<Button.Flyout>
+									<MenuFlyout Placement="Top">
+										<MenuItem Header="Open Game Folder" Click="OpenGameFolder_Click" />
+									</MenuFlyout>
+								</Button.Flyout>
+									<Path Width="8" Height="5" Data="M0,5 L4,0 L8,5" Stroke="White" StrokeThickness="1.5" />
+								</Button>
+							</Grid>
+						</Border>
+					</StackPanel>
+				</Grid>
+			</Border>
 		</Grid>
+
+		<!-- â”€â”€ VERTICAL DIVIDER â”€â”€ -->
+		<Rectangle Grid.Column="1" Width="1" Fill="{DynamicResource AppDivider}" />
+
+		<!-- â”€â”€ RIGHT PANEL: FRIENDS / PATCH NOTES tabs â”€â”€ -->
+		<Grid Grid.Column="2" Background="{DynamicResource AppRightPanelBg}" ClipToBounds="True">
+			<Grid.RowDefinitions>
+				<RowDefinition Height="Auto" />
+				<RowDefinition Height="1" />
+				<RowDefinition Height="*" />
+			</Grid.RowDefinitions>
+
+			<!-- Tab header buttons -->
+			<Grid Grid.Row="0" ColumnDefinitions="*,*">
+				<Button
+					Grid.Column="0"
+					Classes="tabBtn"
+					Classes.tabActive="{Binding IsFriendsTabActive}"
+					Content="FRIENDS"
+					Click="FriendsTab_Click" />
+				<Button
+					Grid.Column="1"
+					Classes="tabBtn"
+					Classes.tabActive="{Binding IsPatchNotesTabActive}"
+					Content="PATCH NOTES"
+					Click="PatchNotesTab_Click" />
+			</Grid>
+
+			<!-- Tab divider -->
+			<Rectangle Grid.Row="1" Fill="{DynamicResource AppDivider}" />
+
+			<!-- â”€â”€ FRIENDS TAB â”€â”€ -->
+			<Grid Grid.Row="2" IsVisible="{Binding IsFriendsTabActive}">
+				<Grid.RowDefinitions>
+					<RowDefinition Height="Auto" />
+					<RowDefinition Height="*" />
+				</Grid.RowDefinitions>
+
+				<TextBlock
+					Grid.Row="0"
+					Margin="8,8,4,0"
+					FontSize="11"
+					FontWeight="Bold"
+					Foreground="#F39C12"
+					IsVisible="{Binding IsOfflineMode}"
+					Text="OFFLINE MODE" />
+
+				<TextBlock
+					Grid.Row="0"
+					Margin="8,26,4,0"
+					FontSize="12"
+					Foreground="{DynamicResource AppMutedText}"
+					FontStyle="Italic"
+					IsVisible="{Binding ShowGenericFriendsStatus}"
+					Text="{Binding FriendsStatus}" />
+
+				<Grid Grid.Row="1" IsVisible="{Binding ShowNoFriendsState}">
+					<StackPanel
+						HorizontalAlignment="Center"
+						VerticalAlignment="Center"
+						Spacing="8">
+						<TextBlock
+							FontSize="62"
+							FontWeight="Bold"
+							HorizontalAlignment="Center"
+							Foreground="{DynamicResource AppMutedText}"
+							Text=":(" />
+						<TextBlock
+							FontSize="18"
+							FontWeight="Bold"
+							HorizontalAlignment="Center"
+							Foreground="{DynamicResource AppPrimaryText}"
+							Text="You have no friends!" />
+						<TextBlock
+							FontSize="12"
+							FontStyle="Italic"
+							HorizontalAlignment="Center"
+							Foreground="{DynamicResource AppMutedText}"
+							Text="Go frag someone, then add them." />
+					</StackPanel>
+				</Grid>
+
+				<ScrollViewer Grid.Row="1" IsVisible="{Binding !FriendsShowStatus}" Padding="4,8,12,12" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+					<StackPanel Spacing="0">
+						<ItemsControl ItemsSource="{Binding Friends}">
+							<ItemsControl.ItemsPanel>
+								<ItemsPanelTemplate>
+									<StackPanel Spacing="2" />
+								</ItemsPanelTemplate>
+							</ItemsControl.ItemsPanel>
+							<ItemsControl.ItemTemplate>
+								<DataTemplate x:DataType="wau:FriendInfo">
+									<Grid ColumnDefinitions="54,*,18,16" Margin="4,8">
+										<Border Width="42" Height="42" CornerRadius="21" ClipToBounds="True" VerticalAlignment="Center" Opacity="{Binding AvatarOpacity}">
+											<Image asyncImageLoader:ImageLoader.Source="{Binding AvatarUrl}" Stretch="UniformToFill" />
+										</Border>
+										<StackPanel Grid.Column="1" Margin="8,0" VerticalAlignment="Center" Spacing="1">
+											<TextBlock
+												FontSize="14"
+												FontWeight="SemiBold"
+												Foreground="{DynamicResource AppPrimaryText}"
+												Text="{Binding Username}"
+												TextTrimming="CharacterEllipsis" />
+											<TextBlock FontSize="11" Foreground="{Binding StatusColor}" Text="{Binding StatusText}" TextTrimming="CharacterEllipsis" />
+										</StackPanel>
+										<Button Grid.Column="2" Classes="friendMenuBtn" VerticalAlignment="Center">
+											<Button.Flyout>
+												<MenuFlyout Placement="Top">
+													<MenuItem Header="View eddies.cc Profile" Tag="{Binding}" Click="ViewFriendProfile_Click" />
+												</MenuFlyout>
+											</Button.Flyout>
+											<Path Width="8" Height="5" Data="M0,0 L4,5 L8,0" Stroke="{DynamicResource AppMutedText}" StrokeThickness="1.2" />
+										</Button>
+										<Ellipse Grid.Column="3" Width="10" Height="10" VerticalAlignment="Center" Fill="{Binding DotColor}" />
+									</Grid>
+								</DataTemplate>
+							</ItemsControl.ItemTemplate>
+						</ItemsControl>
+						<Border Height="34" />
+					</StackPanel>
+				</ScrollViewer>
+			</Grid>
+
+			<!-- â”€â”€ PATCH NOTES TAB â”€â”€ -->
+			<Grid Grid.Row="2" IsVisible="{Binding IsPatchNotesTabActive}">
+				<ScrollViewer x:Name="PatchNotesScroll" Margin="0,0,0,0" Padding="10,10,20,16" ClipToBounds="True" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+					<StackPanel Spacing="0">
+						<TextBlock
+							Margin="0,0,0,6"
+							FontSize="11"
+							FontWeight="Bold"
+							Foreground="#F39C12"
+							IsVisible="{Binding IsOfflineMode}"
+							Text="OFFLINE MODE" />
+						<TextBlock
+							Margin="0,0,0,8"
+							FontSize="11"
+							Foreground="{DynamicResource AppMutedText}"
+							Text="Latest wauncher changes"
+							TextWrapping="Wrap" />
+						<TextBlock
+							x:Name="PatchNotesVersion"
+							Margin="0,0,0,10"
+							FontSize="12"
+							FontWeight="SemiBold"
+							Foreground="{DynamicResource AppMutedText}"
+							IsVisible="True"
+							Text="Loading..." />
+
+						<ItemsControl x:Name="PatchNotesList" HorizontalAlignment="Stretch" MaxWidth="268">
+							<ItemsControl.ItemsPanel>
+								<ItemsPanelTemplate>
+									<StackPanel Spacing="0" />
+								</ItemsPanelTemplate>
+							</ItemsControl.ItemsPanel>
+							<ItemsControl.ItemTemplate>
+								<DataTemplate x:DataType="vm:PatchNoteItem">
+									<Grid>
+										<TextBlock IsVisible="{Binding IsMajorHeader}" Margin="0,14,0,8" FontSize="22" FontWeight="ExtraBold" Foreground="{DynamicResource AppPrimaryText}" TextWrapping="Wrap" LineHeight="28" MaxWidth="256" Text="{Binding Text}" />
+										<TextBlock IsVisible="{Binding IsHeader}" Margin="0,10,0,7" FontSize="15" FontWeight="Bold" Foreground="{DynamicResource AppPrimaryText}" TextWrapping="Wrap" LineHeight="20" MaxWidth="256" Text="{Binding Text}" />
+										<Grid IsVisible="{Binding IsBullet}" Margin="0,3,0,3" ColumnDefinitions="10,*">
+											<TextBlock Grid.Column="0" FontSize="11" Foreground="#4CAF50" VerticalAlignment="Top" Margin="0,2,0,0" Text="&#x2022;" />
+											<TextBlock Grid.Column="1" FontSize="12" Foreground="{DynamicResource AppBulletText}" TextWrapping="Wrap" LineHeight="18" MaxWidth="246" Text="{Binding Text}" />
+										</Grid>
+									</Grid>
+								</DataTemplate>
+							</ItemsControl.ItemTemplate>
+						</ItemsControl>
+						<Border Height="34" />
+					</StackPanel>
+				</ScrollViewer>
+			</Grid>
+
+		</Grid>
+
 	</Grid>
+</Grid>
 </Window>
+
+
+

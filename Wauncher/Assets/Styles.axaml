@@ -48,13 +48,25 @@
         <Setter Property="Background" Value="Transparent" />
         <Setter Property="Foreground" Value="#6CB5F5" />
         <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="Focusable" Value="False" />
         <Setter Property="Padding" Value="0" />
         <Setter Property="Margin" Value="0" />
-        <Setter Property="Height" Value="NaN" />
+        <Setter Property="MinHeight" Value="0" />
         <Setter Property="HorizontalAlignment" Value="Left" />
         <Setter Property="VerticalAlignment" Value="Center" />
         <Setter Property="Template">
-            <ControlTemplate TargetType="Button" x:DataType="Button"><TextBlock Text="{TemplateBinding Content}" TextDecorations="Underline" /></ControlTemplate>
+            <ControlTemplate TargetType="Button" x:DataType="Button">
+                <TextBlock
+                    Text="{TemplateBinding Content}"
+                    TextDecorations="Underline"
+                    VerticalAlignment="Center" />
+            </ControlTemplate>
         </Setter>
+    </Style>
+    <Style Selector="Button.HyperlinkButton:pointerover">
+        <Setter Property="Opacity" Value="1" />
+    </Style>
+    <Style Selector="Button.HyperlinkButton:pressed">
+        <Setter Property="Opacity" Value="1" />
     </Style>
 </Styles>
