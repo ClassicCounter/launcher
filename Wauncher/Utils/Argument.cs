@@ -1,4 +1,4 @@
-﻿namespace Wauncher.Utils
+namespace Wauncher.Utils
 {
     public static class Argument
     {
