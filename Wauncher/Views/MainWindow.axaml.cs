@@ -1,4 +1,4 @@
-using System.IO;
+﻿using System.IO;
 using System.Net.Http;
 using System.Linq;
 using System.Net.NetworkInformation;
@@ -406,6 +406,11 @@ namespace Wauncher.Views
                 Argument.ClearAdditionalArguments();
 
                 Argument.AddArgument("-novid");
+                if (!string.IsNullOrWhiteSpace(_settings.LaunchOptions))
+                {
+                    foreach (var arg in ParseLaunchOptions(_settings.LaunchOptions))
+                        Argument.AddArgument(arg);
+                }
 
                 var selected = vm?.SelectedServer;
                 if (selected != null && !selected.IsNone && !string.IsNullOrEmpty(selected.IpPort))
@@ -1566,6 +1571,40 @@ exit /b 0
             {
                 return false;
             }
+        }
+
+        // Minimal parser for launch options that supports quoted values.
+        private static IEnumerable<string> ParseLaunchOptions(string options)
+        {
+            if (string.IsNullOrWhiteSpace(options))
+                yield break;
+
+            var current = new StringBuilder();
+            bool inQuotes = false;
+
+            foreach (var ch in options)
+            {
+                if (ch == '"')
+                {
+                    inQuotes = !inQuotes;
+                    continue;
+                }
+
+                if (char.IsWhiteSpace(ch) && !inQuotes)
+                {
+                    if (current.Length > 0)
+                    {
+                        yield return current.ToString();
+                        current.Clear();
+                    }
+                    continue;
+                }
+
+                current.Append(ch);
+            }
+
+            if (current.Length > 0)
+                yield return current.ToString();
         }
 
     }
