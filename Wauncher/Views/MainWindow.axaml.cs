@@ -1246,6 +1246,18 @@ exit /b 0
                 // to avoid a redundant full validation on every update click.
                 bool validateAll = _forceValidateAllOnce;
                 _forceValidateAllOnce = false;
+                bool usingCachedPatches = _cachedPatches != null;
+
+                if (!usingCachedPatches)
+                {
+                    vm.UpdateIndeterminate = true;
+                    vm.UpdateStatusFile = validateAll
+                        ? "Verifying all game files..."
+                        : "Checking game files...";
+                    vm.UpdateStatusSpeed = "";
+                    vm.UpdateProgress = 0;
+                }
+
                 var patches = _cachedPatches ?? await Task.Run(() => PatchManager.ValidatePatches(validateAll: validateAll), token);
                 _cachedPatches = null; // consumed — force fresh check next time
                 if (token.IsCancellationRequested) return;
