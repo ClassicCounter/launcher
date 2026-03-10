@@ -1,7 +1,7 @@
 <p align="center">
- <h2 align="center">ClassicCounter Launcher</h2>
+ <h2 align="center">ClassicCounter Wauncher</h2>
  <p align="center">
-   Launcher for ClassicCounter with Discord RPC, Auto-Updates and More!
+   Wauncher for ClassicCounter with Discord RPC, Auto-Updates and More!
    <br/>
    Written in C# using .NET 8.
  </p>
@@ -13,21 +13,11 @@
 [![MIT License][license-shield]][license-url]
 
 > [!IMPORTANT]
-> .NET Runtime 8 is required to run the launcher. Download it from [**here**](https://dotnet.microsoft.com/en-us/download/dotnet/thank-you/runtime-8.0.11-windows-x64-installer).
+> .NET Runtime 8 is required to run the Wauncher. Download it from [**here**](https://dotnet.microsoft.com/en-us/download/dotnet/thank-you/runtime-8.0.11-windows-x64-installer).
 
-## Arguments
-- `--debug-mode` - Enables debug mode, prints additional info.
-- `--disable-rpc` - Disables Discord RPC.
-- `--gc` - Launches the Game with custom Game Coordinator.
-- `--install-dependencies` - Launches setup process for required Game dependencies.
-- `--patch-only` - Will only check for patches, won't open the game.
-- `--skip-updates` - Skips checking for launcher updates.
-- `--skip-validating` - Skips validating patches.
-- `--validate-all` - Validates all game files.
-
-> [!CAUTION]
-> **Using `--skip-updates` or `--skip-validating` is NOT recommended!**  
-> **An outdated launcher or patches might cause issues.**
+## Settings
+- Validation behavior is controlled in the GUI.
+- Use `Verify Game Files` from the launch button drop-up menu when you want a full file check.
 
 ## Packages Used
 - [CSGSI](https://github.com/rakijah/CSGSI) by [rakijah](https://github.com/rakijah)
