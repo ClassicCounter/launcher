@@ -173,6 +173,30 @@
                         OnContent="" />
                 </Grid>
 
+                <Rectangle
+                    Height="1"
+                    Margin="0,4,0,20"
+                    Fill="{DynamicResource AppDivider2}" />
+
+                <TextBlock
+                    Margin="0,0,0,12"
+                    FontSize="11"
+                    FontWeight="Bold"
+                    Foreground="{DynamicResource AppMutedText}"
+                    LetterSpacing="2"
+                    Text="LAUNCH OPTIONS" />
+
+                <TextBox
+                    Padding="12,10"
+                    Background="{DynamicResource AppInputBg}"
+                    BorderThickness="0"
+                    CaretBrush="White"
+                    CornerRadius="6"
+                    FontSize="13"
+                    Foreground="{DynamicResource AppPrimaryText}"
+                    Watermark="e.g. -high -novid +fps_max 300"
+                    Text="{Binding LaunchOptions}" />
+
             </StackPanel>
         </Grid>
     </Grid>
