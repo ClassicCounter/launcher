@@ -1,4 +1,4 @@
-﻿using Refit;
+using Refit;
 using Newtonsoft.Json;
 
 namespace Wauncher.Utils
