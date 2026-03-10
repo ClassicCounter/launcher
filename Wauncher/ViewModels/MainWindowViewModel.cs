@@ -1,4 +1,4 @@
-using Avalonia.Threading;
+﻿using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using Wauncher.Utils;
 using System.Collections.ObjectModel;
