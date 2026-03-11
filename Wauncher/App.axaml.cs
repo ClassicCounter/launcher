@@ -100,9 +100,6 @@ namespace Wauncher
             };
             _discordRpcMenuItem.Click += DiscordRpc_Click;
 
-            var openItem = new NativeMenuItem { Header = "Open" };
-            openItem.Click += (_, _) => ShowMainWindow();
-
             var exitItem = new NativeMenuItem { Header = "Exit" };
             exitItem.Click += (_, _) =>
             {
@@ -115,8 +112,6 @@ namespace Wauncher
             };
 
             var menu = new NativeMenu();
-            menu.Items.Add(openItem);
-            menu.Items.Add(new NativeMenuItemSeparator());
             menu.Items.Add(_discordRpcMenuItem);
             menu.Items.Add(new NativeMenuItemSeparator());
             menu.Items.Add(exitItem);
