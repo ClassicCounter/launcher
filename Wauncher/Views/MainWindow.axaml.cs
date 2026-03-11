@@ -81,7 +81,7 @@ namespace Wauncher.Views
             {
                 if (_forceClose) return;
                 _settings = SettingsWindowViewModel.LoadGlobal();
-                if (_settings.MinimizeToTray)
+                if (_settings.MinimizeToTray && IsGameRunning())
                 {
                     e.Cancel = true;
                     Hide();
@@ -469,6 +469,12 @@ namespace Wauncher.Views
             _forceClose = true;
             TeardownCarousel();
             Close();
+        }
+
+        private bool IsGameRunning()
+        {
+            return DataContext is MainWindowViewModel vm &&
+                   string.Equals(vm.GameStatus, "Running", StringComparison.Ordinal);
         }
 
         private void OpenGameFolder_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
