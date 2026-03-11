@@ -1,9 +1,9 @@
 <p align="center">
  <h2 align="center">ClassicCounter Wauncher</h2>
  <p align="center">
-   Wauncher for ClassicCounter with Discord RPC, Auto-Updates and More!
+   Wauncher for ClassicCounter with Discord RPC, a Server List, Friends List, Auto-Updates and More!
    <br/>
-   Written in C# using .NET 8.
+   Written in C# using .NET 8 and Avalonia.
  </p>
 </p>
 
@@ -15,12 +15,18 @@
 > [!IMPORTANT]
 > .NET Runtime 8 is required to run the Wauncher. Download it from [**here**](https://dotnet.microsoft.com/en-us/download/dotnet/thank-you/runtime-8.0.11-windows-x64-installer).
 
+> [!IMPORTANT]
+> Wauncher is still a work in progress. Some features are unfinished and you may run into bugs or changes between builds.
+
 ## Settings
-- Validation behavior is controlled in the GUI.
-- Use `Verify Game Files` from the launch button drop-up menu when you want a full file check.
+- `Minimize to System Tray` keeps the launcher running in the background when in-game.
+- `Skip Updates` lets you launch the game even when Wauncher detects available updates.
+- `Discord RPC` controls whether Wauncher updates your Discord presence. In some cases, Discord may still show "Counter-Strike: Global Offensive" even when RPC is disabled.
+- `Launch Options` lets you pass extra game launch flags such as `-high` or `+fps_max 300`.
+- `Verify Game Files` checks your installation and repairs any missing or damaged game files automatically.
 
 ## Known Issues
-- Friends list currently cannot show when a friend is online and actively in-game.
+- Friends list does not currently show accurate `Online` or `Offline` status.
 
 ## Build / Publish
 - Build: `dotnet build Wauncher/Wauncher.csproj -c Release`
