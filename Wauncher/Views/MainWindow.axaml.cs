@@ -1,4 +1,4 @@
-﻿using System.IO;
+using System.IO;
 using System.Net.Http;
 using System.Linq;
 using System.Net.NetworkInformation;
@@ -1442,12 +1442,14 @@ exit /b 0
         {
             if (_settingsWindow == null)
             {
+                var skipUpdatesBeforeOpen = _settings.SkipUpdates;
                 _settingsWindow = new SettingsWindow();
                 _settingsWindow.Closed += (s, e) =>
                 {
                     _settingsWindow = null;
                     _settings = SettingsWindowViewModel.LoadGlobal();
-                    _ = CheckForUpdatesAsync();
+                    if (skipUpdatesBeforeOpen != _settings.SkipUpdates)
+                        _ = CheckForUpdatesAsync();
                 };
                 _settingsWindow.Show(this);
             }
