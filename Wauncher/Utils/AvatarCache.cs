@@ -1,6 +1,7 @@
 using System.Collections.Concurrent;
 using System.Security.Cryptography;
 using System.Text;
+using SkiaSharp;
 
 namespace Wauncher.Utils
 {
@@ -16,6 +17,7 @@ namespace Wauncher.Utils
             "avatars");
 
         private const int MaxAvatarBytes = 20 * 1024 * 1024; // 20 MB
+        private const int MaxSteamAvatarDimension = 128;
 
         public static string GetDisplaySource(string? avatarUrl)
         {
@@ -66,9 +68,18 @@ namespace Wauncher.Utils
             using var response = await _http.GetAsync(avatarUrl, HttpCompletionOption.ResponseHeadersRead);
             response.EnsureSuccessStatusCode();
 
-            await using var input = await response.Content.ReadAsStreamAsync();
             var tempPath = cachePath + ".tmp";
-            await using var output = File.Create(tempPath);
+            var bytes = await ReadAvatarBytesAsync(response);
+            var bytesToWrite = TryDownscaleSteamAvatar(avatarUrl, bytes) ?? bytes;
+
+            await File.WriteAllBytesAsync(tempPath, bytesToWrite);
+            File.Move(tempPath, cachePath, overwrite: true);
+        }
+
+        private static async Task<byte[]> ReadAvatarBytesAsync(HttpResponseMessage response)
+        {
+            await using var input = await response.Content.ReadAsStreamAsync();
+            await using var bufferStream = new MemoryStream();
 
             var buffer = new byte[81920];
             int read;
@@ -79,11 +90,76 @@ namespace Wauncher.Utils
                 if (total > MaxAvatarBytes)
                     throw new InvalidDataException("Avatar exceeds size limit.");
 
-                await output.WriteAsync(buffer.AsMemory(0, read));
+                await bufferStream.WriteAsync(buffer.AsMemory(0, read));
             }
 
-            output.Close();
-            File.Move(tempPath, cachePath, overwrite: true);
+            return bufferStream.ToArray();
+        }
+
+        private static byte[]? TryDownscaleSteamAvatar(string avatarUrl, byte[] bytes)
+        {
+            if (!ShouldDownscaleAvatar(avatarUrl))
+                return null;
+
+            try
+            {
+                using var sourceBitmap = SKBitmap.Decode(bytes);
+                if (sourceBitmap == null)
+                    return null;
+
+                if (sourceBitmap.Width <= MaxSteamAvatarDimension &&
+                    sourceBitmap.Height <= MaxSteamAvatarDimension)
+                {
+                    return null;
+                }
+
+                var scale = Math.Min(
+                    (double)MaxSteamAvatarDimension / sourceBitmap.Width,
+                    (double)MaxSteamAvatarDimension / sourceBitmap.Height);
+
+                int targetWidth = Math.Max(1, (int)Math.Round(sourceBitmap.Width * scale));
+                int targetHeight = Math.Max(1, (int)Math.Round(sourceBitmap.Height * scale));
+
+                using var resizedBitmap = sourceBitmap.Resize(
+                    new SKImageInfo(targetWidth, targetHeight),
+                    SKFilterQuality.Medium);
+
+                if (resizedBitmap == null)
+                    return null;
+
+                using var image = SKImage.FromBitmap(resizedBitmap);
+                var format = GetEncodedFormat(avatarUrl);
+                using var data = image.Encode(format, 90);
+                return data?.ToArray();
+            }
+            catch
+            {
+                return null;
+            }
+        }
+
+        private static bool ShouldDownscaleAvatar(string avatarUrl)
+        {
+            try
+            {
+                var host = new Uri(avatarUrl).Host;
+                return host.Contains("steamstatic.com", StringComparison.OrdinalIgnoreCase);
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        private static SKEncodedImageFormat GetEncodedFormat(string avatarUrl)
+        {
+            var ext = GetExtensionFromUrl(avatarUrl);
+            return ext switch
+            {
+                ".png" => SKEncodedImageFormat.Png,
+                ".webp" => SKEncodedImageFormat.Webp,
+                _ => SKEncodedImageFormat.Jpeg,
+            };
         }
 
         private static string GetCachePath(string avatarUrl)
