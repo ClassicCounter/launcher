@@ -94,12 +94,21 @@ namespace Wauncher.Utils
         }
 
         [JsonProperty("status")]
-        public string Status    { get; set; } = "Offline"; // "Online" | "Offline"
+        public string Status    { get; set; } = "Offline";
 
-        public string DotColor      => Status == "Online" ? "#4CAF50" : "#888888";
-        public bool   IsOffline     => Status == "Offline";
+        [JsonIgnore]
+        public string QuickJoinIpPort { get; set; } = "";
+
+        [JsonIgnore]
+        public string QuickJoinServerName { get; set; } = "";
+
+        [JsonIgnore]
+        public bool CanQuickJoin => !string.IsNullOrWhiteSpace(QuickJoinIpPort);
+
+        public string DotColor      => IsOffline ? "#888888" : "#4CAF50";
+        public bool   IsOffline     => string.Equals(Status, "Offline", StringComparison.OrdinalIgnoreCase);
         public double AvatarOpacity => IsOffline ? 0.35 : 1.0;
-        public string StatusText    => IsOffline ? "Offline" : "In Game";
+        public string StatusText    => string.IsNullOrWhiteSpace(Status) ? "Offline" : Status;
         public string StatusColor   => IsOffline ? "#666666" : "#999999";
     }
 
@@ -200,9 +209,7 @@ namespace Wauncher.Utils
             foreach (var f in friends)
             {
                 var username = string.IsNullOrWhiteSpace(f.Username) ? "Unknown" : f.Username;
-                var status = string.Equals(f.Status, "Online", StringComparison.OrdinalIgnoreCase)
-                    ? "Online"
-                    : "Offline";
+                var status = NormalizeStatus(f.Status);
 
                 normalized.Add(new FriendInfo
                 {
@@ -214,6 +221,21 @@ namespace Wauncher.Utils
             }
 
             return normalized;
+        }
+
+        private static string NormalizeStatus(string? status)
+        {
+            if (string.IsNullOrWhiteSpace(status))
+                return "Offline";
+
+            var trimmed = status.Trim();
+            if (string.Equals(trimmed, "Offline", StringComparison.OrdinalIgnoreCase))
+                return "Offline";
+
+            if (string.Equals(trimmed, "Online", StringComparison.OrdinalIgnoreCase))
+                return "Online";
+
+            return trimmed;
         }
     }
 }
