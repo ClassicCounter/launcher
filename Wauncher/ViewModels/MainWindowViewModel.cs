@@ -5,6 +5,7 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
 using System.Net.NetworkInformation;
+using System.Text.RegularExpressions;
 using System.Text;
 using System.Threading;
 using FriendInfo = Wauncher.Utils.FriendInfo;
@@ -401,6 +402,8 @@ namespace Wauncher.ViewModels
                 {
                     var sorted = apiFriends;
 
+                    ApplyQuickJoinMetadata(sorted);
+
                     foreach (var f in sorted)
                         f.AvatarUrl = AvatarCache.GetDisplaySource(f.AvatarUrl);
 
@@ -450,6 +453,8 @@ namespace Wauncher.ViewModels
                     f.Status = "Offline";
             }
 
+            ApplyQuickJoinMetadata(sorted);
+
             foreach (var f in sorted)
                 f.AvatarUrl = AvatarCache.GetDisplaySource(f.AvatarUrl);
 
@@ -485,6 +490,45 @@ namespace Wauncher.ViewModels
                   .Append('\u001e');
             }
             return sb.ToString();
+        }
+
+        private void ApplyQuickJoinMetadata(IEnumerable<FriendInfo> friends)
+        {
+            foreach (var friend in friends)
+            {
+                friend.QuickJoinIpPort = string.Empty;
+                friend.QuickJoinServerName = string.Empty;
+
+                var serverName = ExtractServerNameFromStatus(friend.Status);
+                if (string.IsNullOrWhiteSpace(serverName))
+                    continue;
+
+                var matches = Servers
+                    .Where(s => !s.IsNone)
+                    .Where(s => string.Equals(s.Name, serverName, StringComparison.OrdinalIgnoreCase))
+                    .ToList();
+
+                if (matches.Count == 1)
+                {
+                    friend.QuickJoinIpPort = matches[0].IpPort;
+                    friend.QuickJoinServerName = matches[0].Name;
+                }
+            }
+        }
+
+        private static string ExtractServerNameFromStatus(string? status)
+        {
+            if (string.IsNullOrWhiteSpace(status))
+                return string.Empty;
+
+            var match = Regex.Match(
+                status,
+                @"^In Game - (?<name>.+?) \(\d+/\d+\)$",
+                RegexOptions.IgnoreCase);
+
+            return match.Success
+                ? match.Groups["name"].Value.Trim()
+                : string.Empty;
         }
 
         private async Task RefreshFriendsSafeAsync()
