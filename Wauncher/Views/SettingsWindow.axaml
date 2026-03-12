@@ -195,7 +195,7 @@
                     FontSize="13"
                     Foreground="{DynamicResource AppPrimaryText}"
                     Watermark="e.g. -high -novid +fps_max 300"
-                    Text="{Binding LaunchOptions}" />
+                    Text="{Binding LaunchOptions, UpdateSourceTrigger=PropertyChanged}" />
 
             </StackPanel>
         </Grid>
