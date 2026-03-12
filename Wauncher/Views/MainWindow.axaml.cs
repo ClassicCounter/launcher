@@ -1,4 +1,4 @@
-using System.IO;
+﻿using System.IO;
 using System.Net.Http;
 using System.Linq;
 using System.Net.NetworkInformation;
@@ -38,7 +38,7 @@ namespace Wauncher.Views
         private const double HeightClosed = 720;
         private const double HeightOpen   = 720;
 
-        // ── Image carousel (center content area) ──────────────────────────────────
+        // â”€â”€ Image carousel (center content area) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
         private Image[] _carouselImages = Array.Empty<Image>();
         private DispatcherTimer? _carouselTimer;
         private int _currentCarouselIndex = 0;
@@ -93,7 +93,7 @@ namespace Wauncher.Views
             this.Closed += (_, _) => TeardownCarousel();
         }
 
-        // ── Image carousel (center content area) ──────────────────────────────────
+        // â”€â”€ Image carousel (center content area) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
         private static readonly HttpClient _http = new();
         private static string PatchNotesCachePath =>
             Path.Combine(
@@ -323,7 +323,7 @@ namespace Wauncher.Views
             _zoomCts[slot] = null;
         }
 
-        // ── Server dropdown ───────────────────────────────────────────
+        // â”€â”€ Server dropdown â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
         private void ToggleServerDropdown(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
         {
             if (DataContext is MainWindowViewModel vmOffline && vmOffline.IsOfflineMode)
@@ -366,7 +366,7 @@ namespace Wauncher.Views
             ServerListPanel.MaxHeight = 0;
         }
 
-        // ── Game launch ───────────────────────────────────────────
+        // â”€â”€ Game launch â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
         private void LaunchUpdate_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
         {
             var vm = DataContext as MainWindowViewModel;
@@ -439,11 +439,22 @@ namespace Wauncher.Views
             finally
             {
                 if (vm != null) vm.GameStatus = "Not Running";
+
+                if (!_forceClose && _settings.MinimizeToTray && !IsVisible)
+                {
+                    Dispatcher.UIThread.Post(() =>
+                    {
+                        Show();
+                        WindowState = WindowState.Normal;
+                        Activate();
+                    });
+                }
+
                 Interlocked.Exchange(ref _launchInProgress, 0);
             }
         }
 
-        // ── Window chrome ───────────────────────────────────────────
+        // â”€â”€ Window chrome â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
         private void TitleBar_PointerPressed(object? sender, PointerPressedEventArgs e)
         {
             if (e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
@@ -500,7 +511,7 @@ namespace Wauncher.Views
             Button_Update(sender, e);
         }
 
-        // ── Update ─────────────────────────────────────────────────────
+        // â”€â”€ Update â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
         private CancellationTokenSource? _updateCts;
         private Patches? _cachedPatches;
         private bool _selfUpdateAvailable;
@@ -727,8 +738,7 @@ namespace Wauncher.Views
             {
                 Dispatcher.UIThread.Post(() =>
                 {
-                    PatchNotesVersion.Text = "Loading latest patch notes...";
-                    PatchNotesVersion.IsVisible = true;
+                    PatchNotesVersion.IsVisible = false;
                 });
 
                 if (DataContext is MainWindowViewModel vm && vm.IsOfflineMode)
@@ -738,16 +748,14 @@ namespace Wauncher.Views
                         var cachedItems = LoadCachedPatchNotes();
                         if (cachedItems.Count > 0)
                         {
-                            PatchNotesVersion.Text = "Offline mode: showing cached patch notes.";
                             PatchNotesList.ItemsSource = cachedItems;
                         }
                         else
                         {
-                            PatchNotesVersion.Text = "Patch notes are unavailable offline.";
                             PatchNotesList.ItemsSource = new List<ViewModels.PatchNoteItem>();
                         }
 
-                        PatchNotesVersion.IsVisible = true;
+                        PatchNotesVersion.IsVisible = false;
                         PatchNotesScroll.Offset = new Vector(0, 0);
                     });
                     return;
@@ -758,10 +766,7 @@ namespace Wauncher.Views
                 SavePatchNotesCache(md);
                 Dispatcher.UIThread.Post(() =>
                 {
-                    PatchNotesVersion.Text = items.Count > 0
-                        ? $"Updated {DateTime.Now:MMM d, h:mm tt}"
-                        : "Patch notes are currently empty.";
-                    PatchNotesVersion.IsVisible = true;
+                    PatchNotesVersion.IsVisible = false;
                     PatchNotesList.ItemsSource = items;
                     PatchNotesScroll.Offset = new Vector(0, 0);
                 });
@@ -776,8 +781,7 @@ namespace Wauncher.Views
 
                 Dispatcher.UIThread.Post(() =>
                 {
-                    PatchNotesVersion.Text = "Using fallback patch notes.";
-                    PatchNotesVersion.IsVisible = true;
+                    PatchNotesVersion.IsVisible = false;
                     PatchNotesList.ItemsSource = items;
                     PatchNotesScroll.Offset = new Vector(0, 0);
                 });
@@ -825,7 +829,8 @@ namespace Wauncher.Views
             return new List<ViewModels.PatchNoteItem>
             {
                 new() { Text = "Anniversary Update", IsMajorHeader = true },
-                new() { Text = "What's Changed", IsHeader = true },
+                new() { Text = "March 12, 2026", IsDateHeader = true },
+                new() { Text = "What''s Changed", IsHeader = true },
                 new() { Text = "Donors now permanently get an extra drop at the end of each match.", IsBullet = true },
                 new() { Text = "NOVAGANG Collection drops have been reverted back to normal rates.", IsBullet = true },
                 new() { Text = "Bug fixes and security improvements.", IsBullet = true },
@@ -835,6 +840,8 @@ namespace Wauncher.Views
         private static List<ViewModels.PatchNoteItem> ParsePatchNotes(string markdown)
         {
             var items = new List<ViewModels.PatchNoteItem>();
+            bool lastWasMajorHeader = false;
+
             foreach (var raw in markdown.Split('\n'))
             {
                 var line = raw.TrimEnd();
@@ -847,11 +854,34 @@ namespace Wauncher.Views
 
                 if (line.StartsWith("# "))
                 {
+                    var headerText = line.TrimStart('#', ' ');
+                    var (title, dateText) = SplitPatchTitleAndDate(headerText);
+
                     items.Add(new ViewModels.PatchNoteItem
                     {
-                        Text = line.TrimStart('#', ' '),
+                        Text = title,
                         IsMajorHeader = true
                     });
+
+                    if (!string.IsNullOrWhiteSpace(dateText))
+                    {
+                        items.Add(new ViewModels.PatchNoteItem
+                        {
+                            Text = dateText,
+                            IsDateHeader = true
+                        });
+                    }
+
+                    lastWasMajorHeader = true;
+                }
+                else if (lastWasMajorHeader && TryParsePatchDateLine(line, out var parsedDate))
+                {
+                    items.Add(new ViewModels.PatchNoteItem
+                    {
+                        Text = parsedDate,
+                        IsDateHeader = true
+                    });
+                    lastWasMajorHeader = false;
                 }
                 else if (line.StartsWith("## ") || line.StartsWith("### "))
                 {
@@ -860,6 +890,7 @@ namespace Wauncher.Views
                         Text = line.TrimStart('#', ' '),
                         IsHeader = true
                     });
+                    lastWasMajorHeader = false;
                 }
                 else if (line.StartsWith("* ") || line.StartsWith("- ") || line.StartsWith("• "))
                 {
@@ -868,6 +899,7 @@ namespace Wauncher.Views
                         Text = line.Substring(2).Trim(),
                         IsBullet = true
                     });
+                    lastWasMajorHeader = false;
                 }
                 else if (Regex.IsMatch(line, @"^\d+\.\s+"))
                 {
@@ -877,6 +909,7 @@ namespace Wauncher.Views
                         Text = bulletText,
                         IsBullet = true
                     });
+                    lastWasMajorHeader = false;
                 }
                 else if (line.StartsWith("**") && line.EndsWith("**"))
                 {
@@ -885,6 +918,7 @@ namespace Wauncher.Views
                         Text = line.Trim('*', ' '),
                         IsHeader = true
                     });
+                    lastWasMajorHeader = false;
                 }
                 else
                 {
@@ -893,9 +927,50 @@ namespace Wauncher.Views
                         Text = line.TrimStart('#', '*', '-', ' '),
                         IsBullet = true
                     });
+                    lastWasMajorHeader = false;
                 }
             }
+
             return items;
+        }
+
+        private static (string Title, string DateText) SplitPatchTitleAndDate(string headerText)
+        {
+            var match = Regex.Match(
+                headerText,
+                @"^(?<title>.+?)\s+(?:-|–|—)\s+(?<date>(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\.?\s+\d{1,2},\s+\d{4})$",
+                RegexOptions.IgnoreCase);
+
+            if (!match.Success)
+                return (headerText, string.Empty);
+
+            return (match.Groups["title"].Value.Trim(), match.Groups["date"].Value.Trim());
+        }
+
+        private static bool TryParsePatchDateLine(string line, out string dateText)
+        {
+            dateText = string.Empty;
+            var trimmed = line.Trim();
+
+            if (trimmed.StartsWith("Date:", StringComparison.OrdinalIgnoreCase))
+            {
+                dateText = trimmed[5..].Trim();
+                return !string.IsNullOrWhiteSpace(dateText);
+            }
+
+            if (Regex.IsMatch(trimmed, @"^(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\.?\s+\d{1,2},\s+\d{4}$", RegexOptions.IgnoreCase))
+            {
+                dateText = trimmed;
+                return true;
+            }
+
+            if (Regex.IsMatch(trimmed, @"^\d{1,2}/\d{1,2}/\d{4}$", RegexOptions.IgnoreCase))
+            {
+                dateText = trimmed;
+                return true;
+            }
+
+            return false;
         }
 
         private sealed class GitHubRelease
@@ -1270,7 +1345,7 @@ exit /b 0
                 }
 
                 var patches = _cachedPatches ?? await Task.Run(() => PatchManager.ValidatePatches(validateAll: validateAll), token);
-                _cachedPatches = null; // consumed — force fresh check next time
+                _cachedPatches = null; // consumed â€” force fresh check next time
                 if (token.IsCancellationRequested) return;
 
                 bool hasPatches = patches.Missing.Count > 0 || patches.Outdated.Count > 0;
@@ -1378,7 +1453,7 @@ exit /b 0
             _updateCts?.Cancel();
         }
 
-        // ── Settings / Info windows ────────────────────────────────────────
+        // â”€â”€ Settings / Info windows â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
         private void FriendsTab_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
         {
             if (DataContext is MainWindowViewModel vm) vm.ActiveRightTab = "Friends";
@@ -1411,6 +1486,31 @@ exit /b 0
             {
                 // Best-effort open.
             }
+        }
+
+        private async void JoinFriendServer_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+        {
+            if (sender is not MenuItem { Tag: FriendInfo friend })
+                return;
+
+            if (DataContext is not MainWindowViewModel vm)
+                return;
+
+            if (string.IsNullOrWhiteSpace(friend.QuickJoinIpPort))
+                return;
+
+            var matchedServer = vm.Servers.FirstOrDefault(s =>
+                !s.IsNone &&
+                string.Equals(s.IpPort, friend.QuickJoinIpPort, StringComparison.OrdinalIgnoreCase));
+
+            if (matchedServer == null)
+            {
+                Wauncher.Utils.ConsoleManager.ShowError("Couldn't match that friend to a server in your server list.");
+                return;
+            }
+
+            vm.SelectedServer = matchedServer;
+            await LaunchGameAsync();
         }
 
         private static string ResolveProfileSteamId(string? steamId)
@@ -1473,7 +1573,7 @@ exit /b 0
             else _infoWindow.Activate();
         }
 
-        // ── Launch button glow + color ────────────────────────────────────────────
+        // â”€â”€ Launch button glow + color â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
         private void SetLaunchGlow(bool updating)
         {
             var brush = new SolidColorBrush(Color.Parse(updating ? "#FFC107" : "#4CAF50"));
@@ -1524,7 +1624,7 @@ exit /b 0
             var eta = TimeSpan.FromSeconds(remainingBytes / speedBytes);
             var etaText = $"ETA {FormatEta(eta)}";
 
-            return string.IsNullOrEmpty(speedText) ? etaText : $"{speedText} • {etaText}";
+            return string.IsNullOrEmpty(speedText) ? etaText : $"{speedText} â€¢ {etaText}";
         }
 
         private static string FormatExtractEta(System.Diagnostics.Stopwatch watch, double percent)
@@ -1617,5 +1717,6 @@ exit /b 0
 
     }
 }
+
 
 
