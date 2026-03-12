@@ -10,7 +10,7 @@
 - Groups on eddies.cc will direct to the vanity URL that matches the group name if no custom group URL is set when editing profile
 
 # Anniversary Update 
-03/14/2026
+03/04/2026
 ## What's Changed
 - Donors now permanently get an extra drop at the end of each match, on top of the extra drop during this month's event. We're grateful for your support!
 - NOVAGANG Collection drops have been reverted back to normal rates.
@@ -51,6 +51,7 @@
 - Added Terminal Z by Zootzie
 - Added H.T.N.G by NOVAGANG
 - Added H.T.N.G. VOL. 2: JUDGEMENT DAY by NOVAGANG
+
 
 
 
