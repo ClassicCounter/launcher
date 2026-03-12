@@ -260,6 +260,32 @@
 		<Style Selector="Button.friendMenuBtn:pointerover">
 			<Setter Property="Background" Value="#22FFFFFF" />
 		</Style>
+		<Style Selector="Button.friendRowBtn">
+			<Setter Property="Padding" Value="0" />
+			<Setter Property="BorderThickness" Value="0" />
+			<Setter Property="Background" Value="Transparent" />
+			<Setter Property="MinHeight" Value="50" />
+			<Setter Property="HorizontalAlignment" Value="Stretch" />
+			<Setter Property="HorizontalContentAlignment" Value="Stretch" />
+			<Setter Property="Cursor" Value="Hand" />
+			<Setter Property="Template">
+				<ControlTemplate>
+					<Border
+						Background="{TemplateBinding Background}"
+						CornerRadius="6"
+						MinHeight="{TemplateBinding MinHeight}"
+						Padding="{TemplateBinding Padding}">
+						<ContentPresenter
+							HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+							VerticalAlignment="Center"
+							Content="{TemplateBinding Content}" />
+					</Border>
+				</ControlTemplate>
+			</Setter>
+		</Style>
+		<Style Selector="Button.friendRowBtn:pointerover">
+			<Setter Property="Background" Value="#14FFFFFF" />
+		</Style>
 
 		<!-- Selected label default (no server) -->
 		<Style Selector="TextBlock.selectedlabel">
@@ -457,7 +483,7 @@
 				Margin="0,0,0,0"
 				HorizontalAlignment="Right"
 				VerticalAlignment="Bottom"
-				Width="360"
+				Width="390"
 				Background="{DynamicResource AppServerListBg}"
 				BorderBrush="{DynamicResource AppDivider}"
 				BorderThickness="1"
@@ -473,7 +499,7 @@
 					<ItemsControl.ItemTemplate>
 						<DataTemplate x:DataType="vm:ServerInfo">
 							<Button Classes="serverBtn" Click="ServerItem_Click" Tag="{Binding}">
-								<Grid ColumnDefinitions="14,*,120,60">
+							<Grid ColumnDefinitions="14,*,120,60">
 									<Ellipse Grid.Column="0" Width="7" Height="7" VerticalAlignment="Center" Fill="{Binding DotColor}" />
 									<TextBlock Grid.Column="1" Margin="8,0,0,0" VerticalAlignment="Center" FontSize="13" Foreground="{Binding NameColor}" Text="{Binding Name}" />
 									<TextBlock Grid.Column="2" Margin="8,0,8,0" VerticalAlignment="Center" FontSize="11" FontFamily="Consolas,monospace" Foreground="{DynamicResource AppSectionLabel}" Text="{Binding MapDisplay}" />
@@ -669,28 +695,33 @@
 							</ItemsControl.ItemsPanel>
 							<ItemsControl.ItemTemplate>
 								<DataTemplate x:DataType="wau:FriendInfo">
-									<Grid ColumnDefinitions="54,*,18,16" Margin="4,8">
-										<Border Width="42" Height="42" CornerRadius="21" ClipToBounds="True" VerticalAlignment="Center" Opacity="{Binding AvatarOpacity}">
-											<Image asyncImageLoader:ImageLoader.Source="{Binding AvatarUrl}" Stretch="UniformToFill" />
-										</Border>
-										<StackPanel Grid.Column="1" Margin="8,0" VerticalAlignment="Center" Spacing="1">
-											<TextBlock
-												FontSize="14"
-												FontWeight="SemiBold"
-												Foreground="{DynamicResource AppPrimaryText}"
-												Text="{Binding Username}"
-												TextTrimming="CharacterEllipsis" />
-											<TextBlock FontSize="11" Foreground="{Binding StatusColor}" Text="{Binding StatusText}" TextTrimming="CharacterEllipsis" />
-										</StackPanel>
-										<Button Grid.Column="2" Classes="friendMenuBtn" VerticalAlignment="Center">
+									<Grid ColumnDefinitions="56,*,12,20" Margin="4,1">
+										<Button Grid.Column="0" Grid.ColumnSpan="3" Classes="friendRowBtn">
 											<Button.Flyout>
 												<MenuFlyout Placement="Top">
+													<MenuItem Header="Join Server" Tag="{Binding}" Click="JoinFriendServer_Click" IsVisible="{Binding CanQuickJoin}" />
 													<MenuItem Header="View eddies.cc Profile" Tag="{Binding}" Click="ViewFriendProfile_Click" />
 												</MenuFlyout>
 											</Button.Flyout>
-											<Path Width="8" Height="5" Data="M0,0 L4,5 L8,0" Stroke="{DynamicResource AppMutedText}" StrokeThickness="1.2" />
+											<Grid ColumnDefinitions="56,*,12" VerticalAlignment="Center" Margin="6,0">
+												<Grid Width="40" Height="40" Margin="2,0,0,0" VerticalAlignment="Center">
+													<Border Width="40" Height="40" CornerRadius="20" ClipToBounds="True" VerticalAlignment="Center" Opacity="{Binding AvatarOpacity}">
+													<Image asyncImageLoader:ImageLoader.Source="{Binding AvatarUrl}" Stretch="UniformToFill" />
+													</Border>
+												</Grid>
+												<StackPanel Grid.Column="1" Margin="6,0,0,0" VerticalAlignment="Center" Spacing="1">
+													<TextBlock
+														FontSize="14"
+														FontWeight="SemiBold"
+														Foreground="{DynamicResource AppPrimaryText}"
+														Text="{Binding Username}"
+														TextTrimming="CharacterEllipsis" />
+													<TextBlock FontSize="11" Foreground="#A8A8A8" Text="{Binding StatusText}" TextTrimming="CharacterEllipsis" />
+												</StackPanel>
+												<Path Grid.Column="2" Width="8" Height="5" HorizontalAlignment="Center" VerticalAlignment="Center" Data="M0,5 L4,0 L8,5" Stroke="{DynamicResource AppMutedText}" StrokeThickness="1.2" />
+											</Grid>
 										</Button>
-										<Ellipse Grid.Column="3" Width="10" Height="10" VerticalAlignment="Center" Fill="{Binding DotColor}" />
+										<Ellipse Grid.Column="3" Width="10" Height="10" Margin="4,0,0,0" VerticalAlignment="Center" Fill="{Binding DotColor}" />
 									</Grid>
 								</DataTemplate>
 							</ItemsControl.ItemTemplate>
@@ -715,6 +746,7 @@
 							Margin="0,0,0,8"
 							FontSize="11"
 							Foreground="{DynamicResource AppMutedText}"
+							IsVisible="False"
 							Text="Latest wauncher changes"
 							TextWrapping="Wrap" />
 						<TextBlock
@@ -723,7 +755,7 @@
 							FontSize="12"
 							FontWeight="SemiBold"
 							Foreground="{DynamicResource AppMutedText}"
-							IsVisible="True"
+							IsVisible="False"
 							Text="Loading..." />
 
 						<ItemsControl x:Name="PatchNotesList" HorizontalAlignment="Stretch" MaxWidth="268">
@@ -736,6 +768,7 @@
 								<DataTemplate x:DataType="vm:PatchNoteItem">
 									<Grid>
 										<TextBlock IsVisible="{Binding IsMajorHeader}" Margin="0,14,0,8" FontSize="22" FontWeight="ExtraBold" Foreground="{DynamicResource AppPrimaryText}" TextWrapping="Wrap" LineHeight="28" MaxWidth="256" Text="{Binding Text}" />
+										<TextBlock IsVisible="{Binding IsDateHeader}" Margin="0,-2,0,8" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource AppMutedText}" TextWrapping="Wrap" LineHeight="16" MaxWidth="256" Text="{Binding Text}" />
 										<TextBlock IsVisible="{Binding IsHeader}" Margin="0,10,0,7" FontSize="15" FontWeight="Bold" Foreground="{DynamicResource AppPrimaryText}" TextWrapping="Wrap" LineHeight="20" MaxWidth="256" Text="{Binding Text}" />
 										<Grid IsVisible="{Binding IsBullet}" Margin="0,3,0,3" ColumnDefinitions="10,*">
 											<TextBlock Grid.Column="0" FontSize="11" Foreground="#4CAF50" VerticalAlignment="Top" Margin="0,2,0,0" Text="&#x2022;" />
