@@ -1,4 +1,5 @@
-# Hotfix - 03/08/2026
+# Hotfix 
+03/08/2026
 ## What's Changed
 - Updated appearance of the "Edit Profile" page on eddies.cc
 - Profiles on eddies.cc are now limited to a maximum level of 6,199
@@ -8,7 +9,8 @@
 - Groups on eddies.cc can now have a custom URL set, directing to the desired Steam group URL instead of the vanity URL that matches the group name
 - Groups on eddies.cc will direct to the vanity URL that matches the group name if no custom group URL is set when editing profile
 
-# Anniversary Update - 03/14/2026
+# Anniversary Update 
+03/14/2026
 ## What's Changed
 - Donors now permanently get an extra drop at the end of each match, on top of the extra drop during this month's event. We're grateful for your support!
 - NOVAGANG Collection drops have been reverted back to normal rates.
@@ -19,7 +21,8 @@
 - Fixed broken or invalid item IDs in player inventories.
 - Bug fixes and security improvements.
 
-# Hotfix - 02/16/2026
+# Hotfix
+02/16/2026
 ## What's Changed
 - Fixed NOVAGANG Collection drop names and images not appearing in game (make sure to run the launcher)
 - CZ-75 now works again on team Terrorists
@@ -28,7 +31,8 @@
 - Background video on the classiccounter.cc website now works properly again
 - Backend fixes and improvements
 
-# NOVAGANG Collection Update - 02/15/2026
+# NOVAGANG Collection Update
+02/15/2026
 ## What's Changed
 - Added NOVAGANG Sticker Capsule
 - Added Dysocjacja by Exodus1900
@@ -47,6 +51,7 @@
 - Added Terminal Z by Zootzie
 - Added H.T.N.G by NOVAGANG
 - Added H.T.N.G. VOL. 2: JUDGEMENT DAY by NOVAGANG
+
 
 
 
