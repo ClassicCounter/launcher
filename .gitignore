@@ -455,3 +455,5 @@ $RECYCLE.BIN/
 
 ## Additions
 Wauncher/Properties/launchSettings.json
+/Launcher/Properties/launchSettings.json
+/.vscode/launch.json
