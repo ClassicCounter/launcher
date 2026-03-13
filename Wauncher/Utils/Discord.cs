@@ -26,7 +26,7 @@ namespace Wauncher.Utils
             if (!_client.Initialize())
                 return;
 
-            SetDetails("In Launcher");
+            SetDetails("In Wauncher");
             SetTimestamp(DateTime.UtcNow);
             SetLargeArtwork("icon");
 
