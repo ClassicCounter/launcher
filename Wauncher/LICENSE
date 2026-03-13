@@ -1,3 +1,75 @@
-© 2026 ClassicCounter. All Rights Reserved. Do Not Redistribute.
-This software and its code are protected by copyright law and international treaties. Unauthorized reproduction or distribution may result in civil and criminal penalties.
-You may not modify, use, reproduce, or distribute Wauncher outside of ClassicCounter or ClassicCounter servers without explicit written or recorded permission from a ClassicCounter staff member.
+ClassicCounter Community Source License (CCCSL)
+
+Copyright (c) 2026 ClassicCounter Community Developers.
+Maintained by eddies. All Rights Reserved.
+
+1. Definitions
+
+"Software" refers to the Wauncher program, including its source code,
+compiled binaries, documentation, and any associated files distributed
+as part of the ClassicCounter project.
+
+"ClassicCounter Community" refers to the official ClassicCounter
+community, its approved members, and its official servers.
+
+"Authorized Members" refers to individuals who are explicitly approved
+or whitelisted by ClassicCounter staff.
+
+2. Permission Grant
+
+Subject to the restrictions below, Authorized Members of the
+ClassicCounter Community are granted permission to:
+
+- View the source code of the Software
+- Use the Software within the ClassicCounter Community
+- Modify the Software for use within the ClassicCounter Community
+- Create forks or derivative works solely for use within
+  ClassicCounter community servers
+
+3. Restrictions
+
+The following actions are strictly prohibited unless explicit written
+permission is granted by the copyright holder or authorized
+ClassicCounter staff:
+
+1. Using the Software outside of the ClassicCounter Community.
+2. Running or deploying the Software on non-ClassicCounter servers.
+3. Redistributing, publishing, or mirroring the Software outside of
+   the ClassicCounter Community.
+4. Selling, sublicensing, or commercially exploiting the Software.
+5. Distributing modified versions outside of the ClassicCounter
+   Community.
+
+Any forks, modifications, or derivative works must remain exclusively
+for use within ClassicCounter community servers.
+
+4. Contributions
+
+By submitting code, patches, or modifications to the ClassicCounter
+project, you grant ClassicCounter and its maintainers a perpetual,
+worldwide, non-exclusive, royalty-free license to use, modify,
+and distribute your contributions as part of the ClassicCounter
+project under the terms of this license.
+
+Contributors retain ownership of their individual contributions.
+
+5. Termination
+
+Any violation of this license automatically terminates the permissions
+granted under this license. Upon termination, all copies of the
+Software must be destroyed and use of the Software must cease
+immediately.
+
+6. No Warranty
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, AND
+NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS
+BE LIABLE FOR ANY CLAIM, DAMAGES, OR OTHER LIABILITY ARISING FROM
+THE USE OF THE SOFTWARE.
+
+7. Jurisdiction
+
+This license shall be governed by applicable copyright laws and
+international copyright treaties.
