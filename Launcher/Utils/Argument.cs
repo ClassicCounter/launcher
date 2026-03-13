@@ -1,4 +1,4 @@
-﻿namespace Launcher.Utils
+namespace Launcher.Utils
 {
     public static class Argument
     {
@@ -13,7 +13,9 @@
             "--disable-rpc",
             "--install-dependencies",
             "--protocol-command",
-            "--ssl-bypass"
+            "--ssl-bypass",
+            "--create-shortcuts",
+            "--add-to-steam"
         };
 
         private static List<string> _additionalArguments = new();

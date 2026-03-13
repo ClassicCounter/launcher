@@ -1,4 +1,4 @@
-﻿using Downloader;
+using Downloader;
 using Refit;
 using Spectre.Console;
 using System.Diagnostics;
@@ -10,7 +10,9 @@ namespace Launcher.Utils
         private static DownloadConfiguration _settings = new()
         {
             ChunkCount = 8,
-            ParallelDownload = true
+            ParallelDownload = true,
+            MaxTryAgainOnFailover = 5,
+            Timeout = 10000
         };
         private static DownloadService _downloader = new DownloadService(_settings);
 
@@ -137,15 +139,33 @@ namespace Launcher.Utils
 
             foreach (var patch in allFiles)
             {
-                try
+                int retryCount = 0;
+                int maxRetries = 3;
+                bool success = false;
+                
+                while (!success && retryCount < maxRetries)
                 {
-                    await DownloadPatch(patch, isGameFiles, progress => updateStatus(progress, patch.File));
-                    completedFiles++;
-                }
-                catch
-                {
-                    failedFiles++;
-                    Terminal.Warning($"Couldn't process {fileType}: {patch.File}, possibly due to missing permissions.");
+                    try
+                    {
+                        await DownloadPatch(patch, isGameFiles, progress => updateStatus(progress, patch.File));
+                        completedFiles++;
+                        success = true;
+                    }
+                    catch (Exception ex)
+                    {
+                        retryCount++;
+                        if (retryCount < maxRetries)
+                        {
+                            if (Debug.Enabled())
+                                Terminal.Debug($"Retrying {patch.File} (attempt {retryCount + 1}/{maxRetries})");
+                            await Task.Delay(1000 * retryCount);
+                        }
+                        else
+                        {
+                            failedFiles++;
+                            Terminal.Warning($"Couldn't process {fileType}: {patch.File} after {maxRetries} attempts. {ex.Message}");
+                        }
+                    }
                 }
             }
 
@@ -192,42 +212,72 @@ namespace Launcher.Utils
 
                     if (needsDownload)
                     {
-                        try
-                        {
-                            EventHandler<Downloader.DownloadProgressChangedEventArgs> progressHandler = (sender, e) =>
-                            {
-                                var speed = e.BytesPerSecondSpeed / (1024.0 * 1024.0);
-                                var progressText = $"{((float)completedFiles / totalFiles * 100):F1}% ({completedFiles}/{totalFiles})";
-                                ctx.Status = $"Downloading {file.File}{GetDots().PadRight(3)} [gray]|[/] {progressText} [gray]|[/] {GetProgressBar(e.ProgressPercentage)} {e.ProgressPercentage:F1}% [gray]|[/] {speed:F1} MB/s";
-                            };
-                            _downloader.DownloadProgressChanged += progressHandler;
+                        int retryCount = 0;
+                        int maxRetries = 3;
+                        bool downloadSuccess = false;
 
+                        while (!downloadSuccess && retryCount < maxRetries)
+                        {
                             try
                             {
-                                await _downloader.DownloadFileTaskAsync(
-                                    file.Link,
-                                    filePath
-                                );
+                                EventHandler<Downloader.DownloadProgressChangedEventArgs> progressHandler = (sender, e) =>
+                                {
+                                    var speed = e.BytesPerSecondSpeed / (1024.0 * 1024.0);
+                                    var progressText = $"{((float)completedFiles / totalFiles * 100):F1}% ({completedFiles}/{totalFiles})";
+                                    var retryText = retryCount > 0 ? $" [gray](retry {retryCount}/{maxRetries})[/]" : "";
+                                    ctx.Status = $"Downloading {file.File}{GetDots().PadRight(3)} [gray]|[/] {progressText} [gray]|[/] {GetProgressBar(e.ProgressPercentage)} {e.ProgressPercentage:F1}% [gray]|[/] {speed:F1} MB/s{retryText}";
+                                };
+                                _downloader.DownloadProgressChanged += progressHandler;
 
-                                string downloadedHash = CalculateMD5(filePath);
-                                if (!downloadedHash.Equals(file.Hash, StringComparison.OrdinalIgnoreCase))
+                                try
+                                {
+                                    await _downloader.DownloadFileTaskAsync(
+                                        file.Link,
+                                        filePath
+                                    );
+
+                                    string downloadedHash = CalculateMD5(filePath);
+                                    if (!downloadedHash.Equals(file.Hash, StringComparison.OrdinalIgnoreCase))
+                                    {
+                                        if (retryCount < maxRetries - 1)
+                                        {
+                                            if (Debug.Enabled())
+                                                Terminal.Debug($"Hash mismatch for {file.File}, retrying...");
+                                            retryCount++;
+                                            await Task.Delay(1000 * retryCount);
+                                            continue;
+                                        }
+                                        else
+                                        {
+                                            failedFiles.Add(file.File);
+                                            Terminal.Error($"Hash mismatch for {file.File} after {maxRetries} attempts");
+                                            break;
+                                        }
+                                    }
+
+                                    completedFiles++;
+                                    downloadSuccess = true;
+                                }
+                                finally
+                                {
+                                    _downloader.DownloadProgressChanged -= progressHandler;
+                                }
+                            }
+                            catch (Exception ex)
+                            {
+                                retryCount++;
+                                if (retryCount < maxRetries)
+                                {
+                                    if (Debug.Enabled())
+                                        Terminal.Debug($"Download failed for {file.File}, retrying... (attempt {retryCount + 1}/{maxRetries})");
+                                    await Task.Delay(1000 * retryCount);
+                                }
+                                else
                                 {
                                     failedFiles.Add(file.File);
-                                    Terminal.Error($"Hash mismatch for {file.File}");
-                                    continue;
+                                    Terminal.Error($"Failed to download {file.File} after {maxRetries} attempts: {ex.Message}");
                                 }
-
-                                completedFiles++;
                             }
-                            finally
-                            {
-                                _downloader.DownloadProgressChanged -= progressHandler;
-                            }
-                        }
-                        catch (Exception ex)
-                        {
-                            failedFiles.Add(file.File);
-                            Terminal.Error($"Failed to download {file.File}: {ex.Message}");
                         }
                     }
                 }

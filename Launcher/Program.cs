@@ -1,4 +1,4 @@
-﻿using Launcher.Utils;
+using Launcher.Utils;
 using Spectre.Console;
 using System.Diagnostics;
 
@@ -196,6 +196,33 @@ if (!File.Exists($"{directory}/csgo.exe"))
             if (success)
             {
                 Terminal.Success("Finished dependency installing!");
+                
+                Terminal.Print("Creating shortcuts...");
+                string launcherPath = Environment.ProcessPath ?? "";
+                string csgoPath = $"{directory}/csgo.exe";
+                
+                if (!string.IsNullOrEmpty(launcherPath))
+                {
+                    ShortcutManager.CreateDesktopShortcut(launcherPath, "ClassicCounter Launcher", "Launch ClassicCounter");
+                    ShortcutManager.CreateStartMenuShortcut(launcherPath, "ClassicCounter Launcher", "Launch ClassicCounter");
+                }
+                
+                if (File.Exists(csgoPath))
+                {
+                    ShortcutManager.CreateDesktopShortcut(csgoPath, "ClassicCounter", "Play ClassicCounter");
+                    ShortcutManager.CreateStartMenuShortcut(csgoPath, "ClassicCounter", "Play ClassicCounter");
+                    Terminal.Success("Created shortcuts!");
+                }
+                
+                AnsiConsole.Markup($"[orange1]Classic[/][blue]Counter[/] [grey50]|[/] [grey82]Would you like to add ClassicCounter to your Steam library? (y/n): [/]");
+                var steamResponse = Console.ReadKey(true);
+                Console.WriteLine(steamResponse.KeyChar);
+                Console.WriteLine();
+                
+                if (char.ToLower(steamResponse.KeyChar) == 'y')
+                {
+                    ShortcutManager.AddToSteamLibrary(csgoPath, "ClassicCounter");
+                }
             }
             else
                 Terminal.Error("No dependencies were installed.");
@@ -331,6 +358,42 @@ if (Argument.Exists("--patch-only"))
 if (Debug.Enabled())
     Terminal.Debug("Cleaning up any .7z files...");
 DownloadManager.Cleanup7zFiles();
+
+if (Argument.Exists("--create-shortcuts"))
+{
+    Terminal.Print("Creating shortcuts...");
+    string launcherPath = Environment.ProcessPath ?? "";
+    string csgoPath = $"{directory}/csgo.exe";
+    
+    if (!string.IsNullOrEmpty(launcherPath))
+    {
+        ShortcutManager.CreateDesktopShortcut(launcherPath, "ClassicCounter Launcher", "Launch ClassicCounter");
+        ShortcutManager.CreateStartMenuShortcut(launcherPath, "ClassicCounter Launcher", "Launch ClassicCounter");
+        Terminal.Success("Created launcher shortcuts!");
+    }
+    
+    if (File.Exists(csgoPath))
+    {
+        ShortcutManager.CreateDesktopShortcut(csgoPath, "ClassicCounter", "Play ClassicCounter");
+        ShortcutManager.CreateStartMenuShortcut(csgoPath, "ClassicCounter", "Play ClassicCounter");
+        Terminal.Success("Created game shortcuts!");
+    }
+}
+
+if (Argument.Exists("--add-to-steam"))
+{
+    Terminal.Print("Adding ClassicCounter to Steam library...");
+    string csgoPath = $"{directory}/csgo.exe";
+    
+    if (File.Exists(csgoPath))
+    {
+        ShortcutManager.AddToSteamLibrary(csgoPath, "ClassicCounter");
+    }
+    else
+    {
+        Terminal.Error("csgo.exe not found! Cannot add to Steam library.");
+    }
+}
 
 bool launched = await Game.Launch();
 if (!launched)
