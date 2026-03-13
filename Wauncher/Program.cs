@@ -15,6 +15,10 @@ namespace Wauncher
         {
             try
             {
+                var exeDirectory = Path.GetDirectoryName(Services.GetExePath());
+                if (!string.IsNullOrWhiteSpace(exeDirectory) && Directory.Exists(exeDirectory))
+                    Directory.SetCurrentDirectory(exeDirectory);
+
                 if (OnStartup(args) == false)
                 {
                     Environment.Exit(0);

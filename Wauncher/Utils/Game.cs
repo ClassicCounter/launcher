@@ -22,10 +22,10 @@ namespace Wauncher.Utils
             if (arguments.Count > 0) Terminal.Print($"Arguments: {string.Join(" ", arguments)}");
 
             var settings = ViewModels.SettingsWindowViewModel.LoadGlobal();
-            string directory = Directory.GetCurrentDirectory();
+            string directory = Path.GetDirectoryName(Services.GetExePath()) ?? Directory.GetCurrentDirectory();
             Terminal.Print($"Directory: {directory}");
 
-            string gameStatePath = $"{directory}/csgo/cfg/gamestate_integration_cc.cfg";
+            string gameStatePath = Path.Combine(directory, "csgo", "cfg", "gamestate_integration_cc.cfg");
 
             if (settings.DiscordRpc)
             {
@@ -76,8 +76,9 @@ namespace Wauncher.Utils
             _process = new Process();
 
             string gameExe = "csgo.exe";
-            _process.StartInfo.FileName = $"{directory}\\{gameExe}";
+            _process.StartInfo.FileName = Path.Combine(directory, gameExe);
             _process.StartInfo.Arguments = string.Join(" ", arguments);
+            _process.StartInfo.WorkingDirectory = directory;
 
             if (!File.Exists(_process.StartInfo.FileName))
             {
