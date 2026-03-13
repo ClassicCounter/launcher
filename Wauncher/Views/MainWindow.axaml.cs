@@ -1,4 +1,4 @@
-﻿using System.IO;
+using System.IO;
 using System.Net.Http;
 using System.Linq;
 using System.Net.NetworkInformation;
@@ -61,9 +61,6 @@ namespace Wauncher.Views
 
             this.Loaded += (_, _) =>
             {
-                var buttonColor = new SolidColorBrush(Color.Parse("#4CAF50"));
-                LaunchUpdateButton.Background = buttonColor;
-                ArrowButton.Background        = buttonColor;
                 LaunchUpdateButton.IsEnabled  = true;
             };
 
