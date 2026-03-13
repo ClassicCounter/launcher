@@ -652,6 +652,7 @@ namespace Wauncher.Views
         private string _selfUpdateDownloadUrl = string.Empty;
         private string _selfUpdateVersion = string.Empty;
         private int _autoSelfUpdateTriggered;
+        private int _protocolLaunchTriggered;
         private bool _forceValidateAllOnce;
 
         /// <summary>
@@ -681,6 +682,9 @@ namespace Wauncher.Views
                 return;
             }
 
+            if (await TryHandleProtocolLaunchAsync(vm))
+                return;
+
             if (vm?.IsOfflineMode == true)
             {
                 vm.IsNeedingInstall           = false;
@@ -708,6 +712,37 @@ namespace Wauncher.Views
             }
 
             await CheckForUpdatesAsync();
+        }
+
+        private async Task<bool> TryHandleProtocolLaunchAsync(MainWindowViewModel vm)
+        {
+            var protocolTarget = Argument.GetProtocolConnectTarget();
+            if (string.IsNullOrWhiteSpace(protocolTarget))
+                return false;
+
+            if (Interlocked.Exchange(ref _protocolLaunchTriggered, 1) == 1)
+                return true;
+
+            try
+            {
+                var matchedServer = vm.Servers.FirstOrDefault(s =>
+                    !s.IsNone &&
+                    string.Equals(s.IpPort, protocolTarget, StringComparison.OrdinalIgnoreCase));
+
+                if (matchedServer != null)
+                {
+                    vm.SelectedServer = matchedServer;
+                    Argument.ConsumeProtocolConnectTarget();
+                }
+
+                await LaunchGameAsync();
+                return true;
+            }
+            catch
+            {
+                Interlocked.Exchange(ref _protocolLaunchTriggered, 0);
+                throw;
+            }
         }
 
         private async Task InstallGameFromCdnAsync()
