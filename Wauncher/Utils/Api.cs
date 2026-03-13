@@ -108,7 +108,19 @@ namespace Wauncher.Utils
         public string DotColor      => IsOffline ? "#888888" : "#4CAF50";
         public bool   IsOffline     => string.Equals(Status, "Offline", StringComparison.OrdinalIgnoreCase);
         public double AvatarOpacity => IsOffline ? 0.35 : 1.0;
-        public string StatusText    => string.IsNullOrWhiteSpace(Status) ? "Offline" : Status;
+        public string StatusText
+        {
+            get
+            {
+                if (string.IsNullOrWhiteSpace(Status))
+                    return "Offline";
+
+                const string inGamePrefix = "In Game - ";
+                return Status.StartsWith(inGamePrefix, StringComparison.OrdinalIgnoreCase)
+                    ? Status[inGamePrefix.Length..].Trim()
+                    : Status;
+            }
+        }
         public string StatusColor   => IsOffline ? "#666666" : "#999999";
     }
 
