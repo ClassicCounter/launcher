@@ -371,18 +371,6 @@
 			VerticalAlignment="Top"
 			Background="{DynamicResource AppTitleBarBrush}"
 			PointerPressed="TitleBar_PointerPressed">
-			<TextBlock
-				HorizontalAlignment="Left"
-				VerticalAlignment="Center"
-				Margin="12,0,0,0"
-				FontSize="11"
-				FontStyle="Italic"
-				Foreground="{DynamicResource AppPrimaryText}"
-				Text="ALPHA TESTING NOT FINAL">
-				<TextBlock.Effect>
-					<DropShadowEffect BlurRadius="6" Color="Black" OffsetX="0" OffsetY="1" Opacity="0.8" />
-				</TextBlock.Effect>
-			</TextBlock>
 			<Image
 			HorizontalAlignment="Center"
 			VerticalAlignment="Center"
