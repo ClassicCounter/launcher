@@ -132,7 +132,7 @@
                     VerticalAlignment="Center"
                     FontSize="12"
                     Foreground="{DynamicResource AppSectionLabel}"
-                    Text="Version 3.0.5" />
+                    Text="{Binding DisplayVersion}" />
             </Grid>
 
             <Rectangle Grid.Row="1" Fill="{DynamicResource AppDivider}" Margin="24,0" />

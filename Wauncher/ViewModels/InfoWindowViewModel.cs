@@ -2,11 +2,12 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
-
 namespace Wauncher.ViewModels
 {
     public partial class InfoWindowViewModel : ViewModelBase
     {
+        public string DisplayVersion => $"Version {Wauncher.Utils.Version.Current}";
+
         [RelayCommand]
         private void OpenUrl(string? url)
         {
