@@ -39,6 +39,14 @@ ClassicCounter staff:
 4. Selling, sublicensing, or commercially exploiting the Software.
 5. Distributing modified versions outside of the ClassicCounter
    Community.
+6. Public hosting of the Software or its source code on external
+   repositories, mirrors, or file hosting platforms (including but
+   not limited to GitHub, GitLab, Bitbucket, or similar services)
+   is prohibited unless the repository is owned or explicitly
+   authorized by ClassicCounter staff.
+7. Replication of the Software's functionality, architecture, or
+   design for the purpose of creating a competing implementation
+   for use outside the ClassicCounter community is prohibited.
 
 Any forks, modifications, or derivative works must remain exclusively
 for use within ClassicCounter community servers.
