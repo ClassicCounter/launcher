@@ -1,8 +1,10 @@
-﻿using Downloader;
+using Downloader;
 using Refit;
+using SharpCompress.Archives;
+using SharpCompress.Archives.SevenZip;
+using SharpCompress.Common;
+using SharpCompress.Readers;
 using Spectre.Console;
-using System.Diagnostics;
-using System.Text.RegularExpressions;
 
 namespace Wauncher.Utils
 {
@@ -157,7 +159,6 @@ namespace Wauncher.Utils
                     return;
                 }
 
-                // pass steam id to api
                 var gameFiles = await Api.ClassicCounter.GetFullGameDownload(Steam.recentSteamID2);
 
                 if (gameFiles?.Files == null || gameFiles.Files.Count == 0)
@@ -203,10 +204,7 @@ namespace Wauncher.Utils
 
                             try
                             {
-                                await _downloader.DownloadFileTaskAsync(
-                                    file.Link,
-                                    filePath
-                                );
+                                await _downloader.DownloadFileTaskAsync(file.Link, filePath);
 
                                 string downloadedHash = CalculateMD5(filePath);
                                 if (!downloadedHash.Equals(file.Hash, StringComparison.OrdinalIgnoreCase))
@@ -233,126 +231,6 @@ namespace Wauncher.Utils
 
                 if (failedFiles.Count == 0)
                 {
-                    string extractPath = Directory.GetCurrentDirectory();
-                    string tempExtractPath = Path.Combine(extractPath, "ClassicCounter_temp");
-
-                    // check for running 7za.exe processes
-                    var processes = Process.GetProcessesByName("7za");
-                    if (processes.Length > 0)
-                    {
-                        if (Debug.Enabled())
-                            Terminal.Debug("Found running 7za.exe process, waiting...");
-
-                        // wait for existing 7za.exe to finish
-                        while (Process.GetProcessesByName("7za").Length > 0)
-                        {
-                            ctx.Status = "Found already running extraction. Waiting for it to complete...";
-                            await Task.Delay(1000);
-                        }
-
-                        // this is just code from ExtractSplitArchive (the moving folder part)
-                        string classicCounterPath = Path.Combine(tempExtractPath, "ClassicCounter");
-                        if (Directory.Exists(tempExtractPath) && Directory.Exists(classicCounterPath))
-                        {
-                            // check if the directory has any contents
-                            if (Directory.GetFiles(classicCounterPath, "*.*", SearchOption.AllDirectories).Any())
-                            {
-                                try
-                                {
-                                    if (Debug.Enabled())
-                                        Terminal.Debug("Moving contents from ClassicCounter folder to root directory...");
-
-                                    foreach (string dirPath in Directory.GetDirectories(classicCounterPath, "*", SearchOption.AllDirectories))
-                                    {
-                                        string newDirPath = dirPath.Replace(classicCounterPath, extractPath);
-                                        Directory.CreateDirectory(newDirPath);
-                                    }
-
-                                    foreach (string filePath in Directory.GetFiles(classicCounterPath, "*.*", SearchOption.AllDirectories))
-                                    {
-                                        string newFilePath = filePath.Replace(classicCounterPath, extractPath);
-
-                                        // skip launcher.exe
-                                        if (Path.GetFileName(filePath).Equals("launcher.exe", StringComparison.OrdinalIgnoreCase))
-                                        {
-                                            if (Debug.Enabled())
-                                                Terminal.Debug("Skipping launcher.exe");
-                                            continue;
-                                        }
-
-                                        try
-                                        {
-                                            if (File.Exists(newFilePath))
-                                            {
-                                                File.Delete(newFilePath);
-                                            }
-                                            File.Move(filePath, newFilePath);
-                                        }
-                                        catch (Exception ex)
-                                        {
-                                            Terminal.Warning($"Failed to move file {filePath}: {ex.Message}");
-                                        }
-                                    }
-
-                                    // cleanup temp directory
-                                    try
-                                    {
-                                        Directory.Delete(tempExtractPath, true);
-                                        if (Debug.Enabled())
-                                            Terminal.Debug("Deleted temporary extraction directory");
-                                    }
-                                    catch (Exception ex)
-                                    {
-                                        Terminal.Warning($"Failed to cleanup temporary directory: {ex.Message}");
-                                    }
-
-                                    // cleanup .7z.xxx files
-                                    try
-                                    {
-                                        var splitArchiveFiles = Directory.GetFiles(extractPath, "*.7z.*")
-                                            .Where(f => Path.GetFileName(f).StartsWith("ClassicCounter.7z."));
-
-                                        foreach (var file in splitArchiveFiles)
-                                        {
-                                            try
-                                            {
-                                                File.Delete(file);
-                                                if (Debug.Enabled())
-                                                    Terminal.Debug($"Deleted split archive file: {file}");
-                                            }
-                                            catch (Exception ex)
-                                            {
-                                                Terminal.Warning($"Failed to delete split archive file {file}: {ex.Message}");
-                                            }
-                                        }
-                                    }
-                                    catch (Exception ex)
-                                    {
-                                        Terminal.Warning($"Failed to cleanup some split archive files: {ex.Message}");
-                                    }
-                                }
-                                catch (Exception ex)
-                                {
-                                    Terminal.Warning($"Some files may not have been moved correctly: {ex.Message}");
-                                }
-                            }
-                            else if (Debug.Enabled())
-                            {
-                                Terminal.Debug("ClassicCounter folder exists but is empty, skipping file movement");
-                            }
-                        }
-                        else if (Debug.Enabled())
-                        {
-                            Terminal.Debug("Temp directory or ClassicCounter folder not found, skipping file movement");
-                        }
-
-                        Terminal.Success("Extraction finished! Closing launcher...");
-                        Terminal.Warning("Make sure to run the launcher again if the game doesn't start afterwards.");
-                        ctx.Status = "Done!";
-                        await Task.Delay(10000);
-                        Environment.Exit(0);
-                    }
-
                     ctx.Status = "Extracting game files... Please do not close the launcher.";
                     await ExtractSplitArchive(gameFiles.Files.Select(f => f.File).ToList());
                     Terminal.Success("Game files downloaded and extracted successfully!");
@@ -388,7 +266,6 @@ namespace Wauncher.Utils
                 Environment.Exit(1);
             }
         }
-
         /// <summary>
         /// Downloads and installs the full game from ClassicCounter's CDN.
         /// Designed for use from a GUI — takes progress/status callbacks instead of a StatusContext.
@@ -451,6 +328,39 @@ namespace Wauncher.Utils
 
         // meant only for downloading whole game for now
         // todo maybe make it more modular/allow other functions to use this
+        // FOR DOWNLOAD STATUS
+        public static int dotCount = 0;
+        public static DateTime lastDotUpdate = DateTime.Now;
+        public static string GetDots()
+        {
+            if ((DateTime.Now - lastDotUpdate).TotalMilliseconds > 500)
+            {
+                dotCount = (dotCount + 1) % 4;
+                lastDotUpdate = DateTime.Now;
+            }
+            return "...".Substring(0, dotCount);
+        }
+        public static string GetProgressBar(double percentage)
+        {
+            int blocks = 16;
+            int level = (int)(percentage / (100.0 / (blocks * 3)));
+            string bar = "";
+
+            for (int i = 0; i < blocks; i++)
+            {
+                int blockLevel = Math.Min(3, Math.Max(0, level - (i * 3)));
+                bar += blockLevel switch
+                {
+                    0 => "¦",
+                    1 => "¦",
+                    2 => "¦",
+                    3 => "¦",
+                    _ => "¦"
+                };
+            }
+            return bar;
+        }
+        // DOWNLOAD STATUS OVER
         public static async Task ExtractSplitArchive(List<string> files, Action<double>? onProgress = null)
         {
             if (files == null || files.Count == 0)
@@ -462,7 +372,7 @@ namespace Wauncher.Utils
 
             if (Debug.Enabled())
             {
-                Terminal.Debug($"Starting extraction of split archive:");
+                Terminal.Debug("Starting extraction of split archive:");
                 foreach (var file in files)
                 {
                     Terminal.Debug($"Found part: {file}");
@@ -477,87 +387,17 @@ namespace Wauncher.Utils
             {
                 Directory.CreateDirectory(tempExtractPath);
 
-                await Download7za();
+                if (Debug.Enabled())
+                    Terminal.Debug("Starting in-process extraction to temp directory...");
 
-                string? launcherDir = Path.GetDirectoryName(Environment.ProcessPath);
-                if (launcherDir == null)
-                {
-                    throw new InvalidOperationException("Could not determine launcher directory");
-                }
-
-                string exePath = Path.Combine(launcherDir, "7za.exe");
-
-                using (var process = new Process())
-                {
-                    process.StartInfo = new ProcessStartInfo
-                    {
-                        FileName = exePath,
-                        Arguments = $"x \"{firstFile}\" -o\"{tempExtractPath}\" -y",
-                        UseShellExecute = false,
-                        RedirectStandardOutput = true,
-                        RedirectStandardError = true,
-                        CreateNoWindow = true
-                    };
-
-                    if (Debug.Enabled())
-                        Terminal.Debug($"Starting extraction to temp directory...");
-
-                    process.OutputDataReceived += (_, e) =>
-                    {
-                        if (string.IsNullOrWhiteSpace(e.Data)) return;
-                        var pct = TryParseSevenZipProgress(e.Data);
-                        if (pct.HasValue) onProgress?.Invoke(pct.Value);
-                    };
-
-                    process.Start();
-                    process.BeginOutputReadLine();
-                    await process.WaitForExitAsync();
-
-                    if (process.ExitCode != 0)
-                    {
-                        throw new Exception($"7za extraction failed with exit code: {process.ExitCode}");
-                    }
-                }
+                await ExtractSplitArchiveToDirectory(files, tempExtractPath, onProgress);
 
                 string classicCounterPath = Path.Combine(tempExtractPath, "ClassicCounter");
                 if (Directory.Exists(classicCounterPath))
                 {
                     if (Debug.Enabled())
                         Terminal.Debug("Moving contents from ClassicCounter folder to root directory...");
-
-                    // first, get all files and directories from the ClassicCounter folder
-                    foreach (string dirPath in Directory.GetDirectories(classicCounterPath, "*", SearchOption.AllDirectories))
-                    {
-                        // create directory in root, removing the "ClassicCounter" part from the path
-                        string newDirPath = dirPath.Replace(classicCounterPath, extractPath);
-                        Directory.CreateDirectory(newDirPath);
-                    }
-
-                    foreach (string filePath in Directory.GetFiles(classicCounterPath, "*.*", SearchOption.AllDirectories))
-                    {
-                        string newFilePath = filePath.Replace(classicCounterPath, extractPath);
-
-                        // skip launcher.exe
-                        if (Path.GetFileName(filePath).Equals("launcher.exe", StringComparison.OrdinalIgnoreCase))
-                        {
-                            if (Debug.Enabled())
-                                Terminal.Debug("Skipping launcher.exe");
-                            continue;
-                        }
-
-                        try
-                        {
-                            if (File.Exists(newFilePath))
-                            {
-                                File.Delete(newFilePath);
-                            }
-                            File.Move(filePath, newFilePath);
-                        }
-                        catch (Exception ex)
-                        {
-                            Terminal.Warning($"Failed to move file {filePath}: {ex.Message}");
-                        }
-                    }
+                    await Task.Run(() => MoveExtractedClassicCounterFiles(classicCounterPath, extractPath));
                 }
                 else
                 {
@@ -602,101 +442,6 @@ namespace Wauncher.Utils
             }
         }
 
-        // FOR DOWNLOAD STATUS
-        public static int dotCount = 0;
-        public static DateTime lastDotUpdate = DateTime.Now;
-        public static string GetDots()
-        {
-            if ((DateTime.Now - lastDotUpdate).TotalMilliseconds > 500)
-            {
-                dotCount = (dotCount + 1) % 4;
-                lastDotUpdate = DateTime.Now;
-            }
-            return "...".Substring(0, dotCount);
-        }
-        public static string GetProgressBar(double percentage)
-        {
-            int blocks = 16;
-            int level = (int)(percentage / (100.0 / (blocks * 3)));
-            string bar = "";
-
-            for (int i = 0; i < blocks; i++)
-            {
-                int blockLevel = Math.Min(3, Math.Max(0, level - (i * 3)));
-                bar += blockLevel switch
-                {
-                    0 => "░",
-                    1 => "▒",
-                    2 => "▓",
-                    3 => "█",
-                    _ => "█"
-                };
-            }
-            return bar;
-        }
-        // DOWNLOAD STATUS OVER
-
-
-
-        private static async Task Download7za()
-        {
-            string? launcherDir = Path.GetDirectoryName(Environment.ProcessPath);
-            if (launcherDir == null)
-                throw new InvalidOperationException("Could not determine launcher directory");
-
-            string exePath = Path.Combine(launcherDir, "7za.exe");
-            if (File.Exists(exePath)) return;
-
-            string[] fallbackUrls =
-            {
-                "https://fastdl.classiccounter.cc/7za.exe",
-                "https://ollumcc.github.io/7za.exe"
-            };
-
-            bool downloaded = false;
-            int retryCount = 0;
-
-            while (!downloaded && retryCount < 10)
-            {
-                if (Debug.Enabled())
-                    Terminal.Debug($"7za.exe not found, downloading... (Attempt {retryCount + 1}/10)");
-
-                try
-                {
-                    using var downloader = new DownloadService(_settings);
-                    await downloader.DownloadFileTaskAsync(fallbackUrls[retryCount % fallbackUrls.Length], exePath);
-
-                    if (File.Exists(exePath))
-                    {
-                        downloaded = true;
-                        if (Debug.Enabled())
-                            Terminal.Debug($"Downloaded 7za.exe to: {exePath}");
-                    }
-                    else
-                    {
-                        Terminal.Error($"Failed to download 7za.exe! Trying again... (Attempt {retryCount + 1})");
-                        retryCount++;
-                    }
-                }
-                catch (Exception ex)
-                {
-                    if (Debug.Enabled())
-                        Terminal.Debug($"Failed to download 7za.exe: {ex.Message}");
-                    retryCount++;
-                }
-
-                if (retryCount > 0)
-                    await Task.Delay(1000);
-            }
-
-            if (!downloaded)
-            {
-                Terminal.Error("Couldn't download 7za.exe! Launcher will close in 5 seconds...");
-                await Task.Delay(5000);
-                Environment.Exit(1);
-            }
-        }
-
         private static async Task Extract7z(string archivePath, string outputPath, Action<double>? onProgress = null)
         {
             try
@@ -708,52 +453,8 @@ namespace Wauncher.Utils
                     return;
                 }
 
-                await Download7za();
+                await ExtractArchiveToDirectory(archivePath, Path.GetDirectoryName(outputPath)!, onProgress);
 
-                string? launcherDir = Path.GetDirectoryName(Environment.ProcessPath);
-                if (launcherDir == null)
-                {
-                    throw new InvalidOperationException("Could not determine launcher directory");
-                }
-
-                string exePath = Path.Combine(launcherDir, "7za.exe");
-
-                using (var process = new Process())
-                {
-                    process.StartInfo = new ProcessStartInfo
-                    {
-                        FileName = exePath,
-                        Arguments = $"x \"{archivePath}\" -o\"{Path.GetDirectoryName(outputPath)}\" -y",
-                        UseShellExecute = false,
-                        RedirectStandardOutput = true,
-                        RedirectStandardError = true,
-                        CreateNoWindow = true
-                    };
-
-                    if (Debug.Enabled())
-                        Terminal.Debug($"Starting extraction...");
-
-                    process.OutputDataReceived += (_, e) =>
-                    {
-                        if (string.IsNullOrWhiteSpace(e.Data)) return;
-                        var pct = TryParseSevenZipProgress(e.Data);
-                        if (pct.HasValue) onProgress?.Invoke(pct.Value);
-                    };
-
-                    process.Start();
-                    process.BeginOutputReadLine();
-                    await process.WaitForExitAsync();
-
-                    if (process.ExitCode != 0)
-                    {
-                        throw new Exception($"7za extraction failed with exit code: {process.ExitCode}");
-                    }
-
-                    if (Debug.Enabled())
-                        Terminal.Debug("Extraction completed successfully!");
-                }
-
-                // delete 7z after extract
                 try
                 {
                     File.Delete(archivePath);
@@ -773,14 +474,93 @@ namespace Wauncher.Utils
             }
         }
 
-        private static readonly Regex SevenZipPercentRegex = new(@"\b(\d{1,3})%\b", RegexOptions.Compiled);
-
-        private static double? TryParseSevenZipProgress(string line)
+        private static void MoveExtractedClassicCounterFiles(string classicCounterPath, string extractPath)
         {
-            var match = SevenZipPercentRegex.Match(line);
-            if (!match.Success) return null;
-            if (!double.TryParse(match.Groups[1].Value, out var pct)) return null;
-            return Math.Clamp(pct, 0, 100);
+            foreach (string dirPath in Directory.GetDirectories(classicCounterPath, "*", SearchOption.AllDirectories))
+            {
+                string newDirPath = dirPath.Replace(classicCounterPath, extractPath);
+                Directory.CreateDirectory(newDirPath);
+            }
+
+            foreach (string filePath in Directory.GetFiles(classicCounterPath, "*.*", SearchOption.AllDirectories))
+            {
+                string newFilePath = filePath.Replace(classicCounterPath, extractPath);
+
+                if (Path.GetFileName(filePath).Equals("launcher.exe", StringComparison.OrdinalIgnoreCase))
+                {
+                    if (Debug.Enabled())
+                        Terminal.Debug("Skipping launcher.exe");
+                    continue;
+                }
+
+                try
+                {
+                    if (File.Exists(newFilePath))
+                    {
+                        File.Delete(newFilePath);
+                    }
+                    File.Move(filePath, newFilePath);
+                }
+                catch (Exception ex)
+                {
+                    Terminal.Warning($"Failed to move file {filePath}: {ex.Message}");
+                }
+            }
+        }
+
+        private static async Task ExtractArchiveToDirectory(string archivePath, string outputDirectory, Action<double>? onProgress = null)
+        {
+            await Task.Run(() =>
+            {
+                using var archive = ArchiveFactory.OpenArchive(new FileInfo(archivePath), new ReaderOptions());
+                var entries = archive.Entries.Where(entry => !entry.IsDirectory).ToArray();
+                int totalEntries = entries.Length > 0 ? entries.Length : 1;
+                int completedEntries = 0;
+
+                onProgress?.Invoke(0);
+
+                foreach (var entry in entries)
+                {
+                    entry.WriteToDirectory(outputDirectory, new ExtractionOptions
+                    {
+                        ExtractFullPath = true,
+                        Overwrite = true
+                    });
+
+                    completedEntries++;
+                    onProgress?.Invoke((double)completedEntries / totalEntries * 100.0);
+                }
+            });
+        }
+
+
+        private static async Task ExtractSplitArchiveToDirectory(IEnumerable<string> archiveParts, string outputDirectory, Action<double>? onProgress = null)
+        {
+            await Task.Run(() =>
+            {
+                var parts = archiveParts
+                    .Select(part => new FileInfo(Path.Combine(Directory.GetCurrentDirectory(), part)))
+                    .ToArray();
+
+                using var archive = SevenZipArchive.OpenArchive(parts, new ReaderOptions());
+                var entries = archive.Entries.Where(entry => !entry.IsDirectory).ToArray();
+                int totalEntries = entries.Length > 0 ? entries.Length : 1;
+                int completedEntries = 0;
+
+                onProgress?.Invoke(0);
+
+                foreach (var entry in entries)
+                {
+                    entry.WriteToDirectory(outputDirectory, new ExtractionOptions
+                    {
+                        ExtractFullPath = true,
+                        Overwrite = true
+                    });
+
+                    completedEntries++;
+                    onProgress?.Invoke((double)completedEntries / totalEntries * 100.0);
+                }
+            });
         }
 
         public static void Cleanup7zFiles()
@@ -804,27 +584,6 @@ namespace Wauncher.Utils
                             Terminal.Debug($"Failed to delete .7z file {file}: {ex.Message}");
                     }
                 }
-
-                // Delete 7za.exe if it exists
-                string? launcherDir = Path.GetDirectoryName(Environment.ProcessPath);
-                if (launcherDir != null)
-                {
-                    string sevenZaPath = Path.Combine(launcherDir, "7za.exe");
-                    if (File.Exists(sevenZaPath))
-                    {
-                        try
-                        {
-                            File.Delete(sevenZaPath);
-                            if (Debug.Enabled())
-                                Terminal.Debug("Deleted 7za.exe");
-                        }
-                        catch (Exception ex)
-                        {
-                            if (Debug.Enabled())
-                                Terminal.Debug($"Failed to delete 7za.exe: {ex.Message}");
-                        }
-                    }
-                }
             }
             catch (Exception ex)
             {
@@ -834,4 +593,6 @@ namespace Wauncher.Utils
         }
     }
 }
+
+
 

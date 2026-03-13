@@ -18,6 +18,13 @@
     Background="Transparent"
     mc:Ignorable="d">
 
+    <Window.Resources>
+        <SolidColorBrush x:Key="InfoOwnerBrush" Color="#E74C3C" />
+        <SolidColorBrush x:Key="InfoDevBrush" Color="#6CB6FF" />
+        <SolidColorBrush x:Key="InfoContributorBrush" Color="#F1C40F" />
+        <SolidColorBrush x:Key="InfoModeratorBrush" Color="#9B59B6" />
+    </Window.Resources>
+
     <Window.Styles>
         <Style Selector="Button.closeBtn">
             <Setter Property="Padding" Value="0" />
@@ -153,20 +160,37 @@
                         FontSize="13"
                         LineHeight="20"
                         Foreground="{DynamicResource AppBodyText}"
-                        TextWrapping="Wrap"
-                        Text="Special thanks to h4rmy, heapy, and eddies for maintaining this project." />
+                        TextWrapping="Wrap">
+                        <Run Text="Special thanks to " />
+                        <Run Foreground="{StaticResource InfoOwnerBrush}" Text="h4rmy" />
+                        <Run Text=", " />
+                        <Run Foreground="{StaticResource InfoDevBrush}" Text="heapy" />
+                        <Run Text=", " />
+                        <Run Foreground="{StaticResource InfoDevBrush}" Text="Grizzle" />
+                        <Run Text=", and " />
+                        <Run Foreground="{StaticResource InfoOwnerBrush}" Text="eddies" />
+                        <Run Text=" for maintaining this project." />
+                    </TextBlock>
                     <TextBlock
                         FontSize="13"
                         LineHeight="20"
                         Foreground="{DynamicResource AppBodyText}"
-                        TextWrapping="Wrap"
-                        Text="Original launcher coded by heapy." />
+                        TextWrapping="Wrap">
+                        <Run Text="Original launcher coded by " />
+                        <Run Foreground="{StaticResource InfoDevBrush}" Text="heapy" />
+                        <Run Text="." />
+                    </TextBlock>
                     <TextBlock
                         FontSize="13"
                         LineHeight="20"
                         Foreground="{DynamicResource AppBodyText}"
-                        TextWrapping="Wrap"
-                        Text="Wauncher coded by koolych and Ways." />
+                        TextWrapping="Wrap">
+                        <Run Text="Wauncher coded by " />
+                        <Run Foreground="{StaticResource InfoContributorBrush}" Text="koolych" />
+                        <Run Text=" and " />
+                        <Run Foreground="{StaticResource InfoModeratorBrush}" Text="Ways" />
+                        <Run Text="." />
+                    </TextBlock>
 
                     <TextBlock
                         FontSize="13"
@@ -180,8 +204,11 @@
                         Margin="0,2,0,8"
                         FontStyle="Italic"
                         Foreground="{DynamicResource AppBodyText}"
-                        TextWrapping="Wrap"
-                        Text="In loving memory of h4rmy." />
+                        TextWrapping="Wrap">
+                        <Run Text="In loving memory of " />
+                        <Run Foreground="{StaticResource InfoOwnerBrush}" Text="h4rmy" />
+                        <Run Text="." />
+                    </TextBlock>
                 </StackPanel>
             </ScrollViewer>
 

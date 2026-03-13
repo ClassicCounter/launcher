@@ -53,6 +53,7 @@
     <PackageReference Include="Gameloop.Vdf" Version="0.6.2" />
     <PackageReference Include="Refit" Version="8.0.0" />
     <PackageReference Include="Refit.Newtonsoft.Json" Version="8.0.0" />
+    <PackageReference Include="SharpCompress" Version="0.47.0" />
     <PackageReference Include="Spectre.Console" Version="0.49.1" />
     <PackageReference Include="Svg.Controls.Skia.Avalonia" Version="11.3.0.4" />
   </ItemGroup>

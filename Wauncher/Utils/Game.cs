@@ -1,4 +1,4 @@
-﻿using CSGSI;
+using CSGSI;
 using CSGSI.Nodes;
 using System.Diagnostics;
 using System.Net.NetworkInformation;
@@ -20,13 +20,13 @@ namespace Wauncher.Utils
         {
             List<string> arguments = Argument.GenerateGameArguments();
             if (arguments.Count > 0) Terminal.Print($"Arguments: {string.Join(" ", arguments)}");
-            var settings = ViewModels.SettingsWindowViewModel.LoadGlobal();
 
+            var settings = ViewModels.SettingsWindowViewModel.LoadGlobal();
             string directory = Directory.GetCurrentDirectory();
             Terminal.Print($"Directory: {directory}");
 
             string gameStatePath = $"{directory}/csgo/cfg/gamestate_integration_cc.cfg";
-            
+
             if (settings.DiscordRpc)
             {
                 _port = GeneratePort();
@@ -35,38 +35,43 @@ namespace Wauncher.Utils
                 _listener.NewGameState += OnNewGameState;
                 _listener.Start();
 
-                try {
-                await File.WriteAllTextAsync(gameStatePath,
-@"""ClassicCounter""
+                try
+                {
+                    string gameStateContents = $$"""
+"ClassicCounter"
 {
-	""uri""                         ""http://localhost:" + _port + @"""
-	""timeout""                     ""5.0""
-	""auth""
+	"uri"                         "http://localhost:{{_port}}"
+	"timeout"                     "5.0"
+	"auth"
 	{
-		""token""				    """ + $"ClassicCounter {Version.Current}" + @"""
+		"token"                    "ClassicCounter {{Version.Current}}"
 	}
-	""data""
+	"data"
 	{
-		""provider""              	""1""
-		""map""                   	""1""
-		""round""                 	""1""
-		""player_id""				""1""
-		""player_weapons""			""1""
-		""player_match_stats""		""1""
-		""player_state""			""1""
-		""allplayers_id""			""1""
-		""allplayers_state""		""1""
-		""allplayers_match_stats""	""1""
+		"provider"                 "1"
+		"map"                      "1"
+		"round"                    "1"
+		"player_id"                "1"
+		"player_weapons"           "1"
+		"player_match_stats"       "1"
+		"player_state"             "1"
+		"allplayers_id"            "1"
+		"allplayers_state"         "1"
+		"allplayers_match_stats"   "1"
 	}
-}"
-                );
+}
+""";
+                    await File.WriteAllTextAsync(gameStatePath, gameStateContents);
                 }
                 catch
                 {
-                    Terminal.Error($"(!) \"/csgo/cfg/gamestate_integration_cc.cfg\" not found in the current directory!");
+                    Terminal.Error("(!) \"/csgo/cfg/gamestate_integration_cc.cfg\" not found in the current directory!");
                 }
             }
-            else if (File.Exists(gameStatePath)) File.Delete(gameStatePath);
+            else if (File.Exists(gameStatePath))
+            {
+                File.Delete(gameStatePath);
+            }
 
             _process = new Process();
 
@@ -82,7 +87,6 @@ namespace Wauncher.Utils
             }
 
             return _process.Start();
-
         }
 
         public static async Task Monitor()
@@ -93,27 +97,37 @@ namespace Wauncher.Utils
             {
                 if (_node != null && _node.Name.Trim().Length != 0)
                 {
-                    if (_map != _node.Name)
+                    bool isMainMenu = string.Equals(_node.Name, "main_menu", StringComparison.OrdinalIgnoreCase);
+                    if (!isMainMenu)
                     {
-                        _map = _node.Name;
-                        _scoreCT = _node.TeamCT.Score;
-                        _scoreT = _node.TeamT.Score;
+                        if (_map != _node.Name)
+                        {
+                            _map = _node.Name;
+                            _scoreCT = _node.TeamCT.Score;
+                            _scoreT = _node.TeamT.Score;
 
-                        Discord.SetDetails(_map);
-                        Discord.SetState($"Score → {_scoreCT}:{_scoreT}");
-                        Discord.SetTimestamp(DateTime.UtcNow);
-                        Discord.SetLargeArtwork($"https://assets.classiccounter.cc/maps/default/{_map}.jpg");
-                        Discord.SetSmallArtwork("icon");
-                        Discord.Update();
+                            Discord.SetDetails(_map);
+                            Discord.SetState($"Score → {_scoreCT}:{_scoreT}");
+                            Discord.SetTimestamp(DateTime.UtcNow);
+                            Discord.SetLargeArtwork($"https://assets.classiccounter.cc/maps/default/{_map}.jpg");
+                            Discord.SetSmallArtwork("icon");
+                            Discord.Update();
+                        }
+
+                        if (_scoreCT != _node.TeamCT.Score || _scoreT != _node.TeamT.Score)
+                        {
+                            _scoreCT = _node.TeamCT.Score;
+                            _scoreT = _node.TeamT.Score;
+
+                            Discord.SetState($"Score → {_scoreCT}:{_scoreT}");
+                            Discord.Update();
+                        }
                     }
-
-                    if (_scoreCT != _node.TeamCT.Score || _scoreT != _node.TeamT.Score)
+                    else
                     {
-                        _scoreCT = _node.TeamCT.Score;
-                        _scoreT = _node.TeamT.Score;
-
-                        Discord.SetState($"Score → {_scoreCT}:{_scoreT}");
-                        Discord.Update();
+                        _map = "main_menu";
+                        _scoreCT = 0;
+                        _scoreT = 0;
                     }
                 }
                 else if (_map != "main_menu")
@@ -135,6 +149,10 @@ namespace Wauncher.Utils
 
             _listener?.Stop();
             _listener = null;
+            _node = null;
+            _map = "main_menu";
+            _scoreCT = 0;
+            _scoreT = 0;
         }
 
         private static int GeneratePort()
@@ -153,4 +171,3 @@ namespace Wauncher.Utils
         public static void OnNewGameState(GameState gs) => _node = gs.Map;
     }
 }
-

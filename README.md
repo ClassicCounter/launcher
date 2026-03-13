@@ -25,6 +25,9 @@
 - `Launch Options` lets you pass extra game launch flags such as `-high` or `+fps_max 300`.
 - `Verify Game Files` checks your installation and repairs any missing or damaged game files automatically.
 
+## Known Issues
+- Friends list does not currently show accurate `Online` or `Offline` status.
+
 ## Build / Publish
 - Build: `dotnet build Wauncher/Wauncher.csproj -c Release`
 - Publish: `dotnet publish Wauncher/Wauncher.csproj -c Release -r win-x64 --self-contained false`

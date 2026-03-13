@@ -1,6 +1,7 @@
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
+using System.Collections.Concurrent;
 
 namespace Wauncher.Utils
 {
@@ -14,12 +15,20 @@ namespace Wauncher.Utils
 
     public static class ServerQuery
     {
+        private sealed class CachedHostEntry
+        {
+            public IPAddress[] Addresses { get; init; } = Array.Empty<IPAddress>();
+            public DateTime ExpiresAtUtc { get; init; }
+        }
+
         private static readonly byte[] A2S_INFO_REQUEST =
         {
             0xFF, 0xFF, 0xFF, 0xFF, 0x54,
             0x53, 0x6F, 0x75, 0x72, 0x63, 0x65, 0x20, 0x45, 0x6E, 0x67,
             0x69, 0x6E, 0x65, 0x20, 0x51, 0x75, 0x65, 0x72, 0x79, 0x00
         };
+        private static readonly ConcurrentDictionary<string, CachedHostEntry> _dnsCache = new();
+        private static readonly TimeSpan DnsCacheDuration = TimeSpan.FromMinutes(5);
 
         public static async Task<ServerQueryResult> QueryAsync(string ipPort, int timeoutMs = 2000)
         {
@@ -30,7 +39,7 @@ namespace Wauncher.Utils
                 string host = parts[0];
                 int port    = int.Parse(parts[1]);
 
-                var addresses = await Dns.GetHostAddressesAsync(host);
+                var addresses = await GetHostAddressesCachedAsync(host);
                 if (addresses.Length == 0) return result;
 
                 var endpoint = new IPEndPoint(addresses[0], port);
@@ -107,6 +116,24 @@ namespace Wauncher.Utils
                 });
 
             await Task.WhenAll(tasks);
+        }
+
+        private static async Task<IPAddress[]> GetHostAddressesCachedAsync(string host)
+        {
+            if (_dnsCache.TryGetValue(host, out var cached) &&
+                cached.ExpiresAtUtc > DateTime.UtcNow &&
+                cached.Addresses.Length > 0)
+            {
+                return cached.Addresses;
+            }
+
+            var addresses = await Dns.GetHostAddressesAsync(host);
+            _dnsCache[host] = new CachedHostEntry
+            {
+                Addresses = addresses,
+                ExpiresAtUtc = DateTime.UtcNow.Add(DnsCacheDuration)
+            };
+            return addresses;
         }
     }
 }

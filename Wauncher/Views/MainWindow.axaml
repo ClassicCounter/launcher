@@ -286,6 +286,11 @@
 		<Style Selector="Button.friendRowBtn:pointerover">
 			<Setter Property="Background" Value="#14FFFFFF" />
 		</Style>
+		<Style Selector="MenuItem.compactFlyoutItem">
+			<Setter Property="FontSize" Value="12.5" />
+			<Setter Property="Padding" Value="9,5" />
+			<Setter Property="MinHeight" Value="0" />
+		</Style>
 
 		<!-- Selected label default (no server) -->
 		<Style Selector="TextBlock.selectedlabel">
@@ -547,7 +552,7 @@
 
 					<!-- Profile left + buttons right -->
 					<StackPanel Grid.Row="1" HorizontalAlignment="Left" VerticalAlignment="Center" Orientation="Horizontal" Spacing="10">
-						<Border Width="36" Height="36" Background="{DynamicResource AppInputBg}" ClipToBounds="True" CornerRadius="18">
+						<Border Width="40" Height="40" Background="{DynamicResource AppInputBg}" ClipToBounds="True" CornerRadius="20">
 							<Image asyncImageLoader:ImageLoader.Source="{Binding ProfilePicture}" Stretch="UniformToFill" />
 						</Border>
 						<StackPanel VerticalAlignment="Center" Spacing="2">
@@ -591,8 +596,8 @@
 								<Button x:Name="ArrowButton" Grid.Column="2" Classes="launchBtn" Classes.updating="{Binding IsUpdatingOrInstalling}" HorizontalContentAlignment="Center" VerticalContentAlignment="Center">
 								<Button.Flyout>
 									<MenuFlyout Placement="Top">
-										<MenuItem Header="Verify Game Files" Click="VerifyGameFiles_Click" />
-										<MenuItem Header="Open Game Folder" Click="OpenGameFolder_Click" />
+										<MenuItem Classes="compactFlyoutItem" Header="Verify Game Files" Click="VerifyGameFiles_Click" />
+										<MenuItem Classes="compactFlyoutItem" Header="Open Game Folder" Click="OpenGameFolder_Click" />
 									</MenuFlyout>
 								</Button.Flyout>
 									<Path Width="8" Height="5" Data="M0,5 L4,0 L8,5" Stroke="White" StrokeThickness="1.5" />
@@ -699,8 +704,8 @@
 										<Button Grid.Column="0" Grid.ColumnSpan="3" Classes="friendRowBtn">
 											<Button.Flyout>
 												<MenuFlyout Placement="Top">
-													<MenuItem Header="Join Server" Tag="{Binding}" Click="JoinFriendServer_Click" IsVisible="{Binding CanQuickJoin}" />
-													<MenuItem Header="View eddies.cc Profile" Tag="{Binding}" Click="ViewFriendProfile_Click" />
+													<MenuItem Classes="compactFlyoutItem" Header="Join Server" Tag="{Binding}" Click="JoinFriendServer_Click" IsVisible="{Binding CanQuickJoin}" />
+													<MenuItem Classes="compactFlyoutItem" Header="View eddies.cc Profile" Tag="{Binding}" Click="ViewFriendProfile_Click" />
 												</MenuFlyout>
 											</Button.Flyout>
 											<Grid ColumnDefinitions="56,*,12" VerticalAlignment="Center" Margin="6,0">

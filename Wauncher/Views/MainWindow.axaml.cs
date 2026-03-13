@@ -4,6 +4,7 @@ using System.Linq;
 using System.Net.NetworkInformation;
 using System.Runtime.InteropServices;
 using System.Diagnostics;
+using System.Security.Cryptography;
 using System.Text.Json;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -16,6 +17,7 @@ using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using Avalonia.Platform;
 using Avalonia.Threading;
+using SkiaSharp;
 using Wauncher.Utils;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -40,9 +42,14 @@ namespace Wauncher.Views
 
         // â”€â”€ Image carousel (center content area) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
         private Image[] _carouselImages = Array.Empty<Image>();
+        private List<string> _carouselImageUrls = new();
         private DispatcherTimer? _carouselTimer;
         private int _currentCarouselIndex = 0;
+        private int _currentCarouselSlot = 0;
+        private int _carouselRotateInProgress = 0;
         private const int CarouselRotationIntervalSeconds = 5;
+        private const int CarouselMaxWidth = 1280;
+        private const int CarouselMaxHeight = 720;
         private readonly List<System.Threading.CancellationTokenSource?> _zoomCts = new();
         private static string WauncherDirectory =>
             Path.GetDirectoryName(Environment.ProcessPath ?? string.Empty) ?? Directory.GetCurrentDirectory();
@@ -102,6 +109,13 @@ namespace Wauncher.Views
                 "Wauncher",
                 "cache",
                 "patchnotes.md");
+        private static string CarouselCacheDir =>
+            Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+                "ClassicCounter",
+                "Wauncher",
+                "cache",
+                "carousel");
 
         private async Task SetupCarouselAsync()
         {
@@ -116,11 +130,11 @@ namespace Wauncher.Views
                     return;
 
                 bool hasInternet = NetworkInterface.GetIsNetworkAvailable();
-                var bitmaps = hasInternet
-                    ? await LoadCarouselFromGitHubAsync()
+                var urls = hasInternet
+                    ? await LoadCarouselUrlsFromGitHubAsync()
                     : null;
 
-                if (bitmaps == null || bitmaps.Count == 0)
+                if (urls == null || urls.Count == 0)
                 {
                     if (offlinePanel != null)
                         offlinePanel.IsVisible = true;
@@ -136,7 +150,8 @@ namespace Wauncher.Views
                 if (offlinePanel != null)
                     offlinePanel.IsVisible = false;
 
-                _carouselImages = CreateCarouselImages(bitmaps);
+                _carouselImageUrls = urls;
+                _carouselImages = CreateCarouselImages(2);
                 EnsureZoomSlots(_carouselImages.Length);
 
                 foreach (var existingImage in carouselContainer.Children.OfType<Image>().ToList())
@@ -157,11 +172,13 @@ namespace Wauncher.Views
                 }
 
                 _currentCarouselIndex = 0;
-                _carouselImages[0].Opacity = 1.0;
-                StartZoomOut(_carouselImages[0], 0);
+                _currentCarouselSlot = 0;
+                await SetCarouselImageAsync(_carouselImages[_currentCarouselSlot], _carouselImageUrls[_currentCarouselIndex]);
+                _carouselImages[_currentCarouselSlot].Opacity = 1.0;
+                StartZoomOut(_carouselImages[_currentCarouselSlot], _currentCarouselSlot);
 
                 _carouselTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(CarouselRotationIntervalSeconds) };
-                _carouselTimer.Tick += (_, _) => RotateCarousel();
+                _carouselTimer.Tick += async (_, _) => await RotateCarouselAsync();
                 _carouselTimer.Start();
             }
             catch (Exception ex)
@@ -170,7 +187,7 @@ namespace Wauncher.Views
             }
         }
 
-        private async Task<List<Bitmap>?> LoadCarouselFromGitHubAsync()
+        private async Task<List<string>?> LoadCarouselUrlsFromGitHubAsync()
         {
             try
             {
@@ -195,18 +212,7 @@ namespace Wauncher.Views
                 if (urls.Count == 0)
                     return null;
 
-                var bitmaps = new List<Bitmap>();
-                foreach (var url in urls)
-                {
-                    try
-                    {
-                        var bytes = await _http.GetByteArrayAsync(url);
-                        using var ms = new MemoryStream(bytes);
-                        bitmaps.Add(new Bitmap(ms));
-                    }
-                    catch { }
-                }
-                return bitmaps.Count > 0 ? bitmaps : null;
+                return urls;
             }
             catch { return null; }
         }
@@ -231,14 +237,13 @@ namespace Wauncher.Views
             public string? DownloadUrl { get; set; }
         }
 
-        private static Image[] CreateCarouselImages(IReadOnlyList<Bitmap> bitmaps)
+        private static Image[] CreateCarouselImages(int count)
         {
-            var images = new Image[bitmaps.Count];
-            for (int i = 0; i < bitmaps.Count; i++)
+            var images = new Image[count];
+            for (int i = 0; i < count; i++)
             {
                 images[i] = new Image
                 {
-                    Source = bitmaps[i],
                     Stretch = Stretch.UniformToFill,
                     Opacity = 0.0,
                     Transitions = new Transitions
@@ -262,20 +267,33 @@ namespace Wauncher.Views
                 _zoomCts.Add(null);
         }
 
-        private void RotateCarousel()
+        private async Task RotateCarouselAsync()
         {
-            if (_carouselImages.Length == 0)
+            if (_carouselImages.Length < 2 || _carouselImageUrls.Count < 2)
                 return;
 
-            // Fade out current image (zoom continues through the crossfade)
-            _carouselImages[_currentCarouselIndex].Opacity = 0.0;
+            if (Interlocked.Exchange(ref _carouselRotateInProgress, 1) == 1)
+                return;
 
-            // Move to next image
-            _currentCarouselIndex = (_currentCarouselIndex + 1) % _carouselImages.Length;
+            try
+            {
+                int nextIndex = (_currentCarouselIndex + 1) % _carouselImageUrls.Count;
+                int nextSlot = (_currentCarouselSlot + 1) % _carouselImages.Length;
+                int currentSlot = _currentCarouselSlot;
 
-            // Fade in next image and start fresh zoom-out
-            StartZoomOut(_carouselImages[_currentCarouselIndex], _currentCarouselIndex);
-            _carouselImages[_currentCarouselIndex].Opacity = 1.0;
+                await SetCarouselImageAsync(_carouselImages[nextSlot], _carouselImageUrls[nextIndex]);
+
+                _carouselImages[currentSlot].Opacity = 0.0;
+                StartZoomOut(_carouselImages[nextSlot], nextSlot);
+                _carouselImages[nextSlot].Opacity = 1.0;
+
+                _currentCarouselIndex = nextIndex;
+                _currentCarouselSlot = nextSlot;
+            }
+            finally
+            {
+                Interlocked.Exchange(ref _carouselRotateInProgress, 0);
+            }
         }
 
         private void TeardownCarousel()
@@ -283,7 +301,126 @@ namespace Wauncher.Views
             _carouselTimer?.Stop();
             _carouselTimer = null;
             for (int i = 0; i < _zoomCts.Count; i++) StopZoom(i);
+            foreach (var image in _carouselImages)
+            {
+                if (image.Source is IDisposable disposable)
+                    disposable.Dispose();
+
+                image.Source = null;
+            }
+            _carouselImageUrls.Clear();
             _carouselImages = Array.Empty<Image>();
+            _currentCarouselIndex = 0;
+            _currentCarouselSlot = 0;
+            Interlocked.Exchange(ref _carouselRotateInProgress, 0);
+        }
+
+        private async Task SetCarouselImageAsync(Image image, string url)
+        {
+            var nextBitmap = await LoadCarouselBitmapAsync(url);
+            if (nextBitmap == null)
+                return;
+
+            if (image.Source is IDisposable disposable)
+                disposable.Dispose();
+
+            image.Source = nextBitmap;
+        }
+
+        private static async Task<Bitmap?> LoadCarouselBitmapAsync(string url)
+        {
+            try
+            {
+                var cachedBytes = await TryGetCachedCarouselBytesAsync(url);
+                var bytes = cachedBytes ?? await _http.GetByteArrayAsync(url);
+                var resized = cachedBytes ?? TryResizeCarouselBytes(bytes) ?? bytes;
+
+                if (cachedBytes == null)
+                    await TryWriteCarouselCacheAsync(url, resized);
+
+                using var ms = new MemoryStream(resized);
+                return new Bitmap(ms);
+            }
+            catch
+            {
+                return null;
+            }
+        }
+
+        private static async Task<byte[]?> TryGetCachedCarouselBytesAsync(string url)
+        {
+            try
+            {
+                var path = GetCarouselCachePath(url);
+                if (!File.Exists(path))
+                    return null;
+
+                return await File.ReadAllBytesAsync(path);
+            }
+            catch
+            {
+                return null;
+            }
+        }
+
+        private static async Task TryWriteCarouselCacheAsync(string url, byte[] bytes)
+        {
+            try
+            {
+                Directory.CreateDirectory(CarouselCacheDir);
+                var path = GetCarouselCachePath(url);
+                var tempPath = path + ".tmp";
+                await File.WriteAllBytesAsync(tempPath, bytes);
+                File.Move(tempPath, path, overwrite: true);
+            }
+            catch
+            {
+                // Best-effort cache only.
+            }
+        }
+
+        private static string GetCarouselCachePath(string url)
+        {
+            var hash = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(url))).ToLowerInvariant();
+            return Path.Combine(CarouselCacheDir, $"{hash}.jpg");
+        }
+
+        private static byte[]? TryResizeCarouselBytes(byte[] bytes)
+        {
+            try
+            {
+                using var sourceBitmap = SKBitmap.Decode(bytes);
+                if (sourceBitmap == null)
+                    return null;
+
+                if (sourceBitmap.Width <= CarouselMaxWidth &&
+                    sourceBitmap.Height <= CarouselMaxHeight)
+                {
+                    return null;
+                }
+
+                var scale = Math.Min(
+                    (double)CarouselMaxWidth / sourceBitmap.Width,
+                    (double)CarouselMaxHeight / sourceBitmap.Height);
+
+                int targetWidth = Math.Max(1, (int)Math.Round(sourceBitmap.Width * scale));
+                int targetHeight = Math.Max(1, (int)Math.Round(sourceBitmap.Height * scale));
+
+                using var resizedBitmap = sourceBitmap.Resize(
+                    new SKImageInfo(targetWidth, targetHeight),
+                    SKFilterQuality.Medium);
+
+                if (resizedBitmap == null)
+                    return null;
+
+                using var image = SKImage.FromBitmap(resizedBitmap);
+                using var data = image.Encode(SKEncodedImageFormat.Jpeg, 88);
+                return data?.ToArray();
+            }
+            catch
+            {
+                return null;
+            }
         }
 
         private void StartZoomOut(Image img, int slot)
