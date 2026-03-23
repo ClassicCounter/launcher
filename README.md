@@ -13,7 +13,7 @@
 [![MIT License][license-shield]][license-url]
 
 > [!IMPORTANT]
-> .NET Runtime 8 is required to run the Wauncher. Download it from [**here**](https://dotnet.microsoft.com/en-us/download/dotnet/thank-you/runtime-8.0.11-windows-x64-installer).
+> .NET Desktop Runtime 8 is required to run the Wauncher. Download it from [**here**](https://dotnet.microsoft.com/en-us/download/dotnet/thank-you/runtime-desktop-8.0.24-windows-x64-installer).
 
 > [!IMPORTANT]
 > Wauncher is still a work in progress. Some features are unfinished and you may run into bugs or changes between builds.
@@ -21,9 +21,18 @@
 ## Settings
 - `Minimize to System Tray` keeps the launcher running in the background when in-game.
 - `Skip Updates` lets you launch the game even when Wauncher detects available updates.
+- `Add ClassicCounter to Steam` adds Wauncher to Steam as a non-Steam game and applies Steam artwork automatically.
+- `Disable Carousel` turns off the rotating hero images to lower memory usage.
+- `Disable Hardware Acceleration` switches Wauncher to software rendering and restarts the launcher automatically.
 - `Discord RPC` controls whether Wauncher updates your Discord presence. In some cases, Discord may still show "Counter-Strike: Global Offensive" even when RPC is disabled.
 - `Launch Options` lets you pass extra game launch flags such as `-high` or `+fps_max 300`.
 - `Verify Game Files` checks your installation and repairs any missing or damaged game files automatically.
+
+## Server Browser
+- Server information is fetched from the live ClassicCounter server list repository:
+  `https://github.com/edd13s/ClassicCounter-Servers`
+- Server list changes can take a few minutes to appear in Wauncher.
+- The server browser now supports scrolling when the list exceeds the visible limit.
 
 ## Build / Publish
 - Build: `dotnet build Wauncher/Wauncher.csproj -c Release`
