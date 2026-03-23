@@ -6,6 +6,7 @@ namespace Wauncher.ViewModels
     {
         // ── Static events — fire whenever these settings change on ANY instance ──
         public static event Action<bool>?   DiscordRpcChanged;
+        public static event Action<bool>?   DisableCarouselChanged;
 
         [ObservableProperty]
         private bool _minimizeToTray = true;
@@ -15,6 +16,12 @@ namespace Wauncher.ViewModels
 
         [ObservableProperty]
         private bool _skipUpdates = false;
+
+        [ObservableProperty]
+        private bool _disableCarousel = false;
+
+        [ObservableProperty]
+        private bool _disableHardwareAcceleration = false;
 
         [ObservableProperty]
         private string _launchOptions = string.Empty;
@@ -27,6 +34,12 @@ namespace Wauncher.ViewModels
         partial void OnMinimizeToTrayChanged(bool value) => Save();
         partial void OnSkipUpdatesChanged(bool value) => Save();
         partial void OnLaunchOptionsChanged(string value) => Save();
+        partial void OnDisableCarouselChanged(bool value)
+        {
+            Save();
+            DisableCarouselChanged?.Invoke(value);
+        }
+        partial void OnDisableHardwareAccelerationChanged(bool value) => Save();
 
         partial void OnDiscordRpcChanged(bool value)
         {
@@ -55,6 +68,8 @@ namespace Wauncher.ViewModels
                         case "MinimizeToTray": MinimizeToTray = value.Trim() == "true"; break;
                         case "DiscordRpc":     DiscordRpc     = value.Trim() == "true"; break;
                         case "SkipUpdates":    SkipUpdates    = value.Trim() == "true"; break;
+                        case "DisableCarousel": DisableCarousel = value.Trim() == "true"; break;
+                        case "DisableHardwareAcceleration": DisableHardwareAcceleration = value.Trim() == "true"; break;
                         case "LaunchOptions":  LaunchOptions  = value; break;
                     }
                 }
@@ -71,6 +86,8 @@ namespace Wauncher.ViewModels
                     $"MinimizeToTray={MinimizeToTray.ToString().ToLower()}",
                     $"DiscordRpc={DiscordRpc.ToString().ToLower()}",
                     $"SkipUpdates={SkipUpdates.ToString().ToLower()}",
+                    $"DisableCarousel={DisableCarousel.ToString().ToLower()}",
+                    $"DisableHardwareAcceleration={DisableHardwareAcceleration.ToString().ToLower()}",
                     $"LaunchOptions={LaunchOptions}",
                 });
             }

@@ -1,0 +1,104 @@
+<UserControl
+    x:Class="Wauncher.Views.Controls.UpdateBarControl"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:asyncImageLoader="clr-namespace:AsyncImageLoader;assembly=AsyncImageLoader.Avalonia"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:vm="using:Wauncher.ViewModels"
+    xmlns:svg="clr-namespace:Avalonia.Svg.Controls;assembly=Avalonia.Svg.Skia"
+    mc:Ignorable="d"
+    d:DesignWidth="1024"
+    d:DesignHeight="80"
+    x:DataType="vm:MainWindowViewModel">
+
+    <Border
+        Background="{DynamicResource AppRightPanelBg}"
+        BorderBrush="{DynamicResource AppDivider}"
+        BorderThickness="0,1,0,0"
+        Padding="14,10">
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+
+            <!-- Update status row -->
+            <StackPanel
+                Grid.Row="0"
+                IsVisible="{Binding ShowUpdateStatus}"
+                Spacing="3"
+                Margin="0,0,4,8"
+                HorizontalAlignment="Right"
+                Width="260">
+                <TextBlock IsVisible="{Binding UpdateService.IsCheckingUpdates}" FontSize="10" Foreground="{DynamicResource AppSectionLabel}" FontStyle="Italic" Text="Checking for updates..." HorizontalAlignment="Center" />
+                <TextBlock
+                    IsVisible="{Binding ShowUpdateStatus}"
+                    FontSize="10"
+                    Foreground="{DynamicResource AppBodyText}"
+                    Text="{Binding UpdateService.UpdateStatusFile}"
+                    TextTrimming="CharacterEllipsis"
+                    HorizontalAlignment="Center"
+                    ToolTip.Tip="{Binding UpdateService.UpdateStatusFile}" />
+                <ProgressBar IsVisible="{Binding IsUpdatingOrInstalling}" Height="4" CornerRadius="2" Minimum="0" Maximum="100" Value="{Binding UpdateService.UpdateProgress}" IsIndeterminate="{Binding UpdateService.UpdateIndeterminate}" Foreground="#FFC107" Background="{DynamicResource AppDivider}" />
+                <TextBlock IsVisible="{Binding IsUpdatingOrInstalling}" FontSize="10" Foreground="#77FFFFFF" Text="{Binding UpdateService.UpdateStatusSpeed}" HorizontalAlignment="Center" />
+            </StackPanel>
+
+            <!-- Profile left + buttons right -->
+            <StackPanel Grid.Row="1" HorizontalAlignment="Left" VerticalAlignment="Center" Orientation="Horizontal" Spacing="10">
+                <Border Width="40" Height="40" Background="{DynamicResource AppInputBg}" ClipToBounds="True" CornerRadius="20">
+                    <Image asyncImageLoader:ImageLoader.Source="{Binding ProfilePicture}" Stretch="UniformToFill" />
+                </Border>
+                <StackPanel VerticalAlignment="Center" Spacing="2">
+                    <TextBlock FontSize="13" FontWeight="Bold" Foreground="{DynamicResource AppPrimaryText}" Text="{Binding UsernameGreeting}" />
+                    <StackPanel Orientation="Horizontal" Spacing="5">
+                        <Ellipse Width="6" Height="6" VerticalAlignment="Center" Fill="{Binding WhitelistDotColor}" />
+                        <TextBlock FontSize="11" Foreground="{DynamicResource AppBulletText}" Text="{Binding WhitelistText}" />
+                    </StackPanel>
+                    <TextBlock FontSize="11" Classes="selectedlabel" Classes.noserver="{Binding IsNoServerSelected}" Classes.serverselected="{Binding IsServerSelected}" Text="{Binding SelectedLabel}" />
+                </StackPanel>
+            </StackPanel>
+
+            <StackPanel Grid.Row="1" HorizontalAlignment="Right" VerticalAlignment="Center" Orientation="Horizontal" Spacing="8">
+                <!-- Info -->
+                <Button Classes="iconBtn" Width="36" Height="36" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Click="Button_Info" CornerRadius="18">
+                    <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="3">
+                        <Ellipse Width="3" Height="3" Fill="White" HorizontalAlignment="Center" />
+                        <Rectangle Width="3" Height="7" Fill="White" HorizontalAlignment="Center" RadiusX="1" RadiusY="1" />
+                    </StackPanel>
+                </Button>
+                <!-- Settings -->
+                <Button Classes="iconBtn" Width="36" Height="36" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Click="Button_Settings" CornerRadius="18">
+                    <Image Width="18" Height="18" Source="avares://Wauncher/Assets/settings.png" />
+                </Button>
+                <!-- Server selector -->
+                <Button Classes="iconBtn serverSelectorBtn" Width="36" Height="36" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Command="{Binding ToggleServerDropdownCommand}" CornerRadius="18" IsEnabled="{Binding IsOnlineMode}" ToolTip.Tip="Select Server">
+                    <Image Width="18" Height="18" Source="avares://Wauncher/Assets/server.png" />
+                </Button>
+                <!-- Launch button -->
+                <Border CornerRadius="5" ClipToBounds="True" x:Name="LaunchButtonGlow" Classes="launchGlow" Classes.installPending="{Binding IsInstallPending}" Classes.updatePending="{Binding IsUpdatePending}" BoxShadow="0 0 18 2 #554CAF50">
+                    <Grid ColumnDefinitions="*,1,32">
+                        <Button x:Name="LaunchUpdateButton" Grid.Column="0" Classes="launchBtn" Classes.updating="{Binding IsUpdatingOrInstalling}" Classes.installPending="{Binding IsInstallPending}" Classes.updatePending="{Binding IsUpdatePending}" Padding="16,10" MinWidth="120" HorizontalContentAlignment="Center" Command="{Binding LaunchGameCommand}">
+                            <StackPanel Orientation="Vertical" Spacing="4" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                <StackPanel Orientation="Horizontal" Spacing="10" HorizontalAlignment="Center">
+                                    <Svg Width="15" Height="20" VerticalAlignment="Center" Path="/Assets/CS-logo.svg" IsVisible="{Binding !IsUpdatingOrInstalling}" />
+                                    <TextBlock FontSize="13" FontWeight="Bold" Foreground="{DynamicResource AppPrimaryText}" VerticalAlignment="Center" Text="{Binding LaunchButtonText}" />
+                                </StackPanel>
+                            </StackPanel>
+                        </Button>
+                        <Rectangle Grid.Column="1" Fill="#40000000" />
+                        <Button x:Name="ArrowButton" Grid.Column="2" Classes="launchBtn" Classes.updating="{Binding IsUpdatingOrInstalling}" Classes.installPending="{Binding IsInstallPending}" Classes.updatePending="{Binding IsUpdatePending}" HorizontalContentAlignment="Center" VerticalContentAlignment="Center">
+                        <Button.Flyout>
+                            <MenuFlyout Placement="Top">
+                                <MenuItem Classes="compactFlyoutItem" Header="Verify Game Files" Command="{Binding ValidateFilesCommand}" />
+                                <MenuItem Classes="compactFlyoutItem" Header="Open Game Folder" Click="OpenGameFolder_Click" />
+                            </MenuFlyout>
+                        </Button.Flyout>
+                            <Path Width="8" Height="5" Data="M0,5 L4,0 L8,5" Stroke="White" StrokeThickness="1.5" />
+                        </Button>
+                    </Grid>
+                </Border>
+            </StackPanel>
+        </Grid>
+    </Border>
+</UserControl>

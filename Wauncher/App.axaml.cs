@@ -5,6 +5,7 @@ using Avalonia.Data.Core.Plugins;
 using Avalonia.Markup.Xaml;
 using Avalonia.Media.Imaging;
 using Avalonia.Platform;
+using Avalonia.Threading;
 using CommunityToolkit.Mvvm.Input;
 using Wauncher.Utils;
 using System.Diagnostics;
@@ -22,6 +23,8 @@ namespace Wauncher
         {
             AvaloniaXamlLoader.Load(this);
             ProtocolManager.RegisterURIHandler();
+            // Initialize memory management
+            MemoryManager.CleanupMemory();
         }
 
         public override async void OnFrameworkInitializationCompleted()
@@ -30,55 +33,64 @@ namespace Wauncher
             {
                 DisableAvaloniaDataAnnotationValidation();
 
-                if (!Steam.IsInstalled())
-                {
-                    ConsoleManager.ShowError(
-                        "Steam is required to use Wauncher.\n\nPlease install Steam and relaunch.");
-                    desktop.Shutdown();
-                    return;
-                }
-
-                if (!IsSteamRunning())
-                {
-                    ConsoleManager.ShowError(
-                        "Steam must be open before using Wauncher.\n\nPlease open Steam, then relaunch Wauncher.");
-                    desktop.Shutdown();
-                    return;
-                }
-
-                if (Game.IsRunning())
-                {
-                    ConsoleManager.ShowError(
-                        "ClassicCounter is already running.\n\nPlease close the game before opening Wauncher again.");
-                    desktop.Shutdown();
-                    return;
-                }
-
-                bool hasRecentSteamUser = await Steam.GetRecentLoggedInSteamID(false);
-                if (!hasRecentSteamUser)
-                {
-                    ConsoleManager.ShowError(
-                        "Steam is open, but no logged-in Steam account was detected.\n\nPlease sign in to Steam and relaunch Wauncher.");
-                    desktop.Shutdown();
-                    return;
-                }
-
-                // Always init so Discord username/avatar callbacks fire for the greeting.
-                // Presence is only pushed via Update() when RPC is enabled.
                 try
                 {
-                    if (DependencyChecks.IsDiscordInstalled())
-                        Discord.Init();
+                    if (!Steam.IsInstalled())
+                    {
+                        ConsoleManager.ShowError(
+                            "Steam is required to use Wauncher.\n\nPlease install Steam and relaunch.");
+                        desktop.Shutdown();
+                        return;
+                    }
+
+                    if (!IsSteamRunning())
+                    {
+                        ConsoleManager.ShowError(
+                            "Steam must be open before using Wauncher.\n\nPlease open Steam, then relaunch Wauncher.");
+                        desktop.Shutdown();
+                        return;
+                    }
+
+                    if (Game.IsRunning())
+                    {
+                        ConsoleManager.ShowError(
+                            "ClassicCounter is already running.\n\nPlease close the game before opening Wauncher again.");
+                        desktop.Shutdown();
+                        return;
+                    }
+
+                    bool hasRecentSteamUser = await Steam.GetRecentLoggedInSteamID(false);
+                    if (!hasRecentSteamUser)
+                    {
+                        ConsoleManager.ShowError(
+                            "Steam is open, but no logged-in Steam account was detected.\n\nPlease sign in to Steam and relaunch Wauncher.");
+                        desktop.Shutdown();
+                        return;
+                    }
                 }
-                catch
+                catch (Exception ex)
                 {
-                    // Discord integration is optional.
+                    ConsoleManager.ShowError($"Startup error: {ex.Message}");
+                    desktop.Shutdown();
+                    return;
                 }
 
-                desktop.MainWindow = new MainWindow
+                desktop.MainWindow = new MainWindow();
+
+                // Initialize Discord in background
+                _ = Task.Run(() =>
                 {
-                    DataContext = new MainWindowViewModel(),
-                };
+                    try
+                    {
+                        if (DependencyChecks.IsDiscordInstalled())
+                            Discord.Init();
+                    }
+                    catch
+                    {
+                        // Discord integration is optional.
+                    }
+                });
+
                 desktop.Exit += (_, _) => _trayIcon?.Dispose();
             }
 
@@ -136,7 +148,11 @@ namespace Wauncher
                 using var stream = AssetLoader.Open(uri);
                 _trayIcon.Icon = new WindowIcon(stream);
             }
-            catch { }
+            catch (Exception ex)
+            {
+                // Tray icon is optional, log but don't fail
+                System.Diagnostics.Debug.WriteLine($"Failed to load tray icon: {ex.Message}");
+            }
 
             _trayIcon.Clicked += (_, _) => ShowMainWindow();
 

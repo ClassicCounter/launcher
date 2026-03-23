@@ -11,10 +11,18 @@ namespace Wauncher.Utils
 {
     public static class DownloadManager
     {
+        private static string WauncherDirectory =>
+            Path.GetDirectoryName(Services.GetExePath()) ?? Directory.GetCurrentDirectory();
+
         private static readonly DownloadConfiguration _settings = new()
         {
             ChunkCount = 8,
             ParallelDownload = true
+        };
+        private static readonly DownloadConfiguration _fullGameSettings = new()
+        {
+            ChunkCount = 1,
+            ParallelDownload = false
         };
         // Shared only for DownloadUpdater / DownloadDependencies (console-launcher, always sequential)
         private static DownloadService _downloader = new DownloadService(_settings);
@@ -38,14 +46,14 @@ namespace Wauncher.Utils
                 {
                     if (dependency.URL != null)
                     {
-                        string path = Directory.GetCurrentDirectory() + dependency.Path;
+                        string path = WauncherDirectory + dependency.Path;
                         if (File.Exists(path))
                             File.Delete(path);
                         if (Debug.Enabled())
                             Terminal.Debug($"Downloading {dependency.Name}");
                         await _downloader.DownloadFileTaskAsync(
                             $"{dependency.URL}",
-                            $"{Directory.GetCurrentDirectory()}{dependency.Path}");
+                            $"{WauncherDirectory}{dependency.Path}");
                         remote.Add(dependency);
                     }
                     else
@@ -66,7 +74,7 @@ namespace Wauncher.Utils
             Action<double>? onExtractProgress = null)
         {
             string originalFileName = patch.File.EndsWith(".7z") ? patch.File[..^3] : patch.File;
-            string downloadPath = $"{Directory.GetCurrentDirectory()}/{patch.File}";
+            string downloadPath = Path.Combine(WauncherDirectory, patch.File);
 
             if (Debug.Enabled())
                 Terminal.Debug($"Starting download of: {patch.File}");
@@ -96,7 +104,7 @@ namespace Wauncher.Utils
 
             await downloader.DownloadFileTaskAsync(
                 $"{baseUrl}/{patch.File}",
-                $"{Directory.GetCurrentDirectory()}/{patch.File}"
+                Path.Combine(WauncherDirectory, patch.File)
             );
 
             if (patch.File.EndsWith(".7z"))
@@ -104,7 +112,7 @@ namespace Wauncher.Utils
                 if (Debug.Enabled())
                     Terminal.Debug($"Download complete, starting extraction of: {patch.File}");
                 onExtract?.Invoke();
-                string extractPath = $"{Directory.GetCurrentDirectory()}/{originalFileName}";
+                string extractPath = Path.Combine(WauncherDirectory, originalFileName);
                 await Extract7z(downloadPath, extractPath, onExtractProgress);
             }
         }
@@ -125,7 +133,7 @@ namespace Wauncher.Utils
                 var speed = progress.BytesPerSecondSpeed / (1024.0 * 1024.0);
                 var progressText = $"{((float)completedFiles / totalFiles * 100):F1}% ({completedFiles}/{totalFiles})";
                 var status = filename.EndsWith(".7z") && progress.ProgressPercentage >= 100 ? "Extracting" : "Downloading new";
-                ctx.Status = $"{status} {fileTypePlural}{GetDots().PadRight(3)} [gray]|[/] {progressText} [gray]|[/] {GetProgressBar(progress.ProgressPercentage)} {progress.ProgressPercentage:F1}% [gray]|[/] {speed:F1} MB/s";
+                ctx.Status = _statusFormatter.FormatStatus(status, fileTypePlural, progress.ProgressPercentage, speed, completedFiles, totalFiles);
             };
 
             foreach (var patch in allFiles)
@@ -177,7 +185,7 @@ namespace Wauncher.Utils
 
                 foreach (var file in gameFiles.Files)
                 {
-                    string filePath = Path.Combine(Directory.GetCurrentDirectory(), file.File);
+                    string filePath = Path.Combine(WauncherDirectory, file.File);
                     bool needsDownload = true;
 
                     if (File.Exists(filePath))
@@ -199,7 +207,7 @@ namespace Wauncher.Utils
                             {
                                 var speed = e.BytesPerSecondSpeed / (1024.0 * 1024.0);
                                 var progressText = $"{((float)completedFiles / totalFiles * 100):F1}% ({completedFiles}/{totalFiles})";
-                                ctx.Status = $"Downloading {file.File}{GetDots().PadRight(3)} [gray]|[/] {progressText} [gray]|[/] {GetProgressBar(e.ProgressPercentage)} {e.ProgressPercentage:F1}% [gray]|[/] {speed:F1} MB/s";
+                                ctx.Status = _statusFormatter.FormatStatus("Downloading", file.File, e.ProgressPercentage, speed, completedFiles, totalFiles);
                             };
                             _downloader.DownloadProgressChanged += progressHandler;
 
@@ -316,7 +324,7 @@ namespace Wauncher.Utils
 
             foreach (var file in gameFiles.Files)
             {
-                string filePath = Path.Combine(Directory.GetCurrentDirectory(), file.File);
+                string filePath = Path.Combine(WauncherDirectory, file.File);
 
                 if (File.Exists(filePath) &&
                     CalculateMD5(filePath).Equals(file.Hash, StringComparison.OrdinalIgnoreCase))
@@ -326,7 +334,17 @@ namespace Wauncher.Utils
                     continue;
                 }
 
-                using var downloader = new DownloadService(_settings);
+                try
+                {
+                    if (File.Exists(filePath))
+                        File.Delete(filePath);
+                }
+                catch (Exception ex)
+                {
+                    Terminal.Warning($"Failed to delete existing file {filePath}: {ex.Message}");
+                }
+
+                using var downloader = new DownloadService(_fullGameSettings);
                 downloader.DownloadProgressChanged += (s, e) =>
                     onProgress?.Invoke(
                         file.File,
@@ -334,8 +352,27 @@ namespace Wauncher.Utils
                         (completed + e.ProgressPercentage / 100.0) / total * 100.0);
 
                 await downloader.DownloadFileTaskAsync(file.Link, filePath);
+
+                string downloadedHash = CalculateMD5(filePath);
+                if (!downloadedHash.Equals(file.Hash, StringComparison.OrdinalIgnoreCase))
+                {
+                    try
+                    {
+                        File.Delete(filePath);
+                    }
+                    catch (Exception ex)
+                    {
+                        Terminal.Warning($"Failed to delete corrupted file {filePath}: {ex.Message}");
+                    }
+
+                    throw new Exception($"Downloaded file failed verification: {file.File}");
+                }
+
                 completed++;
             }
+
+            onStatus?.Invoke("Verifying downloaded archives...");
+            await VerifySplitArchive(gameFiles.Files.Select(f => f.File).ToList());
 
             onStatus?.Invoke("Extracting game files... This may take a few minutes.");
             await ExtractSplitArchive(gameFiles.Files.Select(f => f.File).ToList(), onExtractProgress);
@@ -351,41 +388,7 @@ namespace Wauncher.Utils
             }
         }
 
-        // meant only for downloading whole game for now
-        // todo maybe make it more modular/allow other functions to use this
-        // FOR DOWNLOAD STATUS
-        public static int dotCount = 0;
-        public static DateTime lastDotUpdate = DateTime.Now;
-        public static string GetDots()
-        {
-            if ((DateTime.Now - lastDotUpdate).TotalMilliseconds > 500)
-            {
-                dotCount = (dotCount + 1) % 4;
-                lastDotUpdate = DateTime.Now;
-            }
-            return "...".Substring(0, dotCount);
-        }
-        public static string GetProgressBar(double percentage)
-        {
-            int blocks = 16;
-            int level = (int)(percentage / (100.0 / (blocks * 3)));
-            string bar = "";
-
-            for (int i = 0; i < blocks; i++)
-            {
-                int blockLevel = Math.Min(3, Math.Max(0, level - (i * 3)));
-                bar += blockLevel switch
-                {
-                    0 => "¦",
-                    1 => "¦",
-                    2 => "¦",
-                    3 => "¦",
-                    _ => "¦"
-                };
-            }
-            return bar;
-        }
-        // DOWNLOAD STATUS OVER
+        private static readonly DownloadStatus _statusFormatter = new DownloadStatus();
         public static async Task ExtractSplitArchive(List<string> files, Action<double>? onProgress = null)
         {
             if (files == null || files.Count == 0)
@@ -404,8 +407,8 @@ namespace Wauncher.Utils
                 }
             }
 
-            string firstFile = files[0];
-            string extractPath = Directory.GetCurrentDirectory();
+            string firstFile = Path.Combine(WauncherDirectory, files[0]);
+            string extractPath = WauncherDirectory;
             string tempExtractPath = Path.Combine(extractPath, "ClassicCounter_temp");
 
             try
@@ -463,7 +466,9 @@ namespace Wauncher.Utils
 
                     foreach (string file in files)
                     {
-                        File.Delete(file);
+                        string filePath = Path.Combine(WauncherDirectory, file);
+                        if (File.Exists(filePath))
+                            File.Delete(filePath);
                         if (Debug.Enabled())
                             Terminal.Debug($"Deleted archive part: {file}");
                     }
@@ -489,11 +494,58 @@ namespace Wauncher.Utils
                     if (Directory.Exists(tempExtractPath))
                         Directory.Delete(tempExtractPath, true);
                 }
-                catch { }
+                catch (Exception cleanupEx)
+                {
+                    Terminal.Warning($"Failed to cleanup temporary directory {tempExtractPath}: {cleanupEx.Message}");
+                }
 
+                CleanupSplitArchiveFiles(files);
                 Delete7zaExecutable();
 
                 throw;
+            }
+        }
+
+        private static async Task VerifySplitArchive(List<string> files)
+        {
+            if (files == null || files.Count == 0)
+                throw new ArgumentException("No files provided for archive verification");
+
+            string firstFile = Path.Combine(WauncherDirectory, files[0]);
+            await Download7za();
+
+            string? launcherDir = Path.GetDirectoryName(Environment.ProcessPath);
+            if (launcherDir == null)
+                throw new InvalidOperationException("Could not determine launcher directory");
+
+            string exePath = Path.Combine(launcherDir, "7za.exe");
+
+            using var process = new Process();
+            process.StartInfo = new ProcessStartInfo
+            {
+                FileName = exePath,
+                Arguments = $"t \"{firstFile}\"",
+                UseShellExecute = false,
+                RedirectStandardOutput = true,
+                RedirectStandardError = true,
+                CreateNoWindow = true
+            };
+
+            process.Start();
+            string stdOut = await process.StandardOutput.ReadToEndAsync();
+            string stdErr = await process.StandardError.ReadToEndAsync();
+            await process.WaitForExitAsync();
+
+            if (process.ExitCode != 0)
+            {
+                CleanupSplitArchiveFiles(files);
+                Delete7zaExecutable();
+
+                string details = string.IsNullOrWhiteSpace(stdErr) ? stdOut : stdErr;
+                if (details.Contains("Data Error", StringComparison.OrdinalIgnoreCase))
+                    throw new Exception("Downloaded archives were corrupted. Please try install again.");
+
+                throw new Exception($"Archive verification failed (7za exit code: {process.ExitCode})");
             }
         }
 
@@ -654,7 +706,7 @@ namespace Wauncher.Utils
             await Task.Run(() =>
             {
                 var parts = archiveParts
-                    .Select(part => new FileInfo(Path.Combine(Directory.GetCurrentDirectory(), part)))
+                    .Select(part => new FileInfo(Path.Combine(WauncherDirectory, part)))
                     .ToArray();
 
                 using var archive = SevenZipArchive.OpenArchive(parts, new ReaderOptions());
@@ -682,8 +734,10 @@ namespace Wauncher.Utils
         {
             try
             {
-                string directory = Directory.GetCurrentDirectory();
-                var files = Directory.GetFiles(directory, "*.7z", SearchOption.AllDirectories);
+                string directory = WauncherDirectory;
+                var files = Directory.GetFiles(directory, "*.7z", SearchOption.AllDirectories)
+                    .Concat(Directory.GetFiles(directory, "*.7z.*", SearchOption.AllDirectories))
+                    .Distinct(StringComparer.OrdinalIgnoreCase);
 
                 foreach (string file in files)
                 {
@@ -704,6 +758,24 @@ namespace Wauncher.Utils
             {
                 if (Debug.Enabled())
                     Terminal.Debug($"Failed to perform cleanup: {ex.Message}");
+            }
+        }
+
+        private static void CleanupSplitArchiveFiles(IEnumerable<string> files)
+        {
+            foreach (string file in files)
+            {
+                try
+                {
+                    string filePath = Path.Combine(WauncherDirectory, file);
+                    if (File.Exists(filePath))
+                        File.Delete(filePath);
+                }
+                catch (Exception ex)
+                {
+                    if (Debug.Enabled())
+                        Terminal.Debug($"Failed to delete archive part {file}: {ex.Message}");
+                }
             }
         }
     }

@@ -71,14 +71,31 @@ namespace Wauncher.Utils
             var loginUsersPath = Path.Combine(steamPath, "config", "loginusers.vdf");
             if (!File.Exists(loginUsersPath))
             {
+                if (Debug.Enabled())
+                    Terminal.Debug("loginusers.vdf not found, trying Steamworks API fallback...");
+                
+                if (SteamNative.GetSteamID2() == null)
+                    SteamNative.GetSteamInstallPath();
+                recentSteamID2 = SteamNative.GetSteamID2();
+                recentSteamID64 = SteamNative.GetSteamID64();
+                
+                if (Debug.Enabled() && !string.IsNullOrEmpty(recentSteamID64))
+                {
+                    Terminal.Debug($"Steamworks fallback succeeded - SteamID64: {recentSteamID64}");
+                    Terminal.Debug($"Steamworks fallback succeeded - SteamID2: {recentSteamID2}");
+                }
+                
                 if (!exitOnMissing)
-                    return false;
+                    return !string.IsNullOrEmpty(recentSteamID2);
 
-                Terminal.Error("Steam login data couldn't be found.");
-                Terminal.Error("Closing launcher in 5 seconds...");
-                await Task.Delay(5000);
-                Environment.Exit(1);
-                return false;
+                if (string.IsNullOrEmpty(recentSteamID2))
+                {
+                    Terminal.Error("Steam login data couldn't be found and Steamworks fallback failed.");
+                    Terminal.Error("Closing launcher in 5 seconds...");
+                    await Task.Delay(5000);
+                    Environment.Exit(1);
+                }
+                return !string.IsNullOrEmpty(recentSteamID2);
             }
 
             dynamic loginUsers = VdfConvert.Deserialize(File.ReadAllText(loginUsersPath));
@@ -113,6 +130,24 @@ namespace Wauncher.Utils
             {
                 recentSteamID64 = fallbackSteamId64;
                 recentSteamID2 = ConvertToSteamID2(fallbackSteamId64);
+            }
+
+            // If VDF method failed, try Steamworks API as fallback
+            if (string.IsNullOrWhiteSpace(recentSteamID64))
+            {
+                if (Debug.Enabled())
+                    Terminal.Debug("VDF method failed, trying Steamworks API fallback...");
+                
+                if (SteamNative.GetSteamID2() == null)
+                    SteamNative.GetSteamInstallPath();
+                recentSteamID2 = SteamNative.GetSteamID2();
+                recentSteamID64 = SteamNative.GetSteamID64();
+                
+                if (Debug.Enabled() && !string.IsNullOrEmpty(recentSteamID64))
+                {
+                    Terminal.Debug($"Steamworks fallback succeeded - SteamID64: {recentSteamID64}");
+                    Terminal.Debug($"Steamworks fallback succeeded - SteamID2: {recentSteamID2}");
+                }
             }
             if (Debug.Enabled() && !string.IsNullOrEmpty(recentSteamID64))
             {

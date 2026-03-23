@@ -1,0 +1,63 @@
+<UserControl
+    x:Class="Wauncher.Views.Controls.PatchNotesControl"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:vm="using:Wauncher.ViewModels"
+    mc:Ignorable="d"
+    d:DesignWidth="300"
+    d:DesignHeight="400"
+    x:DataType="vm:MainWindowViewModel">
+
+    <Grid>
+        <ScrollViewer x:Name="PatchNotesScroll" Margin="0,0,0,0" Padding="10,10,20,16" ClipToBounds="True" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+            <StackPanel Spacing="0">
+                <TextBlock
+                    Margin="0,0,0,6"
+                    FontSize="11"
+                    FontWeight="Bold"
+                    Foreground="#F39C12"
+                    IsVisible="{Binding IsOfflineMode}"
+                    Text="OFFLINE MODE" />
+                <TextBlock
+                    Margin="0,0,0,8"
+                    FontSize="11"
+                    Foreground="{DynamicResource AppMutedText}"
+                    IsVisible="False"
+                    Text="Latest wauncher changes"
+                    TextWrapping="Wrap" />
+                <TextBlock
+                    x:Name="PatchNotesVersion"
+                    Margin="0,0,0,10"
+                    FontSize="12"
+                    FontWeight="SemiBold"
+                    Foreground="{DynamicResource AppMutedText}"
+                    IsVisible="False"
+                    Text="Loading..." />
+
+                <ItemsControl x:Name="PatchNotesList" HorizontalAlignment="Stretch" MaxWidth="268">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <StackPanel Spacing="0" />
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate x:DataType="vm:PatchNoteItem">
+                            <Grid>
+                                <TextBlock IsVisible="{Binding IsMajorHeader}" Margin="0,14,0,8" FontSize="22" FontWeight="ExtraBold" Foreground="{DynamicResource AppPrimaryText}" TextWrapping="Wrap" LineHeight="28" MaxWidth="256" Text="{Binding Text}" />
+                                <TextBlock IsVisible="{Binding IsDateHeader}" Margin="0,-2,0,8" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource AppMutedText}" TextWrapping="Wrap" LineHeight="16" MaxWidth="256" Text="{Binding Text}" />
+                                <TextBlock IsVisible="{Binding IsHeader}" Margin="0,10,0,7" FontSize="15" FontWeight="Bold" Foreground="{DynamicResource AppPrimaryText}" TextWrapping="Wrap" LineHeight="20" MaxWidth="256" Text="{Binding Text}" />
+                                <Grid IsVisible="{Binding IsBullet}" Margin="0,3,0,3" ColumnDefinitions="10,*">
+                                    <TextBlock Grid.Column="0" FontSize="11" Foreground="#4CAF50" VerticalAlignment="Top" Margin="0,2,0,0" Text="&#x2022;" />
+                                    <TextBlock Grid.Column="1" FontSize="12" Foreground="{DynamicResource AppBulletText}" TextWrapping="Wrap" LineHeight="18" MaxWidth="246" Text="{Binding Text}" />
+                                </Grid>
+                            </Grid>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+                <Border Height="34" />
+            </StackPanel>
+        </ScrollViewer>
+    </Grid>
+</UserControl>

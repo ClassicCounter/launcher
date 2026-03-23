@@ -6,9 +6,9 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:vm="using:Wauncher.ViewModels"
     Title="Settings"
-    Width="400"
-    Height="510"
-    d:DesignHeight="510"
+    Width="430"
+    Height="620"
+    d:DesignHeight="620"
     d:DesignWidth="400"
     x:DataType="vm:SettingsWindowViewModel"
     SystemDecorations="None"
@@ -47,6 +47,49 @@
         </Style>
         <Style Selector="Button.closeBtn:pressed">
             <Setter Property="Background" Value="#FFB71C1C" />
+        </Style>
+        <Style Selector="Button.compactActionBtn">
+            <Setter Property="Padding" Value="0" />
+            <Setter Property="MinWidth" Value="84" />
+            <Setter Property="Height" Value="30" />
+            <Setter Property="CornerRadius" Value="6" />
+            <Setter Property="HorizontalContentAlignment" Value="Center" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
+            <Setter Property="FontSize" Value="11" />
+            <Setter Property="Background" Value="#1B6EA8" />
+            <Setter Property="Foreground" Value="White" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Template">
+                <ControlTemplate>
+                    <Border
+                        x:Name="PART_Border"
+                        MinWidth="{TemplateBinding MinWidth}"
+                        Height="{TemplateBinding Height}"
+                        CornerRadius="{TemplateBinding CornerRadius}"
+                        Background="{TemplateBinding Background}"
+                        BorderBrush="{TemplateBinding BorderBrush}"
+                        BorderThickness="{TemplateBinding BorderThickness}">
+                        <Border.Transitions>
+                            <Transitions>
+                                <BrushTransition Property="Background" Duration="0:0:0.16" />
+                            </Transitions>
+                        </Border.Transitions>
+                        <ContentPresenter
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center"
+                            Content="{TemplateBinding Content}" />
+                    </Border>
+                </ControlTemplate>
+            </Setter>
+        </Style>
+        <Style Selector="Button.compactActionBtn:pointerover /template/ Border#PART_Border">
+            <Setter Property="Background" Value="#2A8AD2" />
+        </Style>
+        <Style Selector="Button.compactActionBtn:pressed /template/ Border#PART_Border">
+            <Setter Property="Background" Value="#155B8D" />
+        </Style>
+        <Style Selector="Button.compactActionBtn:disabled /template/ Border#PART_Border">
+            <Setter Property="Background" Value="#686868" />
         </Style>
     </Window.Styles>
 
@@ -91,7 +134,7 @@
         </Grid>
 
         <Grid Grid.Row="1" Background="Transparent">
-            <StackPanel Margin="28,24" Spacing="0">
+            <StackPanel Margin="28,18,28,32" Spacing="0">
                 <TextBlock
                     Margin="0,0,0,12"
                     FontSize="11"
@@ -100,8 +143,8 @@
                     LetterSpacing="2"
                     Text="GENERAL" />
 
-                <Grid Margin="0,0,0,20">
-                    <StackPanel VerticalAlignment="Center">
+                <Grid Margin="0,0,0,20" ColumnDefinitions="*,Auto">
+                    <StackPanel Grid.Column="0" VerticalAlignment="Center">
                         <TextBlock
                             FontSize="14"
                             FontWeight="SemiBold"
@@ -173,6 +216,93 @@
                         OnContent="" />
                 </Grid>
 
+                <Grid Margin="0,0,0,20" ColumnDefinitions="*,Auto">
+                    <StackPanel
+                        Grid.Column="0"
+                        VerticalAlignment="Center"
+                        HorizontalAlignment="Stretch"
+                        Margin="0,0,16,0">
+                        <TextBlock
+                            FontSize="14"
+                            FontWeight="SemiBold"
+                            Foreground="{DynamicResource AppPrimaryText}"
+                            Text="Add ClassicCounter to Steam" />
+                        <TextBlock
+                            FontSize="11"
+                            Foreground="{DynamicResource AppMutedText}"
+                            Text="Adds Wauncher to Steam." />
+                    </StackPanel>
+                    <Button
+                        x:Name="AddToSteamButton"
+                        Grid.Column="1"
+                        Classes="compactActionBtn"
+                        VerticalAlignment="Center"
+                        Click="AddToSteamButton_Click"
+                        Content="Add to Steam" />
+                </Grid>
+
+                <Rectangle
+                    Height="1"
+                    Margin="0,4,0,20"
+                    Fill="{DynamicResource AppDivider2}" />
+
+                <TextBlock
+                    Margin="0,0,0,12"
+                    FontSize="11"
+                    FontWeight="Bold"
+                    Foreground="{DynamicResource AppMutedText}"
+                    LetterSpacing="2"
+                    Text="ADVANCED" />
+
+                <Grid Margin="0,0,0,20">
+                    <StackPanel VerticalAlignment="Center">
+                        <TextBlock
+                            FontSize="14"
+                            FontWeight="SemiBold"
+                            Foreground="{DynamicResource AppPrimaryText}"
+                            Text="Disable Carousel" />
+                        <TextBlock
+                            FontSize="11"
+                            Foreground="{DynamicResource AppMutedText}"
+                            Text="Reduce memory usage by turning off rotating images" />
+                    </StackPanel>
+                    <ToggleSwitch
+                        HorizontalAlignment="Right"
+                        VerticalAlignment="Center"
+                        IsChecked="{Binding DisableCarousel}"
+                        OffContent=""
+                        OnContent="" />
+                </Grid>
+
+                <Grid Margin="0,0,0,20" ColumnDefinitions="*,Auto">
+                    <StackPanel
+                        Grid.Column="0"
+                        VerticalAlignment="Center"
+                        HorizontalAlignment="Stretch"
+                        Margin="0,0,16,0">
+                        <TextBlock
+                            FontSize="14"
+                            FontWeight="SemiBold"
+                            Foreground="{DynamicResource AppPrimaryText}"
+                            Text="Disable Hardware Acceleration" />
+                        <TextBlock
+                            FontSize="11"
+                            Foreground="{DynamicResource AppMutedText}"
+                            TextWrapping="Wrap"
+                            Text="Use software rendering instead of GPU rendering." />
+                    </StackPanel>
+                    <ToggleSwitch
+                        x:Name="DisableHardwareAccelerationToggle"
+                        Grid.Column="1"
+                        HorizontalAlignment="Right"
+                        VerticalAlignment="Center"
+                        IsChecked="{Binding DisableHardwareAcceleration}"
+                        Checked="DisableHardwareAccelerationToggle_Changed"
+                        Unchecked="DisableHardwareAccelerationToggle_Changed"
+                        OffContent=""
+                        OnContent="" />
+                </Grid>
+
                 <Rectangle
                     Height="1"
                     Margin="0,4,0,20"
@@ -187,6 +317,7 @@
                     Text="LAUNCH OPTIONS" />
 
                 <TextBox
+                    Margin="0,0,0,12"
                     Padding="12,10"
                     Background="{DynamicResource AppInputBg}"
                     BorderThickness="0"

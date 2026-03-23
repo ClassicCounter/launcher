@@ -122,8 +122,32 @@ namespace Wauncher.Utils
         {
             if (_process == null) return;
 
-            while (!_process.HasExited)
+            int missingProcessPolls = 0;
+
+            while (true)
             {
+                bool trackedProcessRunning = false;
+                try
+                {
+                    trackedProcessRunning = _process != null && !_process.HasExited;
+                }
+                catch
+                {
+                    trackedProcessRunning = false;
+                }
+
+                bool anyGameProcessRunning = IsRunning();
+                if (!trackedProcessRunning && !anyGameProcessRunning)
+                {
+                    missingProcessPolls++;
+                    if (missingProcessPolls >= 2)
+                        break;
+                }
+                else
+                {
+                    missingProcessPolls = 0;
+                }
+
                 if (_node != null && _node.Name.Trim().Length != 0)
                 {
                     bool isMainMenu = string.Equals(_node.Name, "main_menu", StringComparison.OrdinalIgnoreCase);

@@ -187,7 +187,9 @@
                         TextWrapping="Wrap">
                         <Run Text="Wauncher coded by " />
                         <Run Foreground="{StaticResource InfoContributorBrush}" Text="koolych" />
-                        <Run Text=" and " />
+                        <Run Text=", " />
+                        <Run Foreground="{StaticResource InfoContributorBrush}" Text="Simpy" />
+                        <Run Text=", and " />
                         <Run Foreground="{StaticResource InfoModeratorBrush}" Text="Ways" />
                         <Run Text="." />
                     </TextBlock>

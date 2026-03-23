@@ -7,7 +7,7 @@ namespace Wauncher.Utils
 {
     public static class AvatarCache
     {
-        private static readonly HttpClient _http = new();
+        private static readonly HttpClient _http = HttpClientFactory.Shared;
         private static readonly ConcurrentDictionary<string, byte> _inFlight = new();
         private static readonly string _cacheDir = Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
