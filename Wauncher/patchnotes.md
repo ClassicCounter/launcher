@@ -1,3 +1,18 @@
+# Launcher Update 3.1.0
+03/22/2026
+## What's Changed
+- Improved full game downloading and extraction reliability
+- You no longer need an older build installed first for downloads to work reliably
+- Fixed the launcher sometimes staying open in the background after closing the game
+- Improved memory usage
+- Improved Steam detection
+- Added the ability to add ClassicCounter to Steam directly from Wauncher
+- Added a `Disable Carousel` setting for lower memory usage
+- Added a `Disable Hardware Acceleration` setting
+- Improved server browser behavior and added scrolling for longer server lists
+- Server information is now pulled from the live ClassicCounter server list repository
+- Various backend and stability improvements
+
 # Hotfix 
 03/08/2026
 ## What's Changed
