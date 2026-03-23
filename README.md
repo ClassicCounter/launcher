@@ -28,12 +28,6 @@
 - `Launch Options` lets you pass extra game launch flags such as `-high` or `+fps_max 300`.
 - `Verify Game Files` checks your installation and repairs any missing or damaged game files automatically.
 
-## Server Browser
-- Server information is fetched from the live ClassicCounter server list repository:
-  `https://github.com/edd13s/ClassicCounter-Servers`
-- Server list changes can take a few minutes to appear in Wauncher.
-- The server browser now supports scrolling when the list exceeds the visible limit.
-
 ## Build / Publish
 - Build: `dotnet build Wauncher/Wauncher.csproj -c Release`
 - Publish: `dotnet publish Wauncher/Wauncher.csproj -c Release -r win-x64 --self-contained false`
