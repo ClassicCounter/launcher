@@ -1,0 +1,115 @@
+<UserControl
+    x:Class="Wauncher.Views.Controls.FriendsListControl"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:asyncImageLoader="clr-namespace:AsyncImageLoader;assembly=AsyncImageLoader.Avalonia"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:vm="using:Wauncher.ViewModels"
+    xmlns:wau="using:Wauncher.Utils"
+    mc:Ignorable="d"
+    d:DesignWidth="300"
+    d:DesignHeight="400"
+    x:DataType="vm:MainWindowViewModel">
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <TextBlock
+            Grid.Row="0"
+            Margin="8,8,4,0"
+            FontSize="11"
+            FontWeight="Bold"
+            Foreground="#F39C12"
+            IsVisible="{Binding IsOfflineMode}"
+            Text="OFFLINE MODE" />
+
+        <TextBlock
+            Grid.Row="0"
+            Margin="8,26,4,0"
+            FontSize="12"
+            Foreground="{DynamicResource AppMutedText}"
+            FontStyle="Italic"
+            IsVisible="{Binding ShowGenericFriendsStatus}"
+            Text="{Binding FriendsStatus}" />
+
+        <Grid Grid.Row="1" IsVisible="{Binding ShowNoFriendsState}">
+            <StackPanel
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                Spacing="8">
+                <TextBlock
+                    FontSize="62"
+                    FontWeight="Bold"
+                    HorizontalAlignment="Center"
+                    Foreground="{DynamicResource AppMutedText}"
+                    Text=":(" />
+                <TextBlock
+                    FontSize="18"
+                    FontWeight="Bold"
+                    HorizontalAlignment="Center"
+                    Foreground="{DynamicResource AppPrimaryText}"
+                    Text="You have no friends!" />
+                <TextBlock
+                    FontSize="12"
+                    FontStyle="Italic"
+                    HorizontalAlignment="Center"
+                    Foreground="{DynamicResource AppMutedText}"
+                    Text="Go frag someone, then add them." />
+            </StackPanel>
+        </Grid>
+
+        <ScrollViewer Grid.Row="1" IsVisible="{Binding !FriendsShowStatus}" Padding="4,8,12,12" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+            <StackPanel Spacing="0">
+                <ItemsControl ItemsSource="{Binding Friends}">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <StackPanel Spacing="2" />
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Grid ColumnDefinitions="56,*,12,20" Margin="4,1">
+                                <Button Grid.Column="0" Grid.ColumnSpan="3" Classes="friendRowBtn">
+                                    <Button.Flyout>
+                                        <MenuFlyout Placement="Top">
+                                            <MenuItem Classes="compactFlyoutItem" Header="Join Server"
+                                                      Click="JoinFriendServer_Click"
+                                                      Tag="{Binding}"
+                                                      IsVisible="{Binding CanQuickJoin}" />
+                                            <MenuItem Classes="compactFlyoutItem" Header="View eddies.cc Profile"
+                                                      Click="ViewFriendProfile_Click"
+                                                      Tag="{Binding}" />
+                                        </MenuFlyout>
+                                    </Button.Flyout>
+                                    <Grid ColumnDefinitions="56,*,12" VerticalAlignment="Center" Margin="6,0">
+                                        <Grid Width="40" Height="40" Margin="2,0,0,0" VerticalAlignment="Center">
+                                            <Border Width="40" Height="40" CornerRadius="20" ClipToBounds="True" VerticalAlignment="Center" Opacity="{Binding AvatarOpacity}">
+                                                <Image asyncImageLoader:ImageLoader.Source="{Binding AvatarUrl}" Stretch="UniformToFill" />
+                                            </Border>
+                                        </Grid>
+                                        <StackPanel Grid.Column="1" Margin="6,0,0,0" VerticalAlignment="Center" Spacing="1">
+                                            <TextBlock
+                                                FontSize="14"
+                                                FontWeight="SemiBold"
+                                                Foreground="{DynamicResource AppPrimaryText}"
+                                                Text="{Binding Username}"
+                                                TextTrimming="CharacterEllipsis" />
+                                            <TextBlock FontSize="11" Foreground="#A8A8A8" Text="{Binding StatusText}" TextTrimming="CharacterEllipsis" />
+                                        </StackPanel>
+                                        <Path Grid.Column="2" Width="8" Height="5" HorizontalAlignment="Center" VerticalAlignment="Center" Data="M0,5 L4,0 L8,5" Stroke="{DynamicResource AppMutedText}" StrokeThickness="1.2" />
+                                    </Grid>
+                                </Button>
+                                <Ellipse Grid.Column="3" Width="10" Height="10" Margin="4,0,0,0" VerticalAlignment="Center" Fill="{Binding DotColor}" />
+                            </Grid>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+                <Border Height="34" />
+            </StackPanel>
+        </ScrollViewer>
+    </Grid>
+</UserControl>

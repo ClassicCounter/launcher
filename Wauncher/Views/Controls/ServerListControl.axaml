@@ -1,0 +1,52 @@
+<UserControl
+    x:Class="Wauncher.Views.Controls.ServerListControl"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:vm="using:Wauncher.ViewModels"
+    xmlns:conv="using:Wauncher.Converters"
+    mc:Ignorable="d"
+    d:DesignWidth="390"
+    d:DesignHeight="270"
+    x:DataType="vm:MainWindowViewModel">
+
+    <!-- Server dropdown list -->
+    <Border
+        x:Name="ServerListPanel"
+        MaxHeight="{Binding IsDropdownOpen, Converter={x:Static conv:BooleanToMaxHeightConverter.Instance}, ConverterParameter=270, FallbackValue=0}"
+        Margin="0,0,0,0"
+        HorizontalAlignment="Right"
+        VerticalAlignment="Bottom"
+        Width="390"
+        Background="{DynamicResource AppServerListBg}"
+        BorderBrush="{DynamicResource AppDivider}"
+        BorderThickness="1"
+        ClipToBounds="True"
+        CornerRadius="7"
+        ZIndex="20">
+        <Border.Transitions>
+            <Transitions>
+                <DoubleTransition Easing="CubicEaseOut" Property="MaxHeight" Duration="0:0:0.22" />
+            </Transitions>
+        </Border.Transitions>
+        <ScrollViewer Margin="6" MaxHeight="270" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+            <ItemsControl ItemsSource="{Binding Servers}">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <Button Classes="serverBtn"
+                                    Click="ServerItem_Click"
+                                    Tag="{Binding}">
+                            <Grid ColumnDefinitions="14,*,120,60">
+                                <Ellipse Grid.Column="0" Width="7" Height="7" VerticalAlignment="Center" Fill="{Binding DotColor}" />
+                                <TextBlock Grid.Column="1" Margin="8,0,0,0" VerticalAlignment="Center" FontSize="13" Foreground="{Binding NameColor}" Text="{Binding Name}" />
+                                <TextBlock Grid.Column="2" Margin="8,0,8,0" VerticalAlignment="Center" FontSize="11" FontFamily="Consolas,monospace" Foreground="{DynamicResource AppSectionLabel}" Text="{Binding MapDisplay}" />
+                                <TextBlock Grid.Column="3" VerticalAlignment="Center" FontSize="12" FontFamily="Consolas,monospace" Foreground="{DynamicResource AppMutedText}" Text="{Binding PlayerCount}" />
+                            </Grid>
+                        </Button>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </ScrollViewer>
+    </Border>
+</UserControl>

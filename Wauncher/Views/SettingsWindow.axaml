@@ -1,0 +1,335 @@
+<Window
+    x:Class="Wauncher.Views.SettingsWindow"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:vm="using:Wauncher.ViewModels"
+    Title="Settings"
+    Width="430"
+    Height="620"
+    d:DesignHeight="620"
+    d:DesignWidth="400"
+    x:DataType="vm:SettingsWindowViewModel"
+    SystemDecorations="None"
+    TransparencyLevelHint="AcrylicBlur"
+    WindowStartupLocation="CenterScreen"
+    Background="Transparent"
+    mc:Ignorable="d">
+
+    <Window.Styles>
+        <Style Selector="Button.closeBtn">
+            <Setter Property="Padding" Value="0" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="CornerRadius" Value="0" />
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="Transitions">
+                <Transitions>
+                    <BrushTransition Property="Background" Duration="0:0:0.15" />
+                </Transitions>
+            </Setter>
+            <Setter Property="Template">
+                <ControlTemplate>
+                    <Border
+                        Width="{TemplateBinding Width}"
+                        Height="{TemplateBinding Height}"
+                        Background="{TemplateBinding Background}">
+                        <ContentPresenter
+                            HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                            VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                            Content="{TemplateBinding Content}" />
+                    </Border>
+                </ControlTemplate>
+            </Setter>
+        </Style>
+        <Style Selector="Button.closeBtn:pointerover">
+            <Setter Property="Background" Value="#CCE53935" />
+        </Style>
+        <Style Selector="Button.closeBtn:pressed">
+            <Setter Property="Background" Value="#FFB71C1C" />
+        </Style>
+        <Style Selector="Button.compactActionBtn">
+            <Setter Property="Padding" Value="0" />
+            <Setter Property="MinWidth" Value="84" />
+            <Setter Property="Height" Value="30" />
+            <Setter Property="CornerRadius" Value="6" />
+            <Setter Property="HorizontalContentAlignment" Value="Center" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
+            <Setter Property="FontSize" Value="11" />
+            <Setter Property="Background" Value="#1B6EA8" />
+            <Setter Property="Foreground" Value="White" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Template">
+                <ControlTemplate>
+                    <Border
+                        x:Name="PART_Border"
+                        MinWidth="{TemplateBinding MinWidth}"
+                        Height="{TemplateBinding Height}"
+                        CornerRadius="{TemplateBinding CornerRadius}"
+                        Background="{TemplateBinding Background}"
+                        BorderBrush="{TemplateBinding BorderBrush}"
+                        BorderThickness="{TemplateBinding BorderThickness}">
+                        <Border.Transitions>
+                            <Transitions>
+                                <BrushTransition Property="Background" Duration="0:0:0.16" />
+                            </Transitions>
+                        </Border.Transitions>
+                        <ContentPresenter
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center"
+                            Content="{TemplateBinding Content}" />
+                    </Border>
+                </ControlTemplate>
+            </Setter>
+        </Style>
+        <Style Selector="Button.compactActionBtn:pointerover /template/ Border#PART_Border">
+            <Setter Property="Background" Value="#2A8AD2" />
+        </Style>
+        <Style Selector="Button.compactActionBtn:pressed /template/ Border#PART_Border">
+            <Setter Property="Background" Value="#155B8D" />
+        </Style>
+        <Style Selector="Button.compactActionBtn:disabled /template/ Border#PART_Border">
+            <Setter Property="Background" Value="#686868" />
+        </Style>
+    </Window.Styles>
+
+    <Design.DataContext>
+        <vm:SettingsWindowViewModel />
+    </Design.DataContext>
+
+    <Grid Background="#3A3A3A">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="36" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <Grid
+            Grid.Row="0"
+            Background="{DynamicResource AppTitleBarBrush}"
+            PointerPressed="TitleBar_PointerPressed">
+            <TextBlock
+                Margin="16,0,0,0"
+                VerticalAlignment="Center"
+                FontSize="11"
+                FontWeight="Bold"
+                LetterSpacing="2.5"
+                Foreground="{DynamicResource AppMutedText}"
+                Text="SETTINGS"
+                IsHitTestVisible="False" />
+            <Button
+                HorizontalAlignment="Right"
+                Classes="closeBtn"
+                Width="44"
+                Height="36"
+                HorizontalContentAlignment="Center"
+                VerticalContentAlignment="Center"
+                Click="CloseButton_Click">
+                <Path
+                    Width="10"
+                    Height="10"
+                    Data="M0,0 L10,10 M10,0 L0,10"
+                    Stroke="{DynamicResource AppPrimaryText}"
+                    StrokeThickness="1.5" />
+            </Button>
+        </Grid>
+
+        <Grid Grid.Row="1" Background="Transparent">
+            <StackPanel Margin="28,18,28,32" Spacing="0">
+                <TextBlock
+                    Margin="0,0,0,12"
+                    FontSize="11"
+                    FontWeight="Bold"
+                    Foreground="{DynamicResource AppMutedText}"
+                    LetterSpacing="2"
+                    Text="GENERAL" />
+
+                <Grid Margin="0,0,0,20" ColumnDefinitions="*,Auto">
+                    <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                        <TextBlock
+                            FontSize="14"
+                            FontWeight="SemiBold"
+                            Foreground="{DynamicResource AppPrimaryText}"
+                            Text="Minimize to System Tray" />
+                        <TextBlock
+                            FontSize="11"
+                            Foreground="{DynamicResource AppMutedText}"
+                            Text="Keep launcher running in the background" />
+                    </StackPanel>
+                    <ToggleSwitch
+                        HorizontalAlignment="Right"
+                        VerticalAlignment="Center"
+                        IsChecked="{Binding MinimizeToTray}"
+                        OffContent=""
+                        OnContent="" />
+                </Grid>
+
+                <Grid Margin="0,0,0,20">
+                    <StackPanel VerticalAlignment="Center">
+                        <TextBlock
+                            FontSize="14"
+                            FontWeight="SemiBold"
+                            Foreground="{DynamicResource AppPrimaryText}"
+                            Text="Skip Updates" />
+                        <TextBlock
+                            FontSize="11"
+                            Foreground="{DynamicResource AppMutedText}"
+                            Text="Allow launching without patching first" />
+                    </StackPanel>
+                    <ToggleSwitch
+                        HorizontalAlignment="Right"
+                        VerticalAlignment="Center"
+                        IsChecked="{Binding SkipUpdates}"
+                        OffContent=""
+                        OnContent="" />
+                </Grid>
+
+                <Rectangle
+                    Height="1"
+                    Margin="0,4,0,20"
+                    Fill="{DynamicResource AppDivider2}" />
+
+                <TextBlock
+                    Margin="0,0,0,12"
+                    FontSize="11"
+                    FontWeight="Bold"
+                    Foreground="{DynamicResource AppMutedText}"
+                    LetterSpacing="2"
+                    Text="INTEGRATIONS" />
+
+                <Grid Margin="0,0,0,20">
+                    <StackPanel VerticalAlignment="Center">
+                        <TextBlock
+                            FontSize="14"
+                            FontWeight="SemiBold"
+                            Foreground="{DynamicResource AppPrimaryText}"
+                            Text="Discord RPC" />
+                        <TextBlock
+                            FontSize="11"
+                            Foreground="{DynamicResource AppMutedText}"
+                            Text="Show game activity in Discord" />
+                    </StackPanel>
+                    <ToggleSwitch
+                        HorizontalAlignment="Right"
+                        VerticalAlignment="Center"
+                        IsChecked="{Binding DiscordRpc}"
+                        OffContent=""
+                        OnContent="" />
+                </Grid>
+
+                <Grid Margin="0,0,0,20" ColumnDefinitions="*,Auto">
+                    <StackPanel
+                        Grid.Column="0"
+                        VerticalAlignment="Center"
+                        HorizontalAlignment="Stretch"
+                        Margin="0,0,16,0">
+                        <TextBlock
+                            FontSize="14"
+                            FontWeight="SemiBold"
+                            Foreground="{DynamicResource AppPrimaryText}"
+                            Text="Add ClassicCounter to Steam" />
+                        <TextBlock
+                            FontSize="11"
+                            Foreground="{DynamicResource AppMutedText}"
+                            Text="Adds Wauncher to Steam." />
+                    </StackPanel>
+                    <Button
+                        x:Name="AddToSteamButton"
+                        Grid.Column="1"
+                        Classes="compactActionBtn"
+                        VerticalAlignment="Center"
+                        Click="AddToSteamButton_Click"
+                        Content="Add to Steam" />
+                </Grid>
+
+                <Rectangle
+                    Height="1"
+                    Margin="0,4,0,20"
+                    Fill="{DynamicResource AppDivider2}" />
+
+                <TextBlock
+                    Margin="0,0,0,12"
+                    FontSize="11"
+                    FontWeight="Bold"
+                    Foreground="{DynamicResource AppMutedText}"
+                    LetterSpacing="2"
+                    Text="ADVANCED" />
+
+                <Grid Margin="0,0,0,20">
+                    <StackPanel VerticalAlignment="Center">
+                        <TextBlock
+                            FontSize="14"
+                            FontWeight="SemiBold"
+                            Foreground="{DynamicResource AppPrimaryText}"
+                            Text="Disable Carousel" />
+                        <TextBlock
+                            FontSize="11"
+                            Foreground="{DynamicResource AppMutedText}"
+                            Text="Reduce memory usage by turning off rotating images" />
+                    </StackPanel>
+                    <ToggleSwitch
+                        HorizontalAlignment="Right"
+                        VerticalAlignment="Center"
+                        IsChecked="{Binding DisableCarousel}"
+                        OffContent=""
+                        OnContent="" />
+                </Grid>
+
+                <Grid Margin="0,0,0,20" ColumnDefinitions="*,Auto">
+                    <StackPanel
+                        Grid.Column="0"
+                        VerticalAlignment="Center"
+                        HorizontalAlignment="Stretch"
+                        Margin="0,0,16,0">
+                        <TextBlock
+                            FontSize="14"
+                            FontWeight="SemiBold"
+                            Foreground="{DynamicResource AppPrimaryText}"
+                            Text="Disable Hardware Acceleration" />
+                        <TextBlock
+                            FontSize="11"
+                            Foreground="{DynamicResource AppMutedText}"
+                            TextWrapping="Wrap"
+                            Text="Use software rendering instead of GPU rendering." />
+                    </StackPanel>
+                    <ToggleSwitch
+                        x:Name="DisableHardwareAccelerationToggle"
+                        Grid.Column="1"
+                        HorizontalAlignment="Right"
+                        VerticalAlignment="Center"
+                        IsChecked="{Binding DisableHardwareAcceleration}"
+                        Checked="DisableHardwareAccelerationToggle_Changed"
+                        Unchecked="DisableHardwareAccelerationToggle_Changed"
+                        OffContent=""
+                        OnContent="" />
+                </Grid>
+
+                <Rectangle
+                    Height="1"
+                    Margin="0,4,0,20"
+                    Fill="{DynamicResource AppDivider2}" />
+
+                <TextBlock
+                    Margin="0,0,0,12"
+                    FontSize="11"
+                    FontWeight="Bold"
+                    Foreground="{DynamicResource AppMutedText}"
+                    LetterSpacing="2"
+                    Text="LAUNCH OPTIONS" />
+
+                <TextBox
+                    Margin="0,0,0,12"
+                    Padding="12,10"
+                    Background="{DynamicResource AppInputBg}"
+                    BorderThickness="0"
+                    CaretBrush="White"
+                    CornerRadius="6"
+                    FontSize="13"
+                    Foreground="{DynamicResource AppPrimaryText}"
+                    Watermark="e.g. -high -novid +fps_max 300"
+                    Text="{Binding LaunchOptions, UpdateSourceTrigger=PropertyChanged}" />
+
+            </StackPanel>
+        </Grid>
+    </Grid>
+</Window>
+
