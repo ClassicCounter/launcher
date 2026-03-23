@@ -1,5 +1,5 @@
 # Launcher Update 3.1.0
-03/22/2026
+## 03/22/2026
 ## What's Changed
 - Improved full game downloading and extraction reliability
 - You no longer need an older build installed first for downloads to work reliably
