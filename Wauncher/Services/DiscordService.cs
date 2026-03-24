@@ -9,7 +9,14 @@ namespace Wauncher.Services
         {
             await Task.Run(() =>
             {
-                Discord.Init();
+                try
+                {
+                    Discord.Init();
+                }
+                catch
+                {
+                    // Discord integration is optional.
+                }
             });
         }
 
@@ -17,7 +24,14 @@ namespace Wauncher.Services
         {
             await Task.Run(() =>
             {
-                Discord.SetDetails(details);
+                try
+                {
+                    Discord.SetDetails(details);
+                }
+                catch
+                {
+                    // Discord integration is optional.
+                }
             });
         }
 
@@ -25,7 +39,14 @@ namespace Wauncher.Services
         {
             await Task.Run(() =>
             {
-                Discord.Update();
+                try
+                {
+                    Discord.Update();
+                }
+                catch
+                {
+                    // Discord integration is optional.
+                }
             });
         }
 
@@ -33,7 +54,14 @@ namespace Wauncher.Services
         {
             await Task.Run(() =>
             {
-                Discord.Deinitialize();
+                try
+                {
+                    Discord.Deinitialize();
+                }
+                catch
+                {
+                    // Discord integration is optional.
+                }
             });
         }
     }

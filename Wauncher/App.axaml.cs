@@ -70,6 +70,7 @@ namespace Wauncher
                 }
                 catch (Exception ex)
                 {
+                    ErrorLogger.LogError("App.OnFrameworkInitializationCompleted", ex, "Application startup validation failed");
                     ConsoleManager.ShowError($"Startup error: {ex.Message}");
                     desktop.Shutdown();
                     return;
@@ -104,8 +105,9 @@ namespace Wauncher
             {
                 return Process.GetProcessesByName("steam").Length > 0;
             }
-            catch
+            catch (Exception ex)
             {
+                ErrorLogger.LogError("App.IsSteamRunning", ex, "Failed to check if Steam is running");
                 return false;
             }
         }
@@ -150,6 +152,7 @@ namespace Wauncher
             }
             catch (Exception ex)
             {
+                ErrorLogger.LogError("App.SetupTrayIcon", ex, "Failed to load tray icon");
                 // Tray icon is optional, log but don't fail
                 System.Diagnostics.Debug.WriteLine($"Failed to load tray icon: {ex.Message}");
             }

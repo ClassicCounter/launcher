@@ -41,8 +41,16 @@ namespace Wauncher.Utils
 
         public static bool IsInstalled()
         {
-            var path = GetSteamInstallPath();
-            return !string.IsNullOrWhiteSpace(path) && Directory.Exists(path);
+            try
+            {
+                var path = GetSteamInstallPath();
+                return !string.IsNullOrWhiteSpace(path) && Directory.Exists(path);
+            }
+            catch (Exception ex)
+            {
+                ErrorLogger.LogError("Steam.IsInstalled", ex, "Failed to check if Steam is installed");
+                return false;
+            }
         }
 
         public static async Task GetRecentLoggedInSteamID()
@@ -119,10 +127,11 @@ namespace Wauncher.Utils
                         break;
                     }
                 }
-                catch (RuntimeBinderException)
+                catch (RuntimeBinderException ex)
                 {
                     if (Debug.Enabled())
                         Terminal.Debug($"Skipping malformed Steam loginusers entry for {steamId64 ?? "unknown user"}.");
+                    ErrorLogger.LogError("Steam.GetRecentLoggedInSteamID", ex, $"Malformed Steam loginusers entry for {steamId64 ?? "unknown user"}");
                 }
             }
 

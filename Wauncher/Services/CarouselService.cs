@@ -66,9 +66,10 @@ namespace Wauncher.Services
 
                 return urls.Count == 0 ? null : urls;
             }
-            catch 
-            { 
-                return null; 
+            catch (Exception ex)
+            {
+                ErrorLogger.LogError("CarouselService.LoadCarouselUrlsFromGitHubAsync", ex, "Failed to load carousel URLs from GitHub");
+                return null;
             }
         }
 
@@ -95,8 +96,9 @@ namespace Wauncher.Services
 
                 return await File.ReadAllBytesAsync(path);
             }
-            catch
+            catch (Exception ex)
             {
+                ErrorLogger.LogError("CarouselService.TryGetCachedCarouselBytesAsync", ex, $"Failed to get cached carousel bytes for URL: {url}");
                 return null;
             }
         }
@@ -111,8 +113,9 @@ namespace Wauncher.Services
                 await File.WriteAllBytesAsync(tempPath, bytes);
                 File.Move(tempPath, path, overwrite: true);
             }
-            catch
+            catch (Exception ex)
             {
+                ErrorLogger.LogError("CarouselService.TryWriteCarouselCacheAsync", ex, $"Failed to write carousel cache for URL: {url}");
                 // Best-effort cache only.
             }
         }

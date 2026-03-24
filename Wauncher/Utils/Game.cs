@@ -84,8 +84,9 @@ namespace Wauncher.Utils
 """;
                     await File.WriteAllTextAsync(gameStatePath, gameStateContents);
                 }
-                catch
+                catch (Exception ex)
                 {
+                    ErrorLogger.LogError("Game.Launch", ex, "Failed to write gamestate integration config");
                     Terminal.Error("(!) \"/csgo/cfg/gamestate_integration_cc.cfg\" not found in the current directory!");
                 }
             }
@@ -131,8 +132,9 @@ namespace Wauncher.Utils
                 {
                     trackedProcessRunning = _process != null && !_process.HasExited;
                 }
-                catch
+                catch (Exception ex)
                 {
+                    ErrorLogger.LogError("Game.Monitor", ex, "Failed to check tracked process status");
                     trackedProcessRunning = false;
                 }
 

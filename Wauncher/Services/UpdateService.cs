@@ -73,6 +73,11 @@ namespace Wauncher.Services
                 
                 return needsUpdate;
             }
+            catch (Exception ex)
+            {
+                ErrorLogger.LogError("UpdateService.CheckForUpdatesAsync", ex, "Failed to check for updates");
+                return false;
+            }
             finally
             {
                 IsCheckingUpdates = false;
@@ -139,6 +144,7 @@ namespace Wauncher.Services
             }
             catch (Exception ex)
             {
+                ErrorLogger.LogError("UpdateService.InstallGameFromCdnAsync", ex, "Failed to install game from CDN");
                 DownloadManager.Cleanup7zFiles();
                 UpdateStatusFile = $"Install error: {ex.Message}";
                 UpdateStatusSpeed = "";
@@ -228,6 +234,7 @@ namespace Wauncher.Services
             }
             catch (Exception ex)
             {
+                ErrorLogger.LogError("UpdateService.ValidateGameFilesAsync", ex, "Failed to validate game files");
                 UpdateStatusFile = $"Error: {ex.Message}";
                 UpdateStatusSpeed = "";
                 return false;
@@ -249,8 +256,9 @@ namespace Wauncher.Services
                 _cachedPatches = patches;
                 return patches;
             }
-            catch
+            catch (Exception ex)
             {
+                ErrorLogger.LogError("UpdateService.GetPatchesAsync", ex, "Failed to get patches");
                 return null;
             }
         }

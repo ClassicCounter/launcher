@@ -30,12 +30,31 @@ namespace Wauncher.Services
                 QueueDeferredConnect(resolvedTarget);
             }
 
-            return await Task.Run(() => Game.Launch());
+            return await Task.Run(() => 
+            {
+                try
+                {
+                    return Game.Launch();
+                }
+                catch (Exception ex)
+                {
+                    ErrorLogger.LogError("GameService.LaunchAsync", ex, $"Connect target: {connectTarget}, Launch options: {launchOptions}");
+                    throw;
+                }
+            });
         }
 
         public async Task MonitorAsync()
         {
-            await Game.Monitor();
+            try
+            {
+                await Game.Monitor();
+            }
+            catch (Exception ex)
+            {
+                ErrorLogger.LogError("GameService.MonitorAsync", ex, "Game monitoring failed");
+                throw;
+            }
         }
 
         public bool IsRunning()
@@ -106,8 +125,9 @@ namespace Wauncher.Services
                 var address = addresses.FirstOrDefault();
                 return address == null ? ipPort.Trim() : $"{address}:{parts[1]}";
             }
-            catch
+            catch (Exception ex)
             {
+                ErrorLogger.LogError("GameService.ResolveConnectTarget", ex, $"Failed to resolve connect target: {ipPort}");
                 return ipPort.Trim();
             }
         }

@@ -144,8 +144,9 @@ namespace Wauncher.Services
                     CurrentUserUsername = self.Username;
                 });
             }
-            catch
+            catch (Exception ex)
             {
+                ErrorLogger.LogError("FriendsService.LoadSelfProfileAsync", ex, "Failed to load self profile");
                 // Best-effort profile load; keep defaults on failure.
             }
         }
@@ -206,8 +207,9 @@ namespace Wauncher.Services
                 {
                     rawFriendsJson = await Api.Eddies.GetFriends(Steam.recentSteamID64 ?? string.Empty);
                 }
-                catch
+                catch (Exception ex)
                 {
+                    ErrorLogger.LogError("FriendsService.RefreshFriendsAsync.GetFriends", ex, "Failed to get friends via SteamID64, trying SteamID2 fallback");
                     rawFriendsJson = await Api.Eddies.GetFriendsBySteamId2(Steam.recentSteamID2 ?? string.Empty);
                 }
                 var apiFriends = Api.ParseFriendsPayload(rawFriendsJson)
@@ -239,8 +241,9 @@ namespace Wauncher.Services
                     FriendsStatus = Friends.Count == 0 ? "No friends found." : "";
                 });
             }
-            catch
+            catch (Exception ex)
             {
+                ErrorLogger.LogError("FriendsService.RefreshFriendsAsync", ex, "Failed to refresh friends");
                 if (TryShowCachedFriends(Steam.recentSteamID2 ?? string.Empty, forceOfflineStatus: true))
                     return;
 

@@ -14,6 +14,21 @@
 - Various backend and stability improvements
 
 # Hotfix 
+03/18/2026
+## What's Changed
+- Fixed context menu when page is not in initial position (is scrolled down)
+- Changed how Newest and Oldest sorting works, and added two new sorting methods based on item ID
+- Revamped trading code, so now traded items are properly tracked which allows us in the future to create an accurate trade history
+- Improved the code for validation of items in a trade offer, should fix some bugs
+- StatTrak kills get now reset down to 0 when they get traded away
+- General updates of a weapon no longer update the timestamp used for sorting in the inventory, most commonly seen with StatTrak weapons by getting kills
+- Changed how deleting items works, they are no longer expunged from the database and just remain hidden
+- Made randomness in multiple places on the website more cryptographically safe
+- Fixed traded-up items having incorrect wear name
+- In-game item announcer now works again
+- Trading is no longer under maintainance and is now again available to the public
+
+# Hotfix 
 03/08/2026
 ## What's Changed
 - Updated appearance of the "Edit Profile" page on eddies.cc

@@ -34,15 +34,7 @@ namespace Wauncher
             }
             catch (Exception ex)
             {
-                try
-                {
-                    var logPath = Path.Combine(Path.GetDirectoryName(System.Environment.ProcessPath) ?? ".", "wauncher_error.log");
-                    File.WriteAllText(logPath, $"{DateTime.Now:yyyy-MM-dd HH:mm:ss}\n{ex}");
-                }
-                catch
-                {
-                }
-
+                ErrorLogger.LogError("Program.Main", ex, "Application startup failed");
                 throw;
             }
             finally
@@ -83,15 +75,7 @@ namespace Wauncher
             }
             catch (Exception ex)
             {
-                try
-                {
-                    var logPath = Path.Combine(Path.GetDirectoryName(System.Environment.ProcessPath) ?? ".", "wauncher_startup_error.log");
-                    File.WriteAllText(logPath, $"{DateTime.Now:yyyy-MM-dd HH:mm:ss}\nOnStartup Error:\n{ex}");
-                }
-                catch
-                {
-                }
-
+                ErrorLogger.LogError("Program.OnStartup", ex, "Startup validation failed");
                 return true; // Allow app to continue anyway
             }
         }
@@ -136,8 +120,9 @@ namespace Wauncher
                         return string.Equals(value, "true", StringComparison.OrdinalIgnoreCase);
                 }
             }
-            catch
+            catch (Exception ex)
             {
+                ErrorLogger.LogError("Program.IsHardwareAccelerationDisabled", ex, "Failed to check hardware acceleration setting");
             }
 
             return false;
