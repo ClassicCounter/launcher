@@ -6,23 +6,26 @@ namespace Wauncher.Utils
 {
     public static class ErrorLogger
     {
+        private const long MaxLogFileBytes = 1024 * 1024;
         private static readonly string LogFilePath = Path.Combine(
-            Path.GetDirectoryName(System.Environment.ProcessPath) ?? ".", 
+            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+            "ClassicCounter",
+            "Wauncher",
+            "logs",
             "WauncherLog.txt"
         );
-        
+        private static readonly string ArchiveLogFilePath = Path.Combine(
+            Path.GetDirectoryName(LogFilePath) ?? ".",
+            "WauncherLog.1.txt"
+        );
+
         private static readonly object _lock = new object();
 
         public static void LogError(string componentName, Exception exception, string? additionalContext = null)
         {
             try
             {
-                var logEntry = FormatLogEntry(componentName, exception, additionalContext);
-                
-                lock (_lock)
-                {
-                    File.AppendAllText(LogFilePath, logEntry);
-                }
+                WriteLogEntry(FormatLogEntry(componentName, exception, additionalContext));
             }
             catch
             {
@@ -34,12 +37,7 @@ namespace Wauncher.Utils
         {
             try
             {
-                var logEntry = FormatLogEntry(componentName, errorMessage, additionalContext);
-                
-                lock (_lock)
-                {
-                    File.AppendAllText(LogFilePath, logEntry);
-                }
+                WriteLogEntry(FormatLogEntry(componentName, errorMessage, additionalContext));
             }
             catch
             {
@@ -51,15 +49,7 @@ namespace Wauncher.Utils
         {
             try
             {
-                var logEntry = FormatLogEntry(componentName, exception, additionalContext);
-                
-                await Task.Run(() =>
-                {
-                    lock (_lock)
-                    {
-                        File.AppendAllText(LogFilePath, logEntry);
-                    }
-                });
+                await Task.Run(() => WriteLogEntry(FormatLogEntry(componentName, exception, additionalContext)));
             }
             catch
             {
@@ -71,20 +61,39 @@ namespace Wauncher.Utils
         {
             try
             {
-                var logEntry = FormatLogEntry(componentName, errorMessage, additionalContext);
-                
-                await Task.Run(() =>
-                {
-                    lock (_lock)
-                    {
-                        File.AppendAllText(LogFilePath, logEntry);
-                    }
-                });
+                await Task.Run(() => WriteLogEntry(FormatLogEntry(componentName, errorMessage, additionalContext)));
             }
             catch
             {
                 // If logging fails, don't throw an exception to avoid infinite loops
             }
+        }
+
+        private static void WriteLogEntry(string logEntry)
+        {
+            lock (_lock)
+            {
+                string logDirectory = Path.GetDirectoryName(LogFilePath) ?? ".";
+                Directory.CreateDirectory(logDirectory);
+
+                RotateLogIfNeeded(logEntry.Length);
+                File.AppendAllText(LogFilePath, logEntry);
+            }
+        }
+
+        private static void RotateLogIfNeeded(int incomingLength)
+        {
+            if (!File.Exists(LogFilePath))
+                return;
+
+            var fileInfo = new FileInfo(LogFilePath);
+            if (fileInfo.Length + incomingLength <= MaxLogFileBytes)
+                return;
+
+            if (File.Exists(ArchiveLogFilePath))
+                File.Delete(ArchiveLogFilePath);
+
+            File.Move(LogFilePath, ArchiveLogFilePath);
         }
 
         private static string FormatLogEntry(string componentName, Exception exception, string? additionalContext)
