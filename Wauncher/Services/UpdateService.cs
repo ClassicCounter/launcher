@@ -50,7 +50,12 @@ namespace Wauncher.Services
         public async Task<bool> CheckForUpdatesAsync()
         {
             if (IsCheckingUpdates || IsUpdating || IsInstalling)
+            {
+                string errorMsg = "Update check already in progress";
+                Terminal.Warning(errorMsg);
+                ErrorLogger.LogError("UpdateService.CheckForUpdatesAsync", errorMsg, "Multiple update check attempts");
                 return false;
+            }
 
             IsCheckingUpdates = true;
             
@@ -60,21 +65,41 @@ namespace Wauncher.Services
                 
                 if (!File.Exists(csgoExe))
                 {
+                    string errorMsg = "Game executable not found - installation needed";
+                    Terminal.Print(errorMsg);
+                    ErrorLogger.LogError("UpdateService.CheckForUpdatesAsync", errorMsg, $"Expected path: {csgoExe}");
                     IsNeedingInstall = true;
                     return true;
                 }
 
+                Terminal.Print("Checking for updates...");
                 var patches = await GetPatchesAsync();
                 if (patches == null)
+                {
+                    string errorMsg = "Failed to retrieve patch information";
+                    Terminal.Warning(errorMsg);
+                    ErrorLogger.LogError("UpdateService.CheckForUpdatesAsync", errorMsg, "GetPatchesAsync returned null");
                     return false;
+                }
 
                 var needsUpdate = await ValidateFilesAsync(patches);
                 IsUpdateAvailable = needsUpdate;
+                
+                if (needsUpdate)
+                {
+                    Terminal.Print("Updates are available");
+                }
+                else
+                {
+                    Terminal.Print("Game is up to date");
+                }
                 
                 return needsUpdate;
             }
             catch (Exception ex)
             {
+                string errorMsg = $"Update check failed: {ex.Message}";
+                Terminal.Error(errorMsg);
                 ErrorLogger.LogError("UpdateService.CheckForUpdatesAsync", ex, "Failed to check for updates");
                 return false;
             }
@@ -248,16 +273,34 @@ namespace Wauncher.Services
         private async Task<Patches?> GetPatchesAsync()
         {
             if (_cachedPatches != null)
+            {
+                Terminal.Print("Using cached patch information");
                 return _cachedPatches;
+            }
 
             try
             {
+                Terminal.Print("Fetching patch information from API...");
                 var patches = await PatchManager.ValidatePatches();
-                _cachedPatches = patches;
+                
+                if (patches.Success)
+                {
+                    _cachedPatches = patches;
+                    Terminal.Print($"Patch validation complete: {patches.Missing.Count} missing, {patches.Outdated.Count} outdated");
+                }
+                else
+                {
+                    string errorMsg = "Patch validation failed";
+                    Terminal.Warning(errorMsg);
+                    ErrorLogger.LogError("UpdateService.GetPatchesAsync", errorMsg, "PatchManager.ValidatePatches returned Success=false");
+                }
+                
                 return patches;
             }
             catch (Exception ex)
             {
+                string errorMsg = $"Failed to get patches: {ex.Message}";
+                Terminal.Error(errorMsg);
                 ErrorLogger.LogError("UpdateService.GetPatchesAsync", ex, "Failed to get patches");
                 return null;
             }
