@@ -1,4 +1,4 @@
-﻿using Newtonsoft.Json;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System.Collections.Concurrent;
 using System.Security.Cryptography;
@@ -35,16 +35,60 @@ namespace Wauncher.Utils
             try
             {
                 string responseString = await Api.ClassicCounter.GetPatches();
+                
+                if (string.IsNullOrWhiteSpace(responseString))
+                {
+                    string errorMsg = "Received empty response from patches API";
+                    Terminal.Warning(errorMsg);
+                    ErrorLogger.LogError("PatchManager.GetPatches", errorMsg, validateAll ? "Full game validation" : "Patch validation");
+                    return patches;
+                }
 
                 JObject responseJson = JObject.Parse(responseString);
 
-                if (responseJson["files"] != null)
-                    patches = responseJson["files"]!.ToObject<Patch[]>()!.ToList();
+                if (responseJson["files"] == null)
+                {
+                    string errorMsg = "API response missing 'files' field";
+                    Terminal.Warning(errorMsg);
+                    ErrorLogger.LogError("PatchManager.GetPatches", errorMsg, $"Response: {responseString}");
+                    return patches;
+                }
+
+                var filesArray = responseJson["files"]!.ToObject<Patch[]>();
+                if (filesArray == null || filesArray.Length == 0)
+                {
+                    string errorMsg = "No files found in API response";
+                    Terminal.Warning(errorMsg);
+                    ErrorLogger.LogError("PatchManager.GetPatches", errorMsg, $"Response contained {filesArray?.Length ?? 0} files");
+                    return patches;
+                }
+                
+                patches = filesArray.ToList();
+                Terminal.Print($"Loaded {patches.Count} patches from API");
             }
-            catch
+            catch (Newtonsoft.Json.JsonException ex)
             {
-                if (Debug.Enabled())
-                    Terminal.Debug($"Couldn't get {(validateAll ? "full game" : "patch")} API data.");
+                string errorMsg = "Failed to parse patches API response";
+                Terminal.Error(errorMsg);
+                ErrorLogger.LogError("PatchManager.GetPatches", ex, "JSON parsing error");
+            }
+            catch (System.Net.Http.HttpRequestException ex)
+            {
+                string errorMsg = "Network error while fetching patches";
+                Terminal.Error(errorMsg);
+                ErrorLogger.LogError("PatchManager.GetPatches", ex, "Network request failed");
+            }
+            catch (System.Threading.Tasks.TaskCanceledException ex)
+            {
+                string errorMsg = "Request timeout while fetching patches";
+                Terminal.Error(errorMsg);
+                ErrorLogger.LogError("PatchManager.GetPatches", ex, "Request timeout");
+            }
+            catch (Exception ex)
+            {
+                string errorMsg = $"Unexpected error getting {(validateAll ? "full game" : "patch")} API data: {ex.Message}";
+                Terminal.Warning(errorMsg);
+                ErrorLogger.LogError("PatchManager.GetPatches", ex, validateAll ? "Full game validation" : "Patch validation");
             }
 
             return patches;
