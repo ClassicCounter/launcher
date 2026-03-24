@@ -99,7 +99,12 @@ namespace Wauncher.ViewModels
         private async Task LaunchGameAsync()
         {
             if (_updateService.IsInstalling || _updateService.IsUpdating || _updateService.IsCheckingUpdates)
+            {
+                string errorMsg = "Launch blocked: Update operation in progress";
+                Terminal.Warning(errorMsg);
+                ErrorLogger.LogError("MainWindowViewModel.LaunchGameAsync", errorMsg, "User attempted to launch during update");
                 return;
+            }
 
             if (_updateService.IsNeedingInstall)
             {
@@ -115,8 +120,19 @@ namespace Wauncher.ViewModels
 
             if (_gameService.IsRunning())
             {
-                ConsoleManager.ShowError(
-                    "ClassicCounter is already running.\n\nPlease close the game before joining a server from Wauncher.");
+                string errorMsg = "ClassicCounter is already running.\n\nPlease close the game before joining a server from Wauncher.";
+                ConsoleManager.ShowError(errorMsg);
+                ErrorLogger.LogError("MainWindowViewModel.LaunchGameAsync", "Game already running", "User attempted to launch while game is running");
+                return;
+            }
+
+            // Validate game executable exists before attempting launch
+            string gameExePath = Path.Combine(Directory.GetCurrentDirectory(), "csgo.exe");
+            if (!File.Exists(gameExePath))
+            {
+                string errorMsg = "Game executable not found!\n\ncsgo.exe is missing from the launcher directory.\nPlease verify your game files or reinstall.";
+                ConsoleManager.ShowError(errorMsg);
+                ErrorLogger.LogError("MainWindowViewModel.LaunchGameAsync", "Game executable not found", $"Path: {gameExePath}");
                 return;
             }
 
@@ -130,11 +146,25 @@ namespace Wauncher.ViewModels
                 // Clear any arguments left over from a previous launch before adding new ones.
                 _gameService.ClearAdditionalArguments();
 
-                var connectTarget = selected != null && !selected.IsNone && !string.IsNullOrEmpty(selected.IpPort)
-                    ? selected.IpPort
-                    : null;
+                string? connectTarget = null;
+                if (selected != null && !selected.IsNone && !string.IsNullOrEmpty(selected.IpPort))
+                {
+                    connectTarget = selected.IpPort;
+                    Terminal.Print($"Connecting to server: {selected.Name} ({selected.IpPort})");
+                }
+                else
+                {
+                    Terminal.Print("Launching game without server connection");
+                }
 
-                await _gameService.LaunchAsync(connectTarget, settings.LaunchOptions);
+                bool launchSuccess = await _gameService.LaunchAsync(connectTarget, settings.LaunchOptions);
+                
+                if (!launchSuccess)
+                {
+                    ConsoleManager.ShowError("Failed to launch game. Please check the logs for details.");
+                    ErrorLogger.LogError("MainWindowViewModel.LaunchGameAsync", "Game launch returned false", $"Connect target: {connectTarget}, Launch options: {settings.LaunchOptions}");
+                    return;
+                }
 
                 if (settings.DiscordRpc)
                 {
@@ -147,7 +177,9 @@ namespace Wauncher.ViewModels
             }
             catch (Exception ex)
             {
-                ConsoleManager.ShowError($"Failed to launch game:\n{ex.Message}");
+                string errorMsg = $"Failed to launch game:\n{ex.Message}";
+                ConsoleManager.ShowError(errorMsg);
+                ErrorLogger.LogError("MainWindowViewModel.LaunchGameAsync", ex, $"Connect target: {SelectedServer?.IpPort}, Launch options: {SettingsWindowViewModel.LoadGlobal().LaunchOptions}");
             }
             finally
             {
