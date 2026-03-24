@@ -44,7 +44,8 @@ namespace Wauncher.Utils
         public static async Task<bool> Launch()
         {
             List<string> arguments = Argument.GenerateGameArguments();
-            if (arguments.Count > 0) Terminal.Print($"Arguments: {string.Join(" ", arguments)}");
+            if (arguments.Count > 0) 
+                Terminal.Print($"Arguments: {string.Join(" ", arguments)}");
 
             var settings = ViewModels.SettingsWindowViewModel.LoadGlobal();
             string directory = Path.GetDirectoryName(Services.GetExePath()) ?? Directory.GetCurrentDirectory();
@@ -58,6 +59,14 @@ namespace Wauncher.Utils
 
                 try
                 {
+                    // Ensure the cfg directory exists
+                    string cfgDirectory = Path.GetDirectoryName(gameStatePath) ?? "";
+                    if (!Directory.Exists(cfgDirectory))
+                    {
+                        Directory.CreateDirectory(cfgDirectory);
+                        Terminal.Print($"Created config directory: {cfgDirectory}");
+                    }
+
                     string gameStateContents = $$"""
 "ClassicCounter"
 {
@@ -83,22 +92,36 @@ namespace Wauncher.Utils
 }
 """;
                     await File.WriteAllTextAsync(gameStatePath, gameStateContents);
+                    Terminal.Print("Game state integration config written successfully");
                 }
                 catch (Exception ex)
                 {
+                    string errorMsg = "Failed to create game state integration config";
                     ErrorLogger.LogError("Game.Launch", ex, "Failed to write gamestate integration config");
-                    Terminal.Error("(!) \"/csgo/cfg/gamestate_integration_cc.cfg\" not found in the current directory!");
+                    Terminal.Error($"(!) \"/csgo/cfg/gamestate_integration_cc.cfg\" could not be created!");
+                    ConsoleManager.ShowError($"{errorMsg}:\n{ex.Message}\n\nDiscord RPC and auto-connect features may not work properly.");
                 }
             }
             else if (File.Exists(gameStatePath))
             {
-                File.Delete(gameStatePath);
+                try
+                {
+                    File.Delete(gameStatePath);
+                    Terminal.Print("Removed game state integration config (disabled)");
+                }
+                catch (Exception ex)
+                {
+                    string errorMsg = "Failed to delete game state integration config";
+                    ErrorLogger.LogError("Game.Launch", ex, "Failed to delete gamestate integration config");
+                    Terminal.Warning("Could not delete game state integration config file");
+                }
             }
 
             _process = new Process();
 
             string gameExe = "csgo.exe";
-            _process.StartInfo.FileName = Path.Combine(directory, gameExe);
+            string gameExePath = Path.Combine(directory, gameExe);
+            _process.StartInfo.FileName = gameExePath;
             _process.StartInfo.Arguments = string.Join(" ", arguments);
             _process.StartInfo.WorkingDirectory = directory;
 
@@ -111,12 +134,39 @@ namespace Wauncher.Utils
 
             if (!File.Exists(_process.StartInfo.FileName))
             {
-                Terminal.Error($"(!) {gameExe} not found in the current directory!");
-                ConsoleManager.ShowError($"{gameExe} not found in the current directory!\n\nPlease make sure the launcher and game files are in the same folder.");
+                string errorMsg = $"{gameExe} not found in current directory!\n\nExpected path: {_process.StartInfo.FileName}";
+                Terminal.Error($"(!) {errorMsg}");
+                ConsoleManager.ShowError(errorMsg);
+                ErrorLogger.LogError("Game.Launch", "Game executable not found", $"Path: {_process.StartInfo.FileName}");
                 return false;
             }
 
-            return _process.Start();
+            try
+            {
+                Terminal.Print($"Starting process: {_process.StartInfo.FileName} {_process.StartInfo.Arguments}");
+                bool started = _process.Start();
+                
+                if (started)
+                {
+                    Terminal.Print("Game process started successfully");
+                }
+                else
+                {
+                    string errorMsg = "Failed to start game process (Process.Start returned false)";
+                    Terminal.Error(errorMsg);
+                    ErrorLogger.LogError("Game.Launch", errorMsg, $"Executable: {_process.StartInfo.FileName}, Arguments: {_process.StartInfo.Arguments}");
+                }
+                
+                return started;
+            }
+            catch (Exception ex)
+            {
+                string errorMsg = $"Failed to start game process:\n{ex.Message}";
+                Terminal.Error($"(!) {errorMsg}");
+                ConsoleManager.ShowError(errorMsg);
+                ErrorLogger.LogError("Game.Launch", ex, $"Executable: {_process.StartInfo.FileName}, Arguments: {_process.StartInfo.Arguments}");
+                return false;
+            }
         }
 
         public static async Task Monitor()
