@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Net.Http;
 using System.Net.NetworkInformation;
 using System.Security.Cryptography;
@@ -193,7 +194,9 @@ namespace Wauncher.Views
                         offlinePanel.IsVisible = true;
 
                     if (offlineTitle != null)
-                        offlineTitle.Text = "No internet connection";
+                        offlineTitle.Text = hasInternet
+                            ? "Carousel Unavailable"
+                            : "Offline Mode";
 
                     if (offlineSubText != null)
                     {
@@ -229,9 +232,11 @@ namespace Wauncher.Views
                 _currentCarouselIndex = 0;
                 _currentCarouselSlot = 0;
 
-                await SetCarouselImageAsync(_carouselImages[_currentCarouselSlot], _carouselImageUrls[_currentCarouselIndex]);
+                await SetCarouselImageLazyAsync(_carouselImages[_currentCarouselSlot], _currentCarouselIndex, _carouselImageUrls[_currentCarouselIndex]);
                 _carouselImages[_currentCarouselSlot].Opacity = 1.0;
                 StartZoomOut(_carouselImages[_currentCarouselSlot], _currentCarouselSlot);
+
+                await _carouselService.PreloadAdjacentImagesAsync(_currentCarouselIndex, _carouselImageUrls);
 
                 _carouselTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(CarouselRotationIntervalSeconds) };
                 _carouselTimer.Tick += async (_, _) => await RotateCarouselAsync();
@@ -348,7 +353,7 @@ namespace Wauncher.Views
                 int nextSlot = (_currentCarouselSlot + 1) % _carouselImages.Length;
                 int currentSlot = _currentCarouselSlot;
 
-                await SetCarouselImageAsync(_carouselImages[nextSlot], _carouselImageUrls[nextIndex]);
+                await SetCarouselImageLazyAsync(_carouselImages[nextSlot], nextIndex, _carouselImageUrls[nextIndex]);
 
                 _carouselImages[currentSlot].Opacity = 0.0;
                 StartZoomOut(_carouselImages[nextSlot], nextSlot);
@@ -356,6 +361,13 @@ namespace Wauncher.Views
 
                 _currentCarouselIndex = nextIndex;
                 _currentCarouselSlot = nextSlot;
+
+                // Preload next adjacent images and unload distant ones
+                if (_carouselService != null)
+                {
+                    await _carouselService.PreloadAdjacentImagesAsync(_currentCarouselIndex, _carouselImageUrls);
+                    await _carouselService.UnloadDistantImagesAsync(_currentCarouselIndex, _carouselImageUrls);
+                }
             }
             finally
             {
@@ -387,6 +399,8 @@ namespace Wauncher.Views
             _currentCarouselIndex = 0;
             _currentCarouselSlot = 0;
             Interlocked.Exchange(ref _carouselRotateInProgress, 0);
+
+            _carouselService?.ClearImageCache();
         }
 
         private void OnDisableCarouselChanged(bool disabled)
@@ -418,6 +432,18 @@ namespace Wauncher.Views
 
                 await InitializeCarouselAsync();
             });
+        }
+
+        private async Task SetCarouselImageLazyAsync(Image image, int index, string url)
+        {
+            var nextBitmap = await _carouselService?.LoadImageAsync(index, url);
+            if (nextBitmap == null)
+                return;
+
+            if (image.Source is IDisposable disposable)
+                disposable.Dispose();
+
+            image.Source = nextBitmap;
         }
 
         private async Task SetCarouselImageAsync(Image image, string url)
