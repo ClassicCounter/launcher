@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -32,7 +33,14 @@ namespace Wauncher.Services
 
         private const int CarouselMaxWidth = 1280;
         private const int CarouselMaxHeight = 720;
-
+        private const int MaxCachedImages = 3; // Keep current + adjacent images
+        private const int PreloadDistance = 1; // Preload 1 image before/after current
+        
+        // Lazy loading cache
+        private readonly ConcurrentDictionary<string, Bitmap> _imageCache = new();
+        private readonly ConcurrentDictionary<string, Task<Bitmap?>> _loadingTasks = new();
+        private readonly SemaphoreSlim _cacheSemaphore = new(1, 1);
+        
         public bool IsOfflineMode => !System.Net.NetworkInformation.NetworkInterface.GetIsNetworkAvailable();
 
         public async Task SetupCarouselAsync()
@@ -75,7 +83,147 @@ namespace Wauncher.Services
 
         public async Task TeardownCarouselAsync()
         {
+            await ClearImageCacheAsync();
             await Task.CompletedTask;
+        }
+        
+        // Lazy loading implementation
+        public async Task<Bitmap?> LoadImageAsync(int index, string url)
+        {
+            if (string.IsNullOrEmpty(url))
+                return null;
+                
+            // Check cache first
+            if (_imageCache.TryGetValue(url, out var cachedBitmap))
+                return cachedBitmap;
+                
+            // Check if already loading
+            var loadingTask = _loadingTasks.GetOrAdd(url, async (key) => await LoadImageInternalAsync(key));
+            
+            try
+            {
+                var bitmap = await loadingTask;
+                if (bitmap != null)
+                {
+                    _imageCache.TryAdd(url, bitmap);
+                }
+                return bitmap;
+            }
+            finally
+            {
+                _loadingTasks.TryRemove(url, out _);
+            }
+        }
+        
+        public async Task PreloadAdjacentImagesAsync(int currentIndex, List<string> urls)
+        {
+            if (urls == null || urls.Count == 0)
+                return;
+                
+            var preloadTasks = new List<Task>();
+            
+            // Preload previous image
+            var prevIndex = (currentIndex - 1 + urls.Count) % urls.Count;
+            if (prevIndex != currentIndex)
+            {
+                preloadTasks.Add(LoadImageAsync(prevIndex, urls[prevIndex]));
+            }
+            
+            // Preload next image
+            var nextIndex = (currentIndex + 1) % urls.Count;
+            if (nextIndex != currentIndex && nextIndex != prevIndex)
+            {
+                preloadTasks.Add(LoadImageAsync(nextIndex, urls[nextIndex]));
+            }
+            
+            // Execute preloads in parallel
+            await Task.WhenAll(preloadTasks);
+        }
+        
+        public async Task UnloadDistantImagesAsync(int currentIndex, List<string> urls, int maxCachedCount = MaxCachedImages)
+        {
+            if (urls == null || urls.Count == 0)
+                return;
+                
+            await _cacheSemaphore.WaitAsync();
+            try
+            {
+                // Determine which URLs to keep (current + adjacent)
+                var urlsToKeep = new HashSet<string>();
+                
+                // Keep current
+                if (currentIndex >= 0 && currentIndex < urls.Count)
+                    urlsToKeep.Add(urls[currentIndex]);
+                    
+                // Keep adjacent
+                for (int i = -PreloadDistance; i <= PreloadDistance; i++)
+                {
+                    var index = (currentIndex + i + urls.Count) % urls.Count;
+                    if (index >= 0 && index < urls.Count)
+                        urlsToKeep.Add(urls[index]);
+                }
+                
+                // Remove distant images from cache
+                var keysToRemove = _imageCache.Keys
+                    .Where(url => !urlsToKeep.Contains(url))
+                    .ToList();
+                    
+                foreach (var key in keysToRemove)
+                {
+                    if (_imageCache.TryRemove(key, out var bitmap))
+                    {
+                        bitmap?.Dispose();
+                    }
+                }
+            }
+            finally
+            {
+                _cacheSemaphore.Release();
+            }
+        }
+        
+        public void ClearImageCache()
+        {
+            _ = ClearImageCacheAsync();
+        }
+        
+        private async Task ClearImageCacheAsync()
+        {
+            await _cacheSemaphore.WaitAsync();
+            try
+            {
+                foreach (var kvp in _imageCache)
+                {
+                    kvp.Value?.Dispose();
+                }
+                _imageCache.Clear();
+                _loadingTasks.Clear();
+            }
+            finally
+            {
+                _cacheSemaphore.Release();
+            }
+        }
+        
+        private async Task<Bitmap?> LoadImageInternalAsync(string url)
+        {
+            try
+            {
+                var cachedBytes = await TryGetCachedCarouselBytesAsync(url);
+                var bytes = cachedBytes ?? await _http.GetByteArrayAsync(url);
+                var resized = cachedBytes ?? TryResizeCarouselBytes(bytes) ?? bytes;
+
+                if (cachedBytes == null)
+                    await TryWriteCarouselCacheAsync(url, resized);
+
+                await using var ms = new MemoryStream(resized);
+                return new Bitmap(ms);
+            }
+            catch (Exception ex)
+            {
+                ErrorLogger.LogError("CarouselService.LoadImageInternalAsync", ex, $"Failed to load image from URL: {url}");
+                return null;
+            }
         }
 
         private static int GetCarouselSortIndex(string name)
