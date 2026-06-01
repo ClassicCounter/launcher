@@ -98,6 +98,28 @@ namespace Wauncher.Views
                 if (_carouselService != null)
                     _ = InitializeCarouselAsync();
                 _ = PatchNotesControl.LoadPatchNotesAsync();
+
+                SettingsPanelControl.CloseRequested += (_, _) =>
+                {
+                    if (DataContext is MainWindowViewModel vm)
+                        vm.IsSettingsPanelOpen = false;
+                };
+
+                InfoPanelControl.CloseRequested += (_, _) =>
+                {
+                    if (DataContext is MainWindowViewModel vm)
+                        vm.IsInfoPanelOpen = false;
+                };
+
+                var appearancePanelControl = this.FindControl<Controls.AppearancePanel>("AppearancePanelControl");
+                if (appearancePanelControl != null)
+                {
+                    appearancePanelControl.CloseRequested += () =>
+                    {
+                        if (DataContext is MainWindowViewModel vm)
+                            vm.IsAppearancePanelOpen = false;
+                    };
+                }
             };
 
             Closing += (_, e) =>

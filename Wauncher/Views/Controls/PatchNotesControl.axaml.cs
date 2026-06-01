@@ -33,9 +33,10 @@ namespace Wauncher.Views.Controls
                 {
                     await Dispatcher.UIThread.InvokeAsync(() =>
                     {
-                        PatchNotesVersion.IsVisible = false;
                         PatchNotesList.ItemsSource = LoadCachedPatchNotes();
                         PatchNotesScroll.Offset = new Avalonia.Vector(0, 0);
+                        PatchNotesLoadingPanel.IsVisible = false;
+                        PatchNotesContent.IsVisible = true;
                     });
                     return;
                 }
@@ -46,9 +47,10 @@ namespace Wauncher.Views.Controls
 
                 await Dispatcher.UIThread.InvokeAsync(() =>
                 {
-                    PatchNotesVersion.IsVisible = false;
                     PatchNotesList.ItemsSource = items;
                     PatchNotesScroll.Offset = new Avalonia.Vector(0, 0);
+                    PatchNotesLoadingPanel.IsVisible = false;
+                    PatchNotesContent.IsVisible = true;
                 });
             }
             catch
@@ -59,9 +61,10 @@ namespace Wauncher.Views.Controls
 
                 await Dispatcher.UIThread.InvokeAsync(() =>
                 {
-                    PatchNotesVersion.IsVisible = false;
                     PatchNotesList.ItemsSource = items;
                     PatchNotesScroll.Offset = new Avalonia.Vector(0, 0);
+                    PatchNotesLoadingPanel.IsVisible = false;
+                    PatchNotesContent.IsVisible = true;
                 });
             }
         }

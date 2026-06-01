@@ -16,7 +16,7 @@ namespace Wauncher.Views.Controls
             var panel = this.FindControl<Border>("ServerListPanel");
             if (panel != null)
             {
-                panel.MaxHeight = isOpen ? 270 : 0;
+                panel.MaxHeight = isOpen ? 415 : 0;
             }
         }
 

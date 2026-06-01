@@ -11,53 +11,75 @@
     x:DataType="vm:MainWindowViewModel">
 
     <Grid>
-        <ScrollViewer x:Name="PatchNotesScroll" Margin="0,0,0,0" Padding="10,10,20,16" ClipToBounds="True" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
-            <StackPanel Spacing="0">
-                <TextBlock
-                    Margin="0,0,0,6"
-                    FontSize="11"
-                    FontWeight="Bold"
-                    Foreground="#F39C12"
-                    IsVisible="{Binding IsOfflineMode}"
-                    Text="OFFLINE MODE" />
-                <TextBlock
-                    Margin="0,0,0,8"
-                    FontSize="11"
-                    Foreground="{DynamicResource AppMutedText}"
-                    IsVisible="False"
-                    Text="Latest wauncher changes"
-                    TextWrapping="Wrap" />
-                <TextBlock
-                    x:Name="PatchNotesVersion"
-                    Margin="0,0,0,10"
-                    FontSize="12"
-                    FontWeight="SemiBold"
-                    Foreground="{DynamicResource AppMutedText}"
-                    IsVisible="False"
-                    Text="Loading..." />
+        <!-- Loading state — shown until content is ready -->
+        <StackPanel
+            x:Name="PatchNotesLoadingPanel"
+            HorizontalAlignment="Center"
+            VerticalAlignment="Center"
+            Spacing="6">
+            <TextBlock
+                FontSize="12"
+                FontStyle="Italic"
+                HorizontalAlignment="Center"
+                Foreground="{DynamicResource AppMutedText}"
+                Text="Loading patch notes..." />
+        </StackPanel>
 
-                <ItemsControl x:Name="PatchNotesList" HorizontalAlignment="Stretch" MaxWidth="268">
-                    <ItemsControl.ItemsPanel>
-                        <ItemsPanelTemplate>
-                            <StackPanel Spacing="0" />
-                        </ItemsPanelTemplate>
-                    </ItemsControl.ItemsPanel>
-                    <ItemsControl.ItemTemplate>
-                        <DataTemplate x:DataType="vm:PatchNoteItem">
-                            <Grid>
-                                <TextBlock IsVisible="{Binding IsMajorHeader}" Margin="0,14,0,8" FontSize="22" FontWeight="ExtraBold" Foreground="{DynamicResource AppPrimaryText}" TextWrapping="Wrap" LineHeight="28" MaxWidth="256" Text="{Binding Text}" />
-                                <TextBlock IsVisible="{Binding IsDateHeader}" Margin="0,-2,0,8" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource AppMutedText}" TextWrapping="Wrap" LineHeight="16" MaxWidth="256" Text="{Binding Text}" />
-                                <TextBlock IsVisible="{Binding IsHeader}" Margin="0,10,0,7" FontSize="15" FontWeight="Bold" Foreground="{DynamicResource AppPrimaryText}" TextWrapping="Wrap" LineHeight="20" MaxWidth="256" Text="{Binding Text}" />
-                                <Grid IsVisible="{Binding IsBullet}" Margin="0,3,0,3" ColumnDefinitions="10,*">
-                                    <TextBlock Grid.Column="0" FontSize="11" Foreground="#4CAF50" VerticalAlignment="Top" Margin="0,2,0,0" Text="&#x2022;" />
-                                    <TextBlock Grid.Column="1" FontSize="12" Foreground="{DynamicResource AppBulletText}" TextWrapping="Wrap" LineHeight="18" MaxWidth="246" Text="{Binding Text}" />
+        <!-- Offline badge + content — hidden until loaded -->
+        <Grid x:Name="PatchNotesContent" IsVisible="False">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+
+            <!-- Offline badge -->
+            <Border
+                Grid.Row="0"
+                IsVisible="{Binding IsOfflineMode}"
+                Background="#18F39C12"
+                Padding="10,4">
+                <StackPanel Orientation="Horizontal" Spacing="5" VerticalAlignment="Center">
+                    <Ellipse Width="5" Height="5" Fill="#F39C12" VerticalAlignment="Center" />
+                    <TextBlock
+                        FontSize="10"
+                        FontWeight="Bold"
+                        Foreground="#F39C12"
+                        VerticalAlignment="Center"
+                        Text="OFFLINE — showing cached notes" />
+                </StackPanel>
+            </Border>
+
+            <ScrollViewer
+                x:Name="PatchNotesScroll"
+                Grid.Row="1"
+                Padding="10,10,20,16"
+                ClipToBounds="True"
+                HorizontalScrollBarVisibility="Disabled"
+                VerticalScrollBarVisibility="Auto">
+                <StackPanel Spacing="0">
+                    <ItemsControl x:Name="PatchNotesList" HorizontalAlignment="Stretch" MaxWidth="268">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <StackPanel Spacing="0" />
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate x:DataType="vm:PatchNoteItem">
+                                <Grid>
+                                    <TextBlock IsVisible="{Binding IsMajorHeader}" Margin="0,14,0,8" FontSize="22" FontWeight="ExtraBold" Foreground="{DynamicResource AppPrimaryText}" TextWrapping="Wrap" LineHeight="28" MaxWidth="256" Text="{Binding Text}" />
+                                    <TextBlock IsVisible="{Binding IsDateHeader}" Margin="0,-2,0,8" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource AppMutedText}" TextWrapping="Wrap" LineHeight="16" MaxWidth="256" Text="{Binding Text}" />
+                                    <TextBlock IsVisible="{Binding IsHeader}" Margin="0,10,0,7" FontSize="15" FontWeight="Bold" Foreground="{DynamicResource AppPrimaryText}" TextWrapping="Wrap" LineHeight="20" MaxWidth="256" Text="{Binding Text}" />
+                                    <Grid IsVisible="{Binding IsBullet}" Margin="0,3,0,3" ColumnDefinitions="10,*">
+                                        <TextBlock Grid.Column="0" FontSize="11" Foreground="{DynamicResource AppAccentGreen}" VerticalAlignment="Top" Margin="0,2,0,0" Text="&#x2022;" />
+                                        <TextBlock Grid.Column="1" FontSize="12" Foreground="{DynamicResource AppBulletText}" TextWrapping="Wrap" LineHeight="18" MaxWidth="246" Text="{Binding Text}" />
+                                    </Grid>
                                 </Grid>
-                            </Grid>
-                        </DataTemplate>
-                    </ItemsControl.ItemTemplate>
-                </ItemsControl>
-                <Border Height="34" />
-            </StackPanel>
-        </ScrollViewer>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                    <Border Height="34" />
+                </StackPanel>
+            </ScrollViewer>
+        </Grid>
     </Grid>
 </UserControl>

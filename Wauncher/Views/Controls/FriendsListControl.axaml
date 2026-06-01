@@ -18,43 +18,62 @@
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
-        <TextBlock
+        <!-- Offline badge — compact strip at top, only when offline -->
+        <Border
             Grid.Row="0"
-            Margin="8,8,4,0"
-            FontSize="11"
-            FontWeight="Bold"
-            Foreground="#F39C12"
             IsVisible="{Binding IsOfflineMode}"
-            Text="OFFLINE MODE" />
+            Background="#18F39C12"
+            Padding="10,4">
+            <StackPanel Orientation="Horizontal" Spacing="5" VerticalAlignment="Center">
+                <Ellipse Width="5" Height="5" Fill="#F39C12" VerticalAlignment="Center" />
+                <TextBlock
+                    FontSize="10"
+                    FontWeight="Bold"
+                    Foreground="#F39C12"
+                    VerticalAlignment="Center"
+                    Text="OFFLINE MODE" />
+            </StackPanel>
+        </Border>
 
-        <TextBlock
-            Grid.Row="0"
-            Margin="8,26,4,0"
-            FontSize="12"
-            Foreground="{DynamicResource AppMutedText}"
-            FontStyle="Italic"
+        <!-- Loading / error / no-connection state (centered in main area) -->
+        <StackPanel
+            Grid.Row="1"
             IsVisible="{Binding ShowGenericFriendsStatus}"
-            Text="{Binding FriendsStatus}" />
+            HorizontalAlignment="Center"
+            VerticalAlignment="Center"
+            Spacing="8"
+            Margin="20,0">
+            <TextBlock
+                FontSize="13"
+                FontStyle="Italic"
+                HorizontalAlignment="Center"
+                TextAlignment="Center"
+                TextWrapping="Wrap"
+                MaxWidth="220"
+                Foreground="{DynamicResource AppMutedText}"
+                Text="{Binding FriendsStatus}" />
+        </StackPanel>
 
+        <!-- No CC friends state (centered) -->
         <Grid Grid.Row="1" IsVisible="{Binding ShowNoFriendsState}">
             <StackPanel
                 HorizontalAlignment="Center"
                 VerticalAlignment="Center"
                 Spacing="8">
                 <TextBlock
-                    FontSize="62"
+                    FontSize="52"
                     FontWeight="Bold"
                     HorizontalAlignment="Center"
                     Foreground="{DynamicResource AppMutedText}"
                     Text=":(" />
                 <TextBlock
-                    FontSize="18"
+                    FontSize="16"
                     FontWeight="Bold"
                     HorizontalAlignment="Center"
                     Foreground="{DynamicResource AppPrimaryText}"
-                    Text="You have no friends!" />
+                    Text="No friends on ClassicCounter" />
                 <TextBlock
-                    FontSize="12"
+                    FontSize="11"
                     FontStyle="Italic"
                     HorizontalAlignment="Center"
                     Foreground="{DynamicResource AppMutedText}"
@@ -62,7 +81,13 @@
             </StackPanel>
         </Grid>
 
-        <ScrollViewer Grid.Row="1" IsVisible="{Binding !FriendsShowStatus}" Padding="4,8,12,12" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+        <!-- Friends list -->
+        <ScrollViewer
+            Grid.Row="1"
+            IsVisible="{Binding !FriendsShowStatus}"
+            Padding="4,8,12,12"
+            HorizontalScrollBarVisibility="Disabled"
+            VerticalScrollBarVisibility="Auto">
             <StackPanel Spacing="0">
                 <ItemsControl ItemsSource="{Binding Friends}">
                     <ItemsControl.ItemsPanel>
@@ -98,7 +123,11 @@
                                                 Foreground="{DynamicResource AppPrimaryText}"
                                                 Text="{Binding Username}"
                                                 TextTrimming="CharacterEllipsis" />
-                                            <TextBlock FontSize="11" Foreground="#A8A8A8" Text="{Binding StatusText}" TextTrimming="CharacterEllipsis" />
+                                            <TextBlock
+                                                FontSize="11"
+                                                Foreground="{DynamicResource AppMutedText}"
+                                                Text="{Binding StatusText}"
+                                                TextTrimming="CharacterEllipsis" />
                                         </StackPanel>
                                         <Path Grid.Column="2" Width="8" Height="5" HorizontalAlignment="Center" VerticalAlignment="Center" Data="M0,5 L4,0 L8,5" Stroke="{DynamicResource AppMutedText}" StrokeThickness="1.2" />
                                     </Grid>

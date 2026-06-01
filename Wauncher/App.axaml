@@ -24,6 +24,9 @@
     <Application.Resources>
         <ResourceDictionary>
             <SolidColorBrush x:Key="AppTitleBarBrush">#CC3A3A3A</SolidColorBrush>
+            <SolidColorBrush x:Key="AppMainBackground">#3A3A3A</SolidColorBrush>
+            <SolidColorBrush x:Key="AppAccentGreen">#4CAF50</SolidColorBrush>
+            <SolidColorBrush x:Key="AppTextColor">White</SolidColorBrush>
             <SolidColorBrush x:Key="AppPrimaryText">White</SolidColorBrush>
             <SolidColorBrush x:Key="AppMutedText">#88FFFFFF</SolidColorBrush>
             <SolidColorBrush x:Key="AppSectionLabel">#55FFFFFF</SolidColorBrush>

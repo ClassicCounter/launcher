@@ -15,7 +15,7 @@
     <PublishSingleFile>true</PublishSingleFile>
     <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
     <SelfContained>false</SelfContained>
-    <Version>3.1</Version>
+    <Version>3.2</Version>
     <AssemblyVersion>$(Version)</AssemblyVersion>
     <FileVersion>$(Version)</FileVersion>
     <AssemblyName>wauncher</AssemblyName>
@@ -32,7 +32,7 @@
 
   <ItemGroup>
     <Folder Include="Models\" />
-    <!-- Embed all assets including carousel images -->
+    <!-- Embed all assets including carousel images and flags -->
     <AvaloniaResource Include="Assets\**" Exclude="Assets\background.mp4;Assets\carousel_*.png" />
   </ItemGroup>
 

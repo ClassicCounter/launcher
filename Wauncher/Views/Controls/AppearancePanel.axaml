@@ -1,0 +1,150 @@
+<UserControl
+    x:Class="Wauncher.Views.Controls.AppearancePanel"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:vm="using:Wauncher.ViewModels"
+    xmlns:local="using:Wauncher.Views.Controls"
+    mc:Ignorable="d"
+    d:DesignWidth="720"
+    d:DesignHeight="415"
+    x:DataType="vm:AppearanceWindowViewModel"
+    HorizontalAlignment="Stretch"
+    VerticalAlignment="Stretch">
+
+    <UserControl.Styles>
+        <Style Selector="TextBlock.colorLabel">
+            <Setter Property="FontSize" Value="13" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="Foreground" Value="{DynamicResource AppPrimaryText}" />
+            <Setter Property="LetterSpacing" Value="0.5" />
+        </Style>
+        <Style Selector="TextBox.colorInput">
+            <Setter Property="Background" Value="{DynamicResource AppInputBg}" />
+            <Setter Property="Foreground" Value="{DynamicResource AppPrimaryText}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource AppDivider}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="CornerRadius" Value="6" />
+            <Setter Property="Padding" Value="8,6" />
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="CaretBrush" Value="{DynamicResource AppPrimaryText}" />
+        </Style>
+        <Style Selector="Border.colorBox">
+            <Setter Property="BorderBrush" Value="{DynamicResource AppDivider2}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="CornerRadius" Value="8" />
+            <Setter Property="Padding" Value="16" />
+            <Setter Property="Background" Value="Transparent" />
+        </Style>
+
+        <!-- Reset button: clean centered template like the Launch button -->
+        <Style Selector="Button.resetBtn">
+            <Setter Property="Background" Value="#F44336" />
+            <Setter Property="Foreground" Value="White" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Template">
+                <ControlTemplate>
+                    <Border x:Name="PART_Border"
+                            Background="{TemplateBinding Background}"
+                            CornerRadius="{TemplateBinding CornerRadius}"
+                            Padding="{TemplateBinding Padding}">
+                        <Border.Transitions>
+                            <Transitions>
+                                <BrushTransition Property="Background" Duration="0:0:0.16" />
+                            </Transitions>
+                        </Border.Transitions>
+                        <ContentPresenter
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center"
+                            Content="{TemplateBinding Content}" />
+                    </Border>
+                </ControlTemplate>
+            </Setter>
+        </Style>
+        <Style Selector="Button.resetBtn:pointerover /template/ Border#PART_Border">
+            <Setter Property="Background" Value="#E53935" />
+        </Style>
+        <Style Selector="Button.resetBtn:pressed /template/ Border#PART_Border">
+            <Setter Property="Background" Value="#C62828" />
+        </Style>
+    </UserControl.Styles>
+
+    <Grid Background="{DynamicResource AppMainBackground}" MinHeight="415">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="1" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <!-- Header -->
+        <Grid Grid.Row="0" Height="44">
+            <TextBlock
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                FontSize="15"
+                FontWeight="Bold"
+                Foreground="{DynamicResource AppPrimaryText}"
+                Text="Appearance" />
+            <Button
+                x:Name="ClosePanelButton"
+                HorizontalAlignment="Right"
+                Classes="titleBtn"
+                Width="44"
+                Height="44"
+                HorizontalContentAlignment="Center"
+                VerticalContentAlignment="Center">
+                <Path Width="10" Height="10"
+                      Data="M0,0 L10,10 M10,0 L0,10"
+                      Stroke="White" StrokeThickness="1.5" />
+            </Button>
+        </Grid>
+
+        <Rectangle Grid.Row="1" Fill="{DynamicResource AppDivider}" />
+
+        <!-- Content (fixed, no scroll) -->
+        <Grid Grid.Row="2" Margin="24,20,24,16" RowDefinitions="*,Auto">
+            <!-- Three color pickers side by side -->
+            <Grid Grid.Row="0" ColumnDefinitions="*,*,*" ColumnSpacing="16">
+                <!-- Background Color -->
+                <Border Grid.Column="0" Classes="colorBox">
+                    <StackPanel Spacing="10">
+                        <TextBlock Classes="colorLabel" Text="Background" HorizontalAlignment="Center" />
+                        <local:SliderColorPicker x:Name="BgColorPicker" ColorChanged="BgColorPicker_ColorChanged" />
+                    </StackPanel>
+                </Border>
+
+                <!-- Accent Color -->
+                <Border Grid.Column="1" Classes="colorBox">
+                    <StackPanel Spacing="10">
+                        <TextBlock Classes="colorLabel" Text="Accent" HorizontalAlignment="Center" />
+                        <local:SliderColorPicker x:Name="GreenColorPicker" ColorChanged="GreenColorPicker_ColorChanged" />
+                    </StackPanel>
+                </Border>
+
+                <!-- Text Color -->
+                <Border Grid.Column="2" Classes="colorBox">
+                    <StackPanel Spacing="10">
+                        <TextBlock Classes="colorLabel" Text="Text" HorizontalAlignment="Center" />
+                        <local:SliderColorPicker x:Name="TextColorPicker" ColorChanged="TextColorPicker_ColorChanged" />
+                    </StackPanel>
+                </Border>
+            </Grid>
+
+            <!-- Reset Button (matches Launch Game button styling) -->
+            <Button
+                Grid.Row="1"
+                x:Name="ResetButton"
+                Classes="resetBtn"
+                Click="ResetButton_Click"
+                Padding="16,10"
+                Margin="0,16,0,0"
+                HorizontalAlignment="Center"
+                Content="Reset to Default Theme"
+                FontSize="13"
+                FontWeight="Bold"
+                Foreground="{DynamicResource AppPrimaryText}"
+                CornerRadius="5" />
+        </Grid>
+    </Grid>
+</UserControl>

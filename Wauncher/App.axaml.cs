@@ -25,6 +25,84 @@ namespace Wauncher
             ProtocolManager.RegisterURIHandler();
             // Initialize memory management
             MemoryManager.CleanupMemory();
+
+            // Subscribe to theme changes
+            AppearanceWindowViewModel.ColorThemeChanged += OnColorThemeChanged;
+        }
+
+        private void OnColorThemeChanged(object? sender, Wauncher.ViewModels.ColorTheme theme)
+        {
+            // Marshal to the UI thread, then apply to Application.Resources
+            Dispatcher.UIThread.Post(() => ApplyThemeToResources(theme));
+        }
+
+        /// <summary>
+        /// Applies a ColorTheme to the live Application.Resources so all
+        /// DynamicResource-bound UI updates immediately. Must run on UI thread.
+        /// </summary>
+        public void ApplyThemeToResources(Wauncher.ViewModels.ColorTheme theme)
+        {
+            try
+            {
+                // Update main background (used by all panels and server selector)
+                var brush = new Avalonia.Media.SolidColorBrush(Avalonia.Media.Color.Parse(theme.BgMain));
+                Resources["AppMainBackground"] = brush;
+
+                // Update accent green (launch button, active tab border, etc.)
+                var accentBrush = new Avalonia.Media.SolidColorBrush(Avalonia.Media.Color.Parse(theme.AccentGreen));
+                Resources["AppAccentGreen"] = accentBrush;
+
+                // Make slider knobs + filled track follow the accent color
+                Resources["SliderThumbBackground"] = accentBrush;
+                Resources["SliderThumbBackgroundPointerOver"] = accentBrush;
+                Resources["SliderThumbBackgroundPressed"] = accentBrush;
+                Resources["SliderTrackValueFill"] = accentBrush;
+                Resources["SliderTrackValueFillPointerOver"] = accentBrush;
+                Resources["SliderTrackValueFillPressed"] = accentBrush;
+                Resources["SliderTrackValueFillDisabled"] = accentBrush;
+
+                // Make ToggleSwitch "on" state follow the accent color
+                Resources["ToggleSwitchFillOn"] = accentBrush;
+                Resources["ToggleSwitchFillOnPointerOver"] = accentBrush;
+                Resources["ToggleSwitchFillOnPressed"] = accentBrush;
+                Resources["ToggleSwitchStrokeOn"] = accentBrush;
+                Resources["ToggleSwitchStrokeOnPointerOver"] = accentBrush;
+                Resources["ToggleSwitchStrokeOnPressed"] = accentBrush;
+
+                // Update primary text color (all text derives from this)
+                brush = new Avalonia.Media.SolidColorBrush(Avalonia.Media.Color.Parse(theme.TextPrimary));
+                Resources["AppTextColor"] = brush;
+                Resources["AppPrimaryText"] = brush;
+
+                // Update secondary text colors (derived from primary but with transparency)
+                var textColor = Avalonia.Media.Color.Parse(theme.TextPrimary);
+                Resources["AppMutedText"] = new Avalonia.Media.SolidColorBrush(textColor) { Opacity = 0.53 };
+                Resources["AppSectionLabel"] = new Avalonia.Media.SolidColorBrush(textColor) { Opacity = 0.33 };
+                Resources["AppBodyText"] = new Avalonia.Media.SolidColorBrush(textColor) { Opacity = 0.8 };
+                Resources["AppBulletText"] = new Avalonia.Media.SolidColorBrush(textColor) { Opacity = 0.67 };
+            }
+            catch (Exception ex)
+            {
+                ErrorLogger.LogError("App.ApplyThemeToResources", ex, "Failed to apply color theme");
+            }
+        }
+
+        /// <summary>
+        /// Loads the saved color theme from wauncher_settings and applies it at startup.
+        /// </summary>
+        private void ApplySavedThemeAtStartup()
+        {
+            try
+            {
+                var settings = SettingsWindowViewModel.LoadGlobal();
+                var theme = settings.LoadColorTheme();
+                if (theme != null)
+                    ApplyThemeToResources(theme);
+            }
+            catch (Exception ex)
+            {
+                ErrorLogger.LogError("App.ApplySavedThemeAtStartup", ex, "Failed to load saved color theme");
+            }
         }
 
         public override async void OnFrameworkInitializationCompleted()
@@ -75,6 +153,10 @@ namespace Wauncher
                     desktop.Shutdown();
                     return;
                 }
+
+                // Apply the saved color theme before showing the window so
+                // custom colors persist across sessions without a flash of defaults.
+                ApplySavedThemeAtStartup();
 
                 desktop.MainWindow = new MainWindow();
 
