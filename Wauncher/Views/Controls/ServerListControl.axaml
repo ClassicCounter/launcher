@@ -7,46 +7,129 @@
     xmlns:vm="using:Wauncher.ViewModels"
     xmlns:conv="using:Wauncher.Converters"
     mc:Ignorable="d"
-    d:DesignWidth="390"
-    d:DesignHeight="270"
+    d:DesignWidth="720"
+    d:DesignHeight="415"
     x:DataType="vm:MainWindowViewModel">
 
-    <!-- Server dropdown list -->
     <Border
         x:Name="ServerListPanel"
-        MaxHeight="{Binding IsDropdownOpen, Converter={x:Static conv:BooleanToMaxHeightConverter.Instance}, ConverterParameter=270, FallbackValue=0}"
-        Margin="0,0,0,0"
-        HorizontalAlignment="Right"
+        MaxHeight="{Binding IsDropdownOpen, Converter={x:Static conv:BooleanToMaxHeightConverter.Instance}, ConverterParameter=415, FallbackValue=0}"
+        HorizontalAlignment="Stretch"
         VerticalAlignment="Bottom"
-        Width="390"
-        Background="{DynamicResource AppServerListBg}"
+        Background="{DynamicResource AppMainBackground}"
         BorderBrush="{DynamicResource AppDivider}"
-        BorderThickness="1"
+        BorderThickness="0,1,0,0"
         ClipToBounds="True"
-        CornerRadius="7"
         ZIndex="20">
         <Border.Transitions>
             <Transitions>
                 <DoubleTransition Easing="CubicEaseOut" Property="MaxHeight" Duration="0:0:0.22" />
             </Transitions>
         </Border.Transitions>
-        <ScrollViewer Margin="6" MaxHeight="270" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
-            <ItemsControl ItemsSource="{Binding Servers}">
-                <ItemsControl.ItemTemplate>
-                    <DataTemplate>
-                        <Button Classes="serverBtn"
+
+        <Grid MinHeight="415">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="44" />
+                <RowDefinition Height="1" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+
+            <!-- Header -->
+            <Grid Grid.Row="0">
+                <TextBlock
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    FontSize="15"
+                    FontWeight="Bold"
+                    Foreground="{DynamicResource AppPrimaryText}"
+                    Text="Server Selector" />
+                <Button
+                    HorizontalAlignment="Right"
+                    Classes="titleBtn"
+                    Width="44"
+                    Height="44"
+                    HorizontalContentAlignment="Center"
+                    VerticalContentAlignment="Center"
+                    Command="{Binding ToggleServerDropdownCommand}">
+                    <Path Width="10" Height="10"
+                          Data="M0,0 L10,10 M10,0 L0,10"
+                          Stroke="White" StrokeThickness="1.5" />
+                </Button>
+            </Grid>
+
+            <Rectangle Grid.Row="1" Fill="{DynamicResource AppDivider}" />
+
+            <!-- Server list -->
+            <ScrollViewer Grid.Row="2"
+                          Padding="20,8,20,16"
+                          HorizontalScrollBarVisibility="Disabled"
+                          VerticalScrollBarVisibility="Auto">
+                <ItemsControl ItemsSource="{Binding Servers}">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <StackPanel Spacing="8" />
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Button Classes="serverBtn"
                                     Click="ServerItem_Click"
                                     Tag="{Binding}">
-                            <Grid ColumnDefinitions="14,*,120,60">
-                                <Ellipse Grid.Column="0" Width="7" Height="7" VerticalAlignment="Center" Fill="{Binding DotColor}" />
-                                <TextBlock Grid.Column="1" Margin="8,0,0,0" VerticalAlignment="Center" FontSize="13" Foreground="{Binding NameColor}" Text="{Binding Name}" />
-                                <TextBlock Grid.Column="2" Margin="8,0,8,0" VerticalAlignment="Center" FontSize="11" FontFamily="Consolas,monospace" Foreground="{DynamicResource AppSectionLabel}" Text="{Binding MapDisplay}" />
-                                <TextBlock Grid.Column="3" VerticalAlignment="Center" FontSize="12" FontFamily="Consolas,monospace" Foreground="{DynamicResource AppMutedText}" Text="{Binding PlayerCount}" />
-                            </Grid>
-                        </Button>
-                    </DataTemplate>
-                </ItemsControl.ItemTemplate>
-            </ItemsControl>
-        </ScrollViewer>
+                                <Grid Margin="12,12,12,12" ColumnDefinitions="Auto,*,Auto" MinHeight="50">
+                                    <!-- Dot -->
+                                    <Ellipse Grid.Column="0" Width="11" Height="11"
+                                             VerticalAlignment="Center"
+                                             Margin="0,0,12,0"
+                                             Fill="{Binding DotColor}" />
+
+                                    <!-- Server name and map -->
+                                    <StackPanel Grid.Column="1" Spacing="12" Orientation="Horizontal" VerticalAlignment="Center">
+                                        <!-- Region flag -->
+                                        <Border CornerRadius="3" ClipToBounds="True" VerticalAlignment="Center"
+                                                Width="28" Height="19"
+                                                BorderBrush="{DynamicResource AppDivider2}" BorderThickness="1"
+                                                IsVisible="{Binding Region, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
+                                            <Panel>
+                                                <Image Source="avares://Wauncher/Assets/eu-flag.png" Stretch="UniformToFill" IsVisible="{Binding IsEu}" />
+                                                <Image Source="avares://Wauncher/Assets/na-flag.png" Stretch="UniformToFill" IsVisible="{Binding IsNa}" />
+                                            </Panel>
+                                        </Border>
+
+                                        <!-- None placeholder (keeps name aligned with server rows) -->
+                                        <Border CornerRadius="3" VerticalAlignment="Center"
+                                                Width="28" Height="19"
+                                                BorderBrush="{DynamicResource AppDivider2}" BorderThickness="1"
+                                                IsVisible="{Binding IsNone}">
+                                            <Path Width="11" Height="11" Stretch="Uniform"
+                                                  HorizontalAlignment="Center" VerticalAlignment="Center"
+                                                  Fill="{DynamicResource AppMutedText}"
+                                                  Data="M12,2C6.48,2,2,6.48,2,12s4.48,10,10,10s10-4.48,10-10S17.52,2,12,2z M4,12c0-4.42,3.58-8,8-8c1.85,0,3.55,0.63,4.9,1.69L5.69,16.9C4.63,15.55,4,13.85,4,12z M12,20c-1.85,0-3.55-0.63-4.9-1.69L18.31,7.1C19.37,8.45,20,10.15,20,12C20,16.42,16.42,20,12,20z" />
+                                        </Border>
+
+                                        <!-- Name and map stacked vertically -->
+                                        <StackPanel Spacing="1" VerticalAlignment="Center">
+                                            <TextBlock FontSize="15" FontWeight="SemiBold"
+                                                       Foreground="{DynamicResource AppPrimaryText}"
+                                                       Text="{Binding DisplayName}" />
+                                            <TextBlock FontSize="11"
+                                                       Foreground="{DynamicResource AppSectionLabel}"
+                                                       Text="{Binding Subtitle}" />
+                                        </StackPanel>
+                                    </StackPanel>
+
+                                    <!-- Player count -->
+                                    <TextBlock Grid.Column="2" FontSize="15" FontWeight="Bold"
+                                               FontFamily="Consolas,monospace"
+                                               VerticalAlignment="Center"
+                                               Margin="12,0,0,0"
+                                               Foreground="{DynamicResource AppPrimaryText}"
+                                               Text="{Binding PlayerCount}" />
+                                </Grid>
+                            </Button>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </ScrollViewer>
+        </Grid>
     </Border>
 </UserControl>

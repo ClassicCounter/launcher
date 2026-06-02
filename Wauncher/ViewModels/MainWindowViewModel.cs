@@ -70,6 +70,23 @@ namespace Wauncher.ViewModels
             _updateService.UpdateStatusFile.StartsWith("Error:", StringComparison.OrdinalIgnoreCase);
         public bool IsInstallPending => _updateService.IsNeedingInstall;
         public bool IsUpdatePending => _updateService.IsUpdateAvailable && !_updateService.IsUpdating && !_updateService.IsInstalling;
+        public bool IsUpdateError =>
+            !string.IsNullOrWhiteSpace(_updateService.UpdateStatusFile) && (
+            _updateService.UpdateStatusFile.StartsWith("Install error:", StringComparison.OrdinalIgnoreCase) ||
+            _updateService.UpdateStatusFile.StartsWith("Error:", StringComparison.OrdinalIgnoreCase));
+
+        public string FriendlyUpdateError
+        {
+            get
+            {
+                var text = _updateService.UpdateStatusFile;
+                if (text.StartsWith("Install error:", StringComparison.OrdinalIgnoreCase))
+                    return text["Install error:".Length..].Trim();
+                if (text.StartsWith("Error:", StringComparison.OrdinalIgnoreCase))
+                    return text["Error:".Length..].Trim();
+                return text;
+            }
+        }
 
         public string LaunchButtonText =>
             _updateService.IsInstalling ? "Installing Game..." :
@@ -203,6 +220,64 @@ namespace Wauncher.ViewModels
             SelectedServer = server?.IsNone == true ? null : server;
             ProtocolManager = (server == null || server.IsNone) ? "None" : server.Name;
             IsDropdownOpen = false;
+        }
+
+        [ObservableProperty]
+        private bool _isSettingsPanelOpen;
+
+        [ObservableProperty]
+        private bool _isInfoPanelOpen;
+
+        [ObservableProperty]
+        private bool _isAppearancePanelOpen;
+
+        [RelayCommand]
+        private void CloseSettingsPanel() => IsSettingsPanelOpen = false;
+
+        [RelayCommand]
+        private void CloseInfoPanel() => IsInfoPanelOpen = false;
+
+        [RelayCommand]
+        private void CloseAppearancePanel() => IsAppearancePanelOpen = false;
+
+        partial void OnIsSettingsPanelOpenChanged(bool value)
+        {
+            if (value)
+            {
+                IsInfoPanelOpen = false;
+                IsDropdownOpen = false;
+                IsAppearancePanelOpen = false;
+            }
+        }
+
+        partial void OnIsInfoPanelOpenChanged(bool value)
+        {
+            if (value)
+            {
+                IsSettingsPanelOpen = false;
+                IsDropdownOpen = false;
+                IsAppearancePanelOpen = false;
+            }
+        }
+
+        partial void OnIsDropdownOpenChanged(bool value)
+        {
+            if (value)
+            {
+                IsSettingsPanelOpen = false;
+                IsInfoPanelOpen = false;
+                IsAppearancePanelOpen = false;
+            }
+        }
+
+        partial void OnIsAppearancePanelOpenChanged(bool value)
+        {
+            if (value)
+            {
+                IsSettingsPanelOpen = false;
+                IsInfoPanelOpen = false;
+                IsDropdownOpen = false;
+            }
         }
 
         [RelayCommand]
@@ -408,6 +483,8 @@ namespace Wauncher.ViewModels
                     OnPropertyChanged(nameof(ShowUpdateStatus));
                     OnPropertyChanged(nameof(IsInstallPending));
                     OnPropertyChanged(nameof(IsUpdatePending));
+                    OnPropertyChanged(nameof(IsUpdateError));
+                    OnPropertyChanged(nameof(FriendlyUpdateError));
                 };
             }
 

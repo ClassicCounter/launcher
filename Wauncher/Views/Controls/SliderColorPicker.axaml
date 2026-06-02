@@ -1,0 +1,42 @@
+<UserControl
+    x:Class="Wauncher.Views.Controls.SliderColorPicker"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    d:DesignWidth="200"
+    d:DesignHeight="220"
+    Background="Transparent">
+
+    <StackPanel Spacing="8">
+        <!-- Color Preview -->
+        <Rectangle x:Name="ColorPreview" Height="40" RadiusX="6" RadiusY="6" />
+
+        <!-- Hex -->
+        <TextBlock x:Name="HexDisplay" HorizontalAlignment="Center"
+                   Foreground="{DynamicResource AppPrimaryText}" FontSize="12" FontWeight="Bold"
+                   FontFamily="Consolas,monospace" />
+
+        <!-- Hue Slider -->
+        <Grid ColumnDefinitions="14,*,34" ColumnSpacing="6">
+            <TextBlock Grid.Column="0" Text="H" Foreground="{DynamicResource AppMutedText}" FontSize="11" VerticalAlignment="Center" />
+            <Slider Grid.Column="1" x:Name="HueSlider" Minimum="0" Maximum="360" Value="0" ValueChanged="Hue_Changed" />
+            <TextBlock Grid.Column="2" x:Name="HueValue" Foreground="{DynamicResource AppMutedText}" FontSize="10" VerticalAlignment="Center" TextAlignment="Right" />
+        </Grid>
+
+        <!-- Saturation Slider -->
+        <Grid ColumnDefinitions="14,*,34" ColumnSpacing="6">
+            <TextBlock Grid.Column="0" Text="S" Foreground="{DynamicResource AppMutedText}" FontSize="11" VerticalAlignment="Center" />
+            <Slider Grid.Column="1" x:Name="SaturationSlider" Minimum="0" Maximum="100" Value="100" ValueChanged="Saturation_Changed" />
+            <TextBlock Grid.Column="2" x:Name="SatValue" Foreground="{DynamicResource AppMutedText}" FontSize="10" VerticalAlignment="Center" TextAlignment="Right" />
+        </Grid>
+
+        <!-- Brightness Slider -->
+        <Grid ColumnDefinitions="14,*,34" ColumnSpacing="6">
+            <TextBlock Grid.Column="0" Text="B" Foreground="{DynamicResource AppMutedText}" FontSize="11" VerticalAlignment="Center" />
+            <Slider Grid.Column="1" x:Name="BrightnessSlider" Minimum="0" Maximum="100" Value="100" ValueChanged="Brightness_Changed" />
+            <TextBlock Grid.Column="2" x:Name="BrightValue" Foreground="{DynamicResource AppMutedText}" FontSize="10" VerticalAlignment="Center" TextAlignment="Right" />
+        </Grid>
+    </StackPanel>
+</UserControl>

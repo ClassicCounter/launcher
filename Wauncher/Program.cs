@@ -1,6 +1,8 @@
 using Avalonia;
 using Avalonia.Win32;
+using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using Wauncher.Utils;
 using Wauncher.ViewModels;
 using static Wauncher.Utils.Services;
@@ -23,6 +25,14 @@ namespace Wauncher
                 if (!string.IsNullOrWhiteSpace(exeDirectory) && Directory.Exists(exeDirectory))
                     Directory.SetCurrentDirectory(exeDirectory);
 
+                // Self-update: if a strictly newer release exists, hand off to the
+                // updater and exit. Fails safe (offline/error -> just launch normally).
+                if (TrySelfUpdate(args))
+                {
+                    Environment.Exit(0);
+                    return;
+                }
+
                 if (OnStartup(args) == false)
                 {
                     Environment.Exit(0);
@@ -42,6 +52,54 @@ namespace Wauncher
                 // Cleanup EventWaitHandle to prevent zombie processes
                 ProgramStarted?.Dispose();
                 ProgramStarted = null;
+            }
+        }
+
+        /// <summary>
+        /// Checks GitHub for a strictly-newer release. If found, downloads the updater
+        /// and hands off to it, returning true so the app exits. Fails safe: any error,
+        /// offline state, or a not-newer version returns false and the app launches normally.
+        /// </summary>
+        private static bool TrySelfUpdate(string[] args)
+        {
+            try
+            {
+                if (!IsWindows())
+                    return false;
+
+                if (args.Any(a => string.Equals(a, "--skip-updates", StringComparison.OrdinalIgnoreCase)))
+                    return false;
+
+                // Was just relaunched by the updater; don't immediately re-check.
+                if (args.Any(a => string.Equals(a, "--updated", StringComparison.OrdinalIgnoreCase)))
+                    return false;
+
+                var latest = Wauncher.Utils.Version.GetLatestVersion().GetAwaiter().GetResult();
+
+                // Only update when the latest release is strictly newer (prevents
+                // downgrades and update loops if versions merely differ in format).
+                if (!System.Version.TryParse(latest, out var latestVer) ||
+                    !System.Version.TryParse(Wauncher.Utils.Version.Current, out var currentVer) ||
+                    latestVer <= currentVer)
+                    return false;
+
+                var updaterPath = Path.Combine(Directory.GetCurrentDirectory(), "updater.exe");
+                DownloadManager.DownloadUpdater(updaterPath).GetAwaiter().GetResult();
+                if (!File.Exists(updaterPath))
+                    return false;
+
+                Process.Start(new ProcessStartInfo
+                {
+                    FileName = updaterPath,
+                    Arguments = $"--version={latest} --ui",
+                    UseShellExecute = false
+                });
+                return true;
+            }
+            catch (Exception ex)
+            {
+                ErrorLogger.LogError("Program.TrySelfUpdate", ex, "Self-update check failed");
+                return false;
             }
         }
 

@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 500">
+  <!-- Red and white stripes -->
+  <rect width="960" height="500" fill="#B22234"/>
+  <rect width="960" height="38.46" y="38.46" fill="white"/>
+  <rect width="960" height="38.46" y="76.92" fill="#B22234"/>
+  <rect width="960" height="38.46" y="115.38" fill="white"/>
+  <rect width="960" height="38.46" y="153.84" fill="#B22234"/>
+  <rect width="960" height="38.46" y="192.3" fill="white"/>
+  <rect width="960" height="38.46" y="230.76" fill="#B22234"/>
+  <rect width="960" height="38.46" y="269.22" fill="white"/>
+  <rect width="960" height="38.46" y="307.68" fill="#B22234"/>
+  <rect width="960" height="38.46" y="346.14" fill="white"/>
+  <rect width="960" height="38.46" y="384.6" fill="#B22234"/>
+  <rect width="960" height="38.46" y="423.06" fill="white"/>
+
+  <!-- Blue canton -->
+  <rect width="360" height="260" fill="#3C3B6B"/>
+
+  <!-- Stars (simplified as circles for small size) -->
+  <g fill="white">
+    <circle cx="60" cy="30" r="8"/>
+    <circle cx="150" cy="30" r="8"/>
+    <circle cx="240" cy="30" r="8"/>
+    <circle cx="330" cy="30" r="8"/>
+    <circle cx="60" cy="80" r="8"/>
+    <circle cx="150" cy="80" r="8"/>
+    <circle cx="240" cy="80" r="8"/>
+    <circle cx="330" cy="80" r="8"/>
+    <circle cx="60" cy="130" r="8"/>
+    <circle cx="150" cy="130" r="8"/>
+    <circle cx="240" cy="130" r="8"/>
+    <circle cx="330" cy="130" r="8"/>
+    <circle cx="60" cy="180" r="8"/>
+    <circle cx="150" cy="180" r="8"/>
+    <circle cx="240" cy="180" r="8"/>
+    <circle cx="330" cy="180" r="8"/>
+    <circle cx="60" cy="230" r="8"/>
+    <circle cx="150" cy="230" r="8"/>
+    <circle cx="240" cy="230" r="8"/>
+    <circle cx="330" cy="230" r="8"/>
+  </g>
+</svg>
