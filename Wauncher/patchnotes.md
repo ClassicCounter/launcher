@@ -1,3 +1,31 @@
+# Launcher Update 3.2.0
+06/02/2026
+## What's Changed
+- Added an Appearance menu to customize the launcher's colors (Background, Accent, and Text)
+- Settings and Info are no longer separate windows; they now open as panels inside the launcher
+- Redesigned the server selector with a cleaner layout
+- Fixed the launcher getting stuck on "Checking for updates…" when the update server is unreachable
+- Fixed auto-updating, so future versions will install automatically (3.2.0 is the last manual download)
+
+# Minor Update - Bug Fixes
+05/17/2026
+- Fixed collection drops not functioning as intended
+- Fixed an issue with drop rarity
+- Fixed drop amounts for donors and non-donors
+- Fed the Horse twice
+
+# Update - Map and Drop Pool Changes
+04/02/2026
+- End of ClassicCounter anniversary event
+- Disabled sv_party_mode on all servers
+- Reverted drops back to normal amounts
+- Updated map pool for Spring season
+- Updated drop pool
+- Removed souvenir drops (event/holiday exclusive)
+- Fed the Horse
+- Some servers still need to be restarted for map and drop pool changes to apply.
+- Servers will be restarted during inactive hours.
+
 # Launcher Update 3.1.0
 03/22/2026
 ## What's Changed
