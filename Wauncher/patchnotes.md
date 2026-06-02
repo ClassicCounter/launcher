@@ -9,6 +9,7 @@
 
 # Minor Update - Bug Fixes
 05/17/2026
+## What's Changed
 - Fixed collection drops not functioning as intended
 - Fixed an issue with drop rarity
 - Fixed drop amounts for donors and non-donors
@@ -16,6 +17,7 @@
 
 # Update - Map and Drop Pool Changes
 04/02/2026
+## What's Changed
 - End of ClassicCounter anniversary event
 - Disabled sv_party_mode on all servers
 - Reverted drops back to normal amounts
