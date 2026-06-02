@@ -21,6 +21,17 @@ namespace Wauncher.Utils
         public List<Patch> Outdated = outdated;
     }
 
+    /// <summary>
+    /// Thrown when the update/patch server can't be reached (no internet, timeout, DNS, etc.).
+    /// Lets callers show a clear "Can't connect to update server" message instead of hanging
+    /// or silently treating the game as up to date.
+    /// </summary>
+    public class UpdateServerUnreachableException : Exception
+    {
+        public UpdateServerUnreachableException(string message, Exception? inner = null)
+            : base(message, inner) { }
+    }
+
     public static class PatchManager
     {
         private static string GetOriginalFileName(string fileName)
@@ -32,19 +43,33 @@ namespace Wauncher.Utils
         {
             List<Patch> patches = new List<Patch>();
 
+            string responseString;
             try
             {
-                string responseString = await Api.ClassicCounter.GetPatches();
+                responseString = await Api.ClassicCounter.GetPatches();
+            }
+            catch (Exception ex)
+            {
+                // Network failure / timeout / DNS — surface it instead of swallowing,
+                // so the UI can say "Can't connect to update server" rather than hang.
+                if (Debug.Enabled())
+                    Terminal.Debug($"Couldn't reach {(validateAll ? "full game" : "patch")} API: {ex.Message}");
+                throw new UpdateServerUnreachableException("Can't connect to update server", ex);
+            }
 
+            try
+            {
                 JObject responseJson = JObject.Parse(responseString);
 
                 if (responseJson["files"] != null)
                     patches = responseJson["files"]!.ToObject<Patch[]>()!.ToList();
             }
-            catch
+            catch (Exception ex)
             {
+                // Reachable but returned something we can't parse — treat as a server problem.
                 if (Debug.Enabled())
-                    Terminal.Debug($"Couldn't get {(validateAll ? "full game" : "patch")} API data.");
+                    Terminal.Debug($"Update server returned invalid data: {ex.Message}");
+                throw new UpdateServerUnreachableException("Update server returned invalid data", ex);
             }
 
             return patches;

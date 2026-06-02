@@ -1,5 +1,6 @@
 ﻿using Refit;
 using Newtonsoft.Json;
+using System.Net.Http;
 
 namespace Wauncher.Utils
 {
@@ -162,8 +163,13 @@ namespace Wauncher.Utils
     public static class Api
     {
         private static RefitSettings _settings = new RefitSettings(new NewtonsoftJsonContentSerializer());
+
+        // Fail fast when a host is unreachable instead of hanging on the default ~100s timeout.
+        private static HttpClient TimedClient(string baseUrl, int timeoutSeconds = 12) =>
+            new HttpClient { BaseAddress = new Uri(baseUrl), Timeout = TimeSpan.FromSeconds(timeoutSeconds) };
+
         public static IGitHub GitHub = RestService.For<IGitHub>("https://api.github.com", _settings);
-        public static IClassicCounter ClassicCounter = RestService.For<IClassicCounter>("https://classiccounter.cc/api", _settings);
+        public static IClassicCounter ClassicCounter = RestService.For<IClassicCounter>(TimedClient("https://classiccounter.cc/api"), _settings);
         public static IEddies Eddies = RestService.For<IEddies>("https://eddies.cc/api", _settings);
 
         public static List<FriendInfo> ParseFriendsPayload(string? json)

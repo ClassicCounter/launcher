@@ -53,7 +53,11 @@ namespace Wauncher.Services
                 return false;
 
             IsCheckingUpdates = true;
-            
+            // Clear any stale error from a previous (e.g. offline) check so a successful
+            // re-check doesn't keep showing "Can't connect to update server".
+            if (UpdateStatusFile.StartsWith("Error:", StringComparison.OrdinalIgnoreCase))
+                UpdateStatusFile = "";
+
             try
             {
                 string csgoExe = Path.Combine(WauncherDirectory, "csgo.exe");
@@ -73,9 +77,16 @@ namespace Wauncher.Services
                 
                 return needsUpdate;
             }
+            catch (UpdateServerUnreachableException ex)
+            {
+                ErrorLogger.LogError("UpdateService.CheckForUpdatesAsync", ex, "Update server unreachable");
+                UpdateStatusFile = "Error: Can't connect to update server";
+                return false;
+            }
             catch (Exception ex)
             {
                 ErrorLogger.LogError("UpdateService.CheckForUpdatesAsync", ex, "Failed to check for updates");
+                UpdateStatusFile = "Error: Couldn't check for updates";
                 return false;
             }
             finally
@@ -256,9 +267,17 @@ namespace Wauncher.Services
                 _cachedPatches = patches;
                 return patches;
             }
+            catch (UpdateServerUnreachableException ex)
+            {
+                // Surface a clear, friendly message in the bottom bar instead of hanging/failing silently.
+                ErrorLogger.LogError("UpdateService.GetPatchesAsync", ex, "Update server unreachable");
+                UpdateStatusFile = "Error: Can't connect to update server";
+                return null;
+            }
             catch (Exception ex)
             {
                 ErrorLogger.LogError("UpdateService.GetPatchesAsync", ex, "Failed to get patches");
+                UpdateStatusFile = "Error: Couldn't check for updates";
                 return null;
             }
         }
