@@ -104,21 +104,33 @@ namespace Wauncher.Utils
 
                 if (File.Exists(pakDatPath))
                 {
-                    if (Debug.Enabled())
-                        Terminal.Debug("Checking hash for: csgo/pak_dat.vpk");
-
                     string pakDatHash = await GetHash(pakDatPath);
                     if (pakDatHash == pakDatPatch.Hash)
                     {
-                        if (Debug.Enabled())
-                            Terminal.Debug("csgo/pak_dat.vpk is up to date - skipping other file checks");
-                        skipValidation = true;
-                        return new Patches(true, missing, outdated);
+                        // pak_dat.vpk matches — also check pak01_dir.vpk before declaring up to date
+                        var dirPatchFast = patches.FirstOrDefault(p => p.File.Contains("pak01_dir.vpk"));
+                        if (dirPatchFast != null)
+                        {
+                            string dirOriginal = GetOriginalFileName(dirPatchFast.File);
+                            string dirPathFast = Path.Combine(Directory.GetCurrentDirectory(), dirOriginal);
+                            if (File.Exists(dirPathFast))
+                            {
+                                string dirHash = await GetHash(dirPathFast);
+                                if (dirHash == dirPatchFast.Hash)
+                                {
+                                    skipValidation = true;
+                                    return new Patches(true, missing, outdated);
+                                }
+                            }
+                        }
+                        else
+                        {
+                            skipValidation = true;
+                            return new Patches(true, missing, outdated);
+                        }
                     }
                     else
                     {
-                        if (Debug.Enabled())
-                            Terminal.Debug("csgo/pak_dat.vpk is outdated - will check all files");
                         if (deleteOutdatedFiles)
                             File.Delete(pakDatPath);
                     }

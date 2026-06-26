@@ -291,8 +291,7 @@ namespace Wauncher.Views
                 return;
             }
 
-            if (string.Equals(vm.GameStatus, "Not Running", StringComparison.OrdinalIgnoreCase) &&
-                !IsVisible)
+            if (string.Equals(vm.GameStatus, "Not Running", StringComparison.OrdinalIgnoreCase))
             {
                 Dispatcher.UIThread.Post(() =>
                 {
@@ -300,11 +299,7 @@ namespace Wauncher.Views
                     Close();
                 });
                 MemoryManager.StopBackgroundCleanup();
-                return;
             }
-
-            if (string.Equals(vm.GameStatus, "Not Running", StringComparison.OrdinalIgnoreCase))
-                MemoryManager.StopBackgroundCleanup();
         }
 
         private static Image[] CreateCarouselImages(int count)

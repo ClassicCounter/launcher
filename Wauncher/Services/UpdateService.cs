@@ -309,7 +309,7 @@ namespace Wauncher.Services
 
             try
             {
-                var patches = await PatchManager.ValidatePatches();
+                var patches = await PatchManager.ValidatePatches(deleteOutdatedFiles: false);
                 _cachedPatches = patches;
                 return patches;
             }
