@@ -43,9 +43,12 @@ namespace Wauncher.Services
         [ObservableProperty]
         private bool _updateIndeterminate;
 
-        private CancellationTokenSource? _updateCts;
         private Patches? _cachedPatches;
         private bool _forceValidateAllOnce;
+        private long _lastInstallProgressTick;
+
+        [ObservableProperty]
+        private bool _isExtracting;
 
         public async Task<bool> CheckForUpdatesAsync()
         {
@@ -72,9 +75,11 @@ namespace Wauncher.Services
                 if (patches == null)
                     return false;
 
-                var needsUpdate = await ValidateFilesAsync(patches);
+                // GetPatchesAsync already hashed/validated every file once; reuse that
+                // result instead of re-validating the whole game a second time.
+                var needsUpdate = patches.Missing.Count > 0 || patches.Outdated.Count > 0;
                 IsUpdateAvailable = needsUpdate;
-                
+
                 return needsUpdate;
             }
             catch (UpdateServerUnreachableException ex)
@@ -107,11 +112,19 @@ namespace Wauncher.Services
             UpdateStatusFile = "Connecting...";
             UpdateStatusSpeed = "";
 
+            _lastInstallProgressTick = 0;
             try
             {
+
                 await DownloadManager.InstallFullGame(
                     onProgress: (file, speed, percent) =>
                     {
+                        // Throttle to ~10 UI updates/sec — the download library fires this
+                        // hundreds of times per second which saturates the UI thread.
+                        var now = Environment.TickCount64;
+                        if (now - _lastInstallProgressTick < 100) return;
+                        _lastInstallProgressTick = now;
+
                         Dispatcher.UIThread.Post(() =>
                         {
                             UpdateStatusFile = $"Installing {ShortFileName(file)}  {percent:F0}%";
@@ -124,24 +137,35 @@ namespace Wauncher.Services
                     {
                         Dispatcher.UIThread.Post(() =>
                         {
-                            bool isExtracting = status.Contains("Extracting", StringComparison.OrdinalIgnoreCase);
-                            UpdateStatusFile = status;
-                            UpdateStatusSpeed = isExtracting ? "Large installs can take a few minutes." : "";
-                            UpdateIndeterminate = isExtracting;
-                            if (isExtracting)
-                                UpdateProgress = 0;
+                            bool nowExtracting = status.Contains("Extracting", StringComparison.OrdinalIgnoreCase);
+                            IsExtracting = nowExtracting;
+                            UpdateStatusFile = nowExtracting ? "Extracting..." : status;
+                            UpdateStatusSpeed = nowExtracting ? "This may take a few minutes." : "";
+                            if (nowExtracting)
+                                UpdateProgress = 0; // Reset so extraction % shows from 0 in button text
+                            else
+                                UpdateIndeterminate = true;
                         });
                     },
                     onExtractProgress: extractPercent =>
                     {
+                        var now = Environment.TickCount64;
+                        if (extractPercent < 100 && now - _lastInstallProgressTick < 100) return;
+                        _lastInstallProgressTick = now;
+
                         Dispatcher.UIThread.Post(() =>
                         {
                             if (extractPercent >= 100)
                             {
+                                IsExtracting = false;
+                                UpdateProgress = 0; // Reset so it doesn't flash "Downloading 100%"
                                 UpdateIndeterminate = false;
-                                UpdateStatusFile = "Finalizing extracted files...";
+                                UpdateStatusFile = "Finalizing...";
                                 UpdateStatusSpeed = "";
-                                UpdateProgress = 100;
+                            }
+                            else
+                            {
+                                UpdateProgress = extractPercent;
                             }
                         });
                     });
@@ -164,11 +188,12 @@ namespace Wauncher.Services
             }
             finally
             {
+                IsExtracting = false;
                 IsInstalling = false;
             }
         }
 
-        public async Task<bool> ValidateGameFilesAsync()
+        public async Task<bool> ValidateGameFilesAsync(bool fullValidate = false)
         {
             if (IsUpdating || IsInstalling)
                 return false;
@@ -180,12 +205,30 @@ namespace Wauncher.Services
             IsUpdating = true;
             UpdateProgress = 0;
             UpdateIndeterminate = false;
-            UpdateStatusFile = "Checking game files...";
+            UpdateStatusFile = fullValidate ? "Verifying game files..." : "Checking game files...";
             UpdateStatusSpeed = "";
 
             try
             {
-                var currentPatches = _cachedPatches ?? await Task.Run(() => PatchManager.ValidatePatches(validateAll: _forceValidateAllOnce));
+                Patches currentPatches;
+                if (fullValidate)
+                {
+                    // "Verify Game Files": always hash every file from scratch (ignore the
+                    // fast-path and any cached result), reporting live progress.
+                    currentPatches = await Task.Run(() => PatchManager.ValidatePatches(
+                        validateAll: true,
+                        onProgress: (done, total) => Dispatcher.UIThread.Post(() =>
+                        {
+                            UpdateIndeterminate = false;
+                            UpdateStatusFile = total > 0 ? $"Verifying game files...  {done}/{total}" : "Verifying game files...";
+                            UpdateProgress = total > 0 ? (double)done / total * 100.0 : 0;
+                            UpdateStatusSpeed = "";
+                        })));
+                }
+                else
+                {
+                    currentPatches = _cachedPatches ?? await Task.Run(() => PatchManager.ValidatePatches(validateAll: _forceValidateAllOnce));
+                }
                 _cachedPatches = null;
                 _forceValidateAllOnce = false;
 
@@ -253,6 +296,9 @@ namespace Wauncher.Services
             finally
             {
                 IsUpdating = false;
+                // Safety net: remove any leftover .7z archives that weren't deleted
+                // during extraction (e.g. a momentarily locked file).
+                DownloadManager.Cleanup7zFiles();
             }
         }
 
@@ -282,12 +328,6 @@ namespace Wauncher.Services
             }
         }
 
-        private async Task<bool> ValidateFilesAsync(Patches patches)
-        {
-            var refreshed = await Task.Run(() => PatchManager.ValidatePatches(deleteOutdatedFiles: false));
-            _cachedPatches = refreshed;
-            return refreshed.Missing.Count > 0 || refreshed.Outdated.Count > 0;
-        }
 
         private static string ShortFileName(string path)
         {

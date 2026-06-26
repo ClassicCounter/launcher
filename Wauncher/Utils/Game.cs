@@ -97,7 +97,12 @@ namespace Wauncher.Utils
 
             _process = new Process();
 
-            string gameExe = "csgo.exe";
+            // GC (Beta): launch the game coordinator (cc.exe) instead of csgo.exe when enabled.
+            bool enableGc = false;
+            try { enableGc = Wauncher.ViewModels.SettingsWindowViewModel.LoadGlobal().EnableGc; }
+            catch { /* fall back to csgo.exe */ }
+
+            string gameExe = enableGc ? "cc.exe" : "csgo.exe";
             _process.StartInfo.FileName = Path.Combine(directory, gameExe);
             _process.StartInfo.Arguments = string.Join(" ", arguments);
             _process.StartInfo.WorkingDirectory = directory;
@@ -116,7 +121,15 @@ namespace Wauncher.Utils
                 return false;
             }
 
-            return _process.Start();
+            bool started = _process.Start();
+
+            // Start polling the netcon port immediately after game launch.
+            // This handles both the normal path (triggered after gamestate fires) and
+            // the fallback path (game DLL modified, gamestate integration broken).
+            if (started && !string.IsNullOrWhiteSpace(_pendingConnectTarget))
+                _ = Task.Run(PollNetconUntilConnectedAsync);
+
+            return started;
         }
 
         public static async Task Monitor()
@@ -260,6 +273,7 @@ namespace Wauncher.Utils
         {
             string? target = _pendingConnectTarget;
             int port = _pendingNetConPort;
+
             if (string.IsNullOrWhiteSpace(target) || port <= 0)
             {
                 _pendingConnectTriggered = 0;
@@ -292,6 +306,44 @@ namespace Wauncher.Utils
             finally
             {
                 _pendingConnectTriggered = 0;
+            }
+        }
+
+        // Polls the netcon port every 3 seconds for up to 2 minutes until the game accepts
+        // the connect command. Works whether or not gamestate integration is functional.
+        private static async Task PollNetconUntilConnectedAsync()
+        {
+            string? target = _pendingConnectTarget;
+            int port = _pendingNetConPort;
+
+            if (string.IsNullOrWhiteSpace(target) || port <= 0)
+                return;
+
+            var deadline = DateTime.UtcNow.AddMinutes(2);
+
+            while (DateTime.UtcNow < deadline)
+            {
+                // If gamestate already handled it, stop
+                if (string.IsNullOrWhiteSpace(_pendingConnectTarget))
+                    return;
+
+                await Task.Delay(TimeSpan.FromSeconds(3));
+
+                try
+                {
+                    using var client = new TcpClient();
+                    await client.ConnectAsync("127.0.0.1", port);
+                    using var stream = client.GetStream();
+                    using var writer = new StreamWriter(stream, Encoding.ASCII) { AutoFlush = true, NewLine = "\n" };
+                    await writer.WriteLineAsync($"connect {target}");
+                    _pendingConnectTarget = null;
+                    _pendingNetConPort = 0;
+                    return;
+                }
+                catch
+                {
+                    // Game not ready yet, keep polling
+                }
             }
         }
     }

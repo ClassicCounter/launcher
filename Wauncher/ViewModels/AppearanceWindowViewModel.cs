@@ -82,9 +82,7 @@ namespace Wauncher.ViewModels
 
         private void ApplyTheme()
         {
-            Terminal.Warning($"ApplyTheme called - raising ColorThemeChanged event");
             ColorThemeChanged?.Invoke(this, CurrentTheme);
-            Terminal.Warning($"ColorThemeChanged event raised");
             SaveTheme();
         }
 

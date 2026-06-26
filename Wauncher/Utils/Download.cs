@@ -431,13 +431,51 @@ namespace Wauncher.Utils
                     process.StartInfo = new ProcessStartInfo
                     {
                         FileName = exePath,
-                        Arguments = $"x \"{firstFile}\" -o\"{tempExtractPath}\" -y",
+                        Arguments = $"x \"{firstFile}\" -o\"{tempExtractPath}\" -y -bsp1",
                         UseShellExecute = false,
                         RedirectStandardOutput = true,
+                        RedirectStandardError = true,
                         CreateNoWindow = true
                     };
 
                     process.Start();
+
+                    // Drain stderr so it never blocks the process
+                    _ = Task.Run(async () => { try { await process.StandardError.ReadToEndAsync(); } catch { } });
+
+                    // Parse percentage progress from 7za stdout (-bsp1 sends it there)
+                    _ = Task.Run(async () =>
+                    {
+                        try
+                        {
+                            var buf = new char[512];
+                            var acc = new System.Text.StringBuilder();
+                            while (true)
+                            {
+                                int n = await process.StandardOutput.ReadAsync(buf, 0, buf.Length);
+                                if (n == 0) break;
+                                acc.Append(buf, 0, n);
+                                string text = acc.ToString();
+                                int pctIdx;
+                                double lastPct = -1;
+                                while ((pctIdx = text.IndexOf('%')) >= 0)
+                                {
+                                    int numStart = pctIdx - 1;
+                                    while (numStart > 0 && (char.IsDigit(text[numStart - 1]) || text[numStart - 1] == ' '))
+                                        numStart--;
+                                    if (double.TryParse(text[numStart..pctIdx].Trim(), out double p))
+                                        lastPct = p;
+                                    text = text[(pctIdx + 1)..];
+                                }
+                                if (lastPct >= 0)
+                                    onProgress?.Invoke(lastPct);
+                                acc.Clear();
+                                acc.Append(text);
+                            }
+                        }
+                        catch { }
+                    });
+
                     await process.WaitForExitAsync();
 
                     if (process.ExitCode != 0)

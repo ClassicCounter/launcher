@@ -143,26 +143,6 @@
                     LetterSpacing="2"
                     Text="GENERAL" />
 
-                <Grid Margin="0,0,0,20" ColumnDefinitions="*,Auto">
-                    <StackPanel Grid.Column="0" VerticalAlignment="Center">
-                        <TextBlock
-                            FontSize="14"
-                            FontWeight="SemiBold"
-                            Foreground="{DynamicResource AppPrimaryText}"
-                            Text="Minimize to System Tray" />
-                        <TextBlock
-                            FontSize="11"
-                            Foreground="{DynamicResource AppMutedText}"
-                            Text="Keep launcher running in the background" />
-                    </StackPanel>
-                    <ToggleSwitch
-                        HorizontalAlignment="Right"
-                        VerticalAlignment="Center"
-                        IsChecked="{Binding MinimizeToTray}"
-                        OffContent=""
-                        OnContent="" />
-                </Grid>
-
                 <Grid Margin="0,0,0,20">
                     <StackPanel VerticalAlignment="Center">
                         <TextBlock

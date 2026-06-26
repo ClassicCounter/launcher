@@ -457,3 +457,8 @@ $RECYCLE.BIN/
 Wauncher/Properties/launchSettings.json
 /Launcher/Properties/launchSettings.json
 /.vscode/launch.json
+
+# Build output
+publish_output/
+debug_log.txt
+publish_out/

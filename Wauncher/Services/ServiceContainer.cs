@@ -16,7 +16,7 @@ namespace Wauncher.Services
 
         public static void RegisterSingleton<TInterface>(TInterface instance)
         {
-            _services[typeof(TInterface)] = instance;
+            _services[typeof(TInterface)] = instance!;
         }
 
         public static void RegisterFactory<TInterface>(Func<object> factory)

@@ -127,40 +127,27 @@ namespace Wauncher.Views
                 if (_forceClose)
                     return;
 
-                var settings = SettingsWindowViewModel.LoadGlobal();
-                bool shouldHideToTray =
-                    settings.MinimizeToTray &&
-                    (Game.IsRunning() ||
-                     string.Equals((DataContext as MainWindowViewModel)?.GameStatus, "Running", StringComparison.OrdinalIgnoreCase));
-
-                if (shouldHideToTray)
-                {
-                    e.Cancel = true;
-                    Hide();
-                    MemoryManager.StartBackgroundCleanup();
-                    return;
-                }
-
+                _forceClose = true;
                 MemoryManager.StopBackgroundCleanup();
 
                 try
                 {
-                    if (Application.Current is App app)
-                    {
-                        var trayIconField = typeof(App).GetField("_trayIcon",
-                            System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-                        var trayIcon = trayIconField?.GetValue(app) as Avalonia.Controls.TrayIcon;
-                        trayIcon?.Dispose();
-                    }
+                    TeardownCarousel();
                 }
-                catch
-                {
-                }
+                catch { }
 
                 if (Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
                 {
-                    _forceClose = true;
-                    Dispatcher.UIThread.Post(() => desktop.Shutdown());
+                    Dispatcher.UIThread.Post(() =>
+                    {
+                        try
+                        {
+                            desktop.Shutdown();
+                        }
+                        catch { }
+
+                        Environment.Exit(0);
+                    });
                 }
             };
 
@@ -292,10 +279,7 @@ namespace Wauncher.Views
             if (e.PropertyName != nameof(MainWindowViewModel.GameStatus))
                 return;
 
-            var settings = SettingsWindowViewModel.LoadGlobal();
-
             if (!_forceClose &&
-                settings.MinimizeToTray &&
                 string.Equals(vm.GameStatus, "Running", StringComparison.OrdinalIgnoreCase))
             {
                 Dispatcher.UIThread.Post(() =>
@@ -307,16 +291,13 @@ namespace Wauncher.Views
                 return;
             }
 
-            if (!_forceClose &&
-                settings.MinimizeToTray &&
-                string.Equals(vm.GameStatus, "Not Running", StringComparison.OrdinalIgnoreCase) &&
+            if (string.Equals(vm.GameStatus, "Not Running", StringComparison.OrdinalIgnoreCase) &&
                 !IsVisible)
             {
                 Dispatcher.UIThread.Post(() =>
                 {
-                    Show();
-                    WindowState = WindowState.Normal;
-                    Activate();
+                    _forceClose = true;
+                    Close();
                 });
                 MemoryManager.StopBackgroundCleanup();
                 return;
@@ -625,20 +606,6 @@ namespace Wauncher.Views
 
             try
             {
-                if (Application.Current is App app)
-                {
-                    var trayIconField = typeof(App).GetField("_trayIcon",
-                        System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-                    var trayIcon = trayIconField?.GetValue(app) as Avalonia.Controls.TrayIcon;
-                    trayIcon?.Dispose();
-                }
-            }
-            catch
-            {
-            }
-
-            try
-            {
                 Close();
             }
             catch
@@ -655,14 +622,6 @@ namespace Wauncher.Views
             }
 
             Environment.Exit(0);
-
-            try
-            {
-                Process.GetCurrentProcess().Kill();
-            }
-            catch
-            {
-            }
         }
     }
 }

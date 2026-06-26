@@ -16,7 +16,6 @@ namespace Wauncher
 {
     public partial class App : Application
     {
-        private TrayIcon? _trayIcon = null;
         private NativeMenuItem? _discordRpcMenuItem = null;
 
         public override void Initialize()
@@ -178,10 +177,8 @@ namespace Wauncher
                     }
                 });
 
-                desktop.Exit += (_, _) => _trayIcon?.Dispose();
             }
 
-            SetupTrayIcon();
             base.OnFrameworkInitializationCompleted();
         }
 
@@ -198,67 +195,7 @@ namespace Wauncher
             }
         }
 
-        private void SetupTrayIcon()
-        {
-            var settings = SettingsWindowViewModel.LoadGlobal();
 
-            _discordRpcMenuItem = new NativeMenuItem
-            {
-                Header = settings.DiscordRpc ? "Discord RPC ON" : "Discord RPC OFF"
-            };
-            _discordRpcMenuItem.Click += DiscordRpc_Click;
-
-            var exitItem = new NativeMenuItem { Header = "Exit" };
-            exitItem.Click += (_, _) =>
-            {
-                if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime d)
-                {
-                    if (d.MainWindow is Views.MainWindow mw)
-                        mw.ForceQuit();
-                    d.TryShutdown();
-                }
-            };
-
-            var menu = new NativeMenu();
-            menu.Items.Add(_discordRpcMenuItem);
-            menu.Items.Add(new NativeMenuItemSeparator());
-            menu.Items.Add(exitItem);
-
-            _trayIcon = new TrayIcon
-            {
-                ToolTipText = "ClassicCounter",
-                Menu = menu,
-            };
-
-            try
-            {
-                var uri = new Uri("avares://Wauncher/Assets/Wauncher.ico");
-                using var stream = AssetLoader.Open(uri);
-                _trayIcon.Icon = new WindowIcon(stream);
-            }
-            catch (Exception ex)
-            {
-                ErrorLogger.LogError("App.SetupTrayIcon", ex, "Failed to load tray icon");
-                // Tray icon is optional, log but don't fail
-                System.Diagnostics.Debug.WriteLine($"Failed to load tray icon: {ex.Message}");
-            }
-
-            _trayIcon.Clicked += (_, _) => ShowMainWindow();
-
-            // Live sync
-            SettingsWindowViewModel.DiscordRpcChanged += enabled => ApplyDiscordRpc(enabled);
-        }
-
-        private void ShowMainWindow()
-        {
-            if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop
-                && desktop.MainWindow != null)
-            {
-                desktop.MainWindow.Show();
-                desktop.MainWindow.WindowState = Avalonia.Controls.WindowState.Normal;
-                desktop.MainWindow.Activate();
-            }
-        }
 
         public void DiscordRpc_Click(object? sender, EventArgs e)
         {
@@ -290,9 +227,6 @@ namespace Wauncher
             if (_discordRpcMenuItem != null)
                 _discordRpcMenuItem.Header = enabled ? "Discord RPC ON" : "Discord RPC OFF";
         }
-
-        [RelayCommand]
-        public void TrayIconClicked() => ShowMainWindow();
 
         public void ExitApplication_Click(object? sender, EventArgs e)
         {

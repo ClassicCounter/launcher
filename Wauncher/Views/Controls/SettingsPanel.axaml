@@ -89,13 +89,13 @@
         <!-- Vertical list of settings -->
         <StackPanel Grid.Row="2" VerticalAlignment="Center" Margin="40,10,40,10" Spacing="0">
 
-            <!-- Minimize to Tray -->
-            <Grid ColumnDefinitions="*,Auto" Margin="0,0,0,0" MinHeight="44">
+            <!-- Enable In-Game Inventory -->
+            <Grid ColumnDefinitions="*,Auto" MinHeight="44">
                 <StackPanel Grid.Column="0" VerticalAlignment="Center">
-                    <TextBlock FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource AppPrimaryText}" Text="Minimize to System Tray" />
-                    <TextBlock FontSize="11" Foreground="{DynamicResource AppMutedText}" Text="Keep launcher running in the background" Margin="0,2,0,0" />
+                    <TextBlock FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource AppPrimaryText}" Text="Enable In-Game Inventory (Beta)" />
+                    <TextBlock FontSize="11" Foreground="{DynamicResource AppMutedText}" Text="Launch through the game coordinator (cc.exe) instead of csgo.exe." Margin="0,2,0,0" />
                 </StackPanel>
-                <ToggleSwitch Grid.Column="1" VerticalAlignment="Center" IsChecked="{Binding MinimizeToTray}" OffContent="" OnContent="" />
+                <ToggleSwitch Grid.Column="1" VerticalAlignment="Center" IsChecked="{Binding EnableGc}" OffContent="" OnContent="" />
             </Grid>
 
             <Rectangle Height="1" Fill="{DynamicResource AppDivider}" />

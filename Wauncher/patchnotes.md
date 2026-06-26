@@ -1,3 +1,8 @@
+# Launcher Update 3.2.1
+06/19/2026
+## What's Changed
+- Added "Enable GC (Beta)" in Settings to launch through the game coordinator (cc.exe)
+
 # Launcher Update 3.2.0
 06/02/2026
 ## What's Changed

@@ -83,51 +83,39 @@ namespace Wauncher.Services
         {
             try
             {
-                System.Diagnostics.Debug.WriteLine($"Fetching servers from: {SERVER_LIST_URL}");
                 var response = await _httpClient.GetAsync(SERVER_LIST_URL);
                 response.EnsureSuccessStatusCode();
-                
+
                 var json = await response.Content.ReadAsStringAsync();
-                System.Diagnostics.Debug.WriteLine($"Raw JSON: {json}");
-                
                 var serverData = JsonSerializer.Deserialize<ServerData[]>(json);
-                System.Diagnostics.Debug.WriteLine($"Deserialized {serverData?.Length ?? 0} servers");
-                
+
                 if (serverData != null)
                 {
-                    // Clear existing servers except "None"
                     var existingServers = Servers.Where(s => !s.IsNone).ToList();
                     foreach (var server in existingServers)
-                    {
                         Servers.Remove(server);
-                    }
-                    
-                    // Add servers from web API (skip "None" from JSON since we already have it)
+
                     foreach (var server in serverData.Where(s => s.name != "None"))
                     {
-                        System.Diagnostics.Debug.WriteLine($"Adding server: {server.name} - {server.ipPort}");
-                        Servers.Add(new ServerInfo 
-                        { 
+                        Servers.Add(new ServerInfo
+                        {
                             Name = server.name,
                             IpPort = server.ipPort,
                             MaxPlayers = server.maxPlayers,
+                            FlagUrl = server.flagUrl,
                             IsOnline = true
                         });
                     }
-                    
-                    System.Diagnostics.Debug.WriteLine($"Total servers in collection: {Servers.Count}");
                 }
             }
             catch (Exception ex)
             {
-                // Log error and fallback to default servers
-                System.Diagnostics.Debug.WriteLine($"Failed to load servers from web: {ex.Message}");
-                System.Diagnostics.Debug.WriteLine($"Stack trace: {ex.StackTrace}");
+                ErrorLogger.LogError("ServerService.LoadServersFromWebAsync", ex, "Failed to load servers from web");
                 await LoadDefaultServersAsync();
             }
         }
 
-        private async Task LoadDefaultServersAsync()
+        private Task LoadDefaultServersAsync()
         {
             // Clear existing servers except "None"
             var existingServers = Servers.Where(s => !s.IsNone).ToList();
@@ -143,7 +131,7 @@ namespace Wauncher.Services
             }
 
             // No default servers - rely entirely on web API
-            // This forces users to configure the SERVER_LIST_URL
+            return Task.CompletedTask;
         }
 
         public async Task RefreshServersSafeAsync()
@@ -168,5 +156,6 @@ namespace Wauncher.Services
         public string name { get; set; } = "";
         public string ipPort { get; set; } = "";
         public int maxPlayers { get; set; }
+        public string flagUrl { get; set; } = "";
     }
 }

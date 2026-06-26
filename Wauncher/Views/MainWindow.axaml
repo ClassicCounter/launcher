@@ -178,12 +178,28 @@
         <Style Selector="Button.launchBtn:pressed /template/ Border#PART_Border">
             <Setter Property="Background" Value="#44000000" />
         </Style>
-        <!-- Yellow when updating -->
+        <!-- Transparent when updating/installing — fill layers behind provide the color -->
         <Style Selector="Button.launchBtn.updating">
-            <Setter Property="Background" Value="#FFC107" />
+            <Setter Property="Background" Value="Transparent" />
+        </Style>
+        <Style Selector="Button.launchBtn.updating:pointerover /template/ Border#PART_Border">
+            <Setter Property="Background" Value="Transparent" />
+        </Style>
+        <Style Selector="Button.launchBtn.updating:pressed /template/ Border#PART_Border">
+            <Setter Property="Background" Value="Transparent" />
         </Style>
         <Style Selector="Button.launchBtn.installPending">
             <Setter Property="Background" Value="#2196F3" />
+        </Style>
+        <!-- During active install both .updating and .installPending are set — keep transparent so fill shows -->
+        <Style Selector="Button.launchBtn.updating.installPending">
+            <Setter Property="Background" Value="Transparent" />
+        </Style>
+        <Style Selector="Button.launchBtn.updating.installPending:pointerover /template/ Border#PART_Border">
+            <Setter Property="Background" Value="Transparent" />
+        </Style>
+        <Style Selector="Button.launchBtn.updating.installPending:pressed /template/ Border#PART_Border">
+            <Setter Property="Background" Value="Transparent" />
         </Style>
         <Style Selector="Button.launchBtn.updatePending">
             <Setter Property="Background" Value="#FFC107" />
@@ -193,6 +209,12 @@
         </Style>
         <Style Selector="Border.launchGlow.updatePending">
             <Setter Property="BoxShadow" Value="0 0 18 2 #55FFC107" />
+        </Style>
+        <Style Selector="Border.launchGlow.activeUpdate">
+            <Setter Property="BoxShadow" Value="0 0 18 2 #55FFC107" />
+        </Style>
+        <Style Selector="Border.launchGlow.activeInstall">
+            <Setter Property="BoxShadow" Value="0 0 18 2 #552196F3" />
         </Style>
 
         <!-- ════════════════════════════════════════════════
@@ -440,6 +462,36 @@
 
             <!-- ── LEFT COLUMN: carousel + bottom bar ── -->
             <Grid Grid.Column="0" ClipToBounds="True">
+                <!-- ── Status Banner (error/install/update) ── -->
+                <Border
+                    x:Name="StatusBanner"
+                    IsVisible="{Binding IsStatusBannerVisible}"
+                    VerticalAlignment="Top"
+                    Margin="0,0,0,0"
+                    Background="{Binding StatusBannerColor}"
+                    Padding="16,12"
+                    ZIndex="100"
+                    ClipToBounds="True"
+                    MaxHeight="{Binding StatusBannerHeight}">
+                    <Border.Transitions>
+                        <Transitions>
+                            <DoubleTransition Property="MaxHeight" Duration="0:0:0.3" />
+                        </Transitions>
+                    </Border.Transitions>
+                    <StackPanel Orientation="Horizontal" Spacing="16" VerticalAlignment="Center">
+                        <TextBlock
+                            VerticalAlignment="Center"
+                            Foreground="White"
+                            FontSize="12"
+                            FontWeight="SemiBold"
+                            Text="{Binding StatusBannerText}" />
+                        <TextBlock
+                            VerticalAlignment="Center"
+                            Foreground="White"
+                            FontSize="11"
+                            Text="{Binding StatusBannerSpeed}" />
+                    </StackPanel>
+                </Border>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="*" />
                     <RowDefinition Height="Auto" />

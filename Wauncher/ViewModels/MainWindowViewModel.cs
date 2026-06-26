@@ -56,14 +56,23 @@ namespace Wauncher.ViewModels
         [ObservableProperty]
         private ServerInfo? _selectedServer;
 
-        private bool _forceClose = false;
+        [ObservableProperty]
+        private bool _isStatusBannerVisible = false;
+
+        [ObservableProperty]
+        private double _statusBannerHeight = 0;
+
+        private bool _isChaining; // true during the gap between CDN install finishing and patch update starting
+        private CancellationTokenSource? _errorDismissCts;
 
         // Computed Properties
         public bool IsFriendsTabActive => ActiveRightTab == "Friends";
         public bool IsPatchNotesTabActive => ActiveRightTab == "PatchNotes";
         public bool IsOnlineMode => !IsOfflineMode;
         public bool IsCheckingOrUpdating => _updateService.IsCheckingUpdates || _updateService.IsUpdating || _updateService.IsInstalling;
-        public bool IsUpdatingOrInstalling => _updateService.IsUpdating || _updateService.IsInstalling;
+        public bool IsUpdatingOrInstalling => _updateService.IsUpdating || _updateService.IsInstalling || _isChaining;
+        public bool IsInstallingOrChaining => _updateService.IsInstalling || _isChaining;
+        public bool IsUpdatingOrChaining => _updateService.IsUpdating || _isChaining;
         public bool ShowUpdateStatus =>
             IsCheckingOrUpdating ||
             _updateService.UpdateStatusFile.StartsWith("Install error:", StringComparison.OrdinalIgnoreCase) ||
@@ -88,12 +97,90 @@ namespace Wauncher.ViewModels
             }
         }
 
+        private void ShowErrorBanner()
+        {
+            _errorDismissCts?.Cancel();
+            _errorDismissCts = new CancellationTokenSource();
+
+            Dispatcher.UIThread.Post(() =>
+            {
+                IsStatusBannerVisible = true;
+                StatusBannerHeight = 60;
+            });
+
+            var cts = _errorDismissCts;
+            _ = Task.Delay(4000, cts.Token).ContinueWith(_ =>
+            {
+                if (!cts.IsCancellationRequested)
+                {
+                    Dispatcher.UIThread.Post(() =>
+                    {
+                        StatusBannerHeight = 0;
+                        Task.Delay(350).ContinueWith(_ => Dispatcher.UIThread.Post(() => IsStatusBannerVisible = false));
+                    });
+                }
+            });
+        }
+
+        private void ShowStatusBanner()
+        {
+            Dispatcher.UIThread.Post(() =>
+            {
+                IsStatusBannerVisible = true;
+                StatusBannerHeight = 60;
+            });
+        }
+
+        private void HideStatusBanner()
+        {
+            Dispatcher.UIThread.Post(() =>
+            {
+                StatusBannerHeight = 0;
+                Task.Delay(350).ContinueWith(_ => Dispatcher.UIThread.Post(() => IsStatusBannerVisible = false));
+            });
+        }
+
+        public bool IsExtracting => _updateService.IsExtracting;
+
         public string LaunchButtonText =>
-            _updateService.IsInstalling ? "Installing Game..." :
-            _updateService.IsUpdating ? "Updating..." :
+            _updateService.IsInstalling ?
+                (_updateService.IsExtracting ?
+                    (_updateService.UpdateProgress > 0 ? $"Installing  {_updateService.UpdateProgress:F0}%" : "Installing...") :
+                 _updateService.UpdateIndeterminate ? "Installing..." :
+                 _updateService.UpdateProgress > 0 ? $"Downloading  {_updateService.UpdateProgress:F0}%" :
+                 "Installing...") :
+            _isChaining ? "Updating..." :
+            _updateService.IsUpdating ?
+                (_updateService.UpdateIndeterminate ? "Updating..." : $"Updating  {_updateService.UpdateProgress:F0}%") :
             _updateService.IsNeedingInstall ? "Install Game" :
             _updateService.IsUpdateAvailable ? "Update" :
             "Launch Game";
+
+        public double LaunchProgressScale =>
+            _updateService.IsUpdating || _updateService.IsInstalling ? _updateService.UpdateProgress / 100.0 :
+            _isChaining ? 1.0 :
+            0.0;
+
+        public string StatusBannerText =>
+            IsUpdateError ? FriendlyUpdateError :
+            _updateService.IsInstalling ?
+                (_updateService.IsExtracting ?
+                    (_updateService.UpdateProgress > 0 ? $"Installing {_updateService.UpdateProgress:F0}%" : "Installing...") :
+                 _updateService.UpdateIndeterminate ? "Installing..." :
+                 _updateService.UpdateProgress > 0 ? $"Downloading {_updateService.UpdateProgress:F0}%" :
+                 "Installing...") :
+            _updateService.IsUpdating ?
+                (_updateService.UpdateIndeterminate ? "Updating..." : $"Updating {_updateService.UpdateProgress:F0}%") :
+            "";
+
+        public string StatusBannerSpeed =>
+            IsUpdateError ? "" : _updateService.UpdateStatusSpeed;
+
+        public string StatusBannerColor =>
+            IsUpdateError ? "#D32F2F" :
+            _updateService.IsInstalling ? "#2196F3" :
+            _updateService.IsUpdating ? "#FFC107" :
+            "#00000000";
 
         public string SelectedLabel => SelectedServer?.IsNone == false
             ? SelectedServer.Name
@@ -137,8 +224,6 @@ namespace Wauncher.ViewModels
                 return;
             }
 
-            GameStatus = "Running";
-
             try
             {
                 var settings = SettingsWindowViewModel.LoadGlobal();
@@ -152,6 +237,8 @@ namespace Wauncher.ViewModels
                     : null;
 
                 await _gameService.LaunchAsync(connectTarget, settings.LaunchOptions);
+
+                GameStatus = "Running";
 
                 if (settings.DiscordRpc)
                 {
@@ -185,21 +272,35 @@ namespace Wauncher.ViewModels
             if (!installed)
                 return;
 
+            _isChaining = true;
+            OnPropertyChanged(nameof(IsInstallingOrChaining));
+            OnPropertyChanged(nameof(IsUpdatingOrChaining));
+            OnPropertyChanged(nameof(IsUpdatingOrInstalling));
+            OnPropertyChanged(nameof(LaunchButtonText));
+            OnPropertyChanged(nameof(LaunchProgressScale));
+
             try
             {
                 bool needsUpdate = await _updateService.CheckForUpdatesAsync();
                 if (needsUpdate || _updateService.IsUpdateAvailable)
                     await _updateService.ValidateGameFilesAsync();
             }
-            catch
+            finally
             {
+                _isChaining = false;
+                OnPropertyChanged(nameof(IsInstallingOrChaining));
+                OnPropertyChanged(nameof(IsUpdatingOrChaining));
+                OnPropertyChanged(nameof(IsUpdatingOrInstalling));
+                OnPropertyChanged(nameof(LaunchButtonText));
+                OnPropertyChanged(nameof(LaunchProgressScale));
             }
         }
 
         [RelayCommand]
         private async Task ValidateFilesAsync()
         {
-            await _updateService.ValidateGameFilesAsync();
+            // "Verify Game Files" = always re-hash every file from scratch.
+            await _updateService.ValidateGameFilesAsync(fullValidate: true);
         }
 
         [RelayCommand]
@@ -478,13 +579,27 @@ namespace Wauncher.ViewModels
                 updateNotifier.PropertyChanged += (s, e) =>
                 {
                     OnPropertyChanged(nameof(LaunchButtonText));
+                    OnPropertyChanged(nameof(StatusBannerText));
+                    OnPropertyChanged(nameof(StatusBannerSpeed));
+                    OnPropertyChanged(nameof(StatusBannerColor));
+                    OnPropertyChanged(nameof(LaunchProgressScale));
+                    OnPropertyChanged(nameof(IsExtracting));
                     OnPropertyChanged(nameof(IsCheckingOrUpdating));
                     OnPropertyChanged(nameof(IsUpdatingOrInstalling));
+                    OnPropertyChanged(nameof(IsInstallingOrChaining));
+                    OnPropertyChanged(nameof(IsUpdatingOrChaining));
                     OnPropertyChanged(nameof(ShowUpdateStatus));
                     OnPropertyChanged(nameof(IsInstallPending));
                     OnPropertyChanged(nameof(IsUpdatePending));
                     OnPropertyChanged(nameof(IsUpdateError));
                     OnPropertyChanged(nameof(FriendlyUpdateError));
+
+                    if (IsUpdateError)
+                        ShowErrorBanner();
+                    else if (IsUpdatingOrInstalling && !IsStatusBannerVisible)
+                        ShowStatusBanner();
+                    else if (!IsUpdatingOrInstalling && !IsUpdateError && IsStatusBannerVisible)
+                        HideStatusBanner();
                 };
             }
 

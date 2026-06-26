@@ -2,6 +2,7 @@
     x:Class="Wauncher.Views.Controls.ServerListControl"
     xmlns="https://github.com/avaloniaui"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:asyncImageLoader="clr-namespace:AsyncImageLoader;assembly=AsyncImageLoader.Avalonia"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:vm="using:Wauncher.ViewModels"
@@ -88,11 +89,8 @@
                                         <Border CornerRadius="3" ClipToBounds="True" VerticalAlignment="Center"
                                                 Width="28" Height="19"
                                                 BorderBrush="{DynamicResource AppDivider2}" BorderThickness="1"
-                                                IsVisible="{Binding Region, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
-                                            <Panel>
-                                                <Image Source="avares://Wauncher/Assets/eu-flag.png" Stretch="UniformToFill" IsVisible="{Binding IsEu}" />
-                                                <Image Source="avares://Wauncher/Assets/na-flag.png" Stretch="UniformToFill" IsVisible="{Binding IsNa}" />
-                                            </Panel>
+                                                IsVisible="{Binding FlagUrl, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
+                                            <Image asyncImageLoader:ImageLoader.Source="{Binding FlagUrl}" Stretch="UniformToFill" />
                                         </Border>
 
                                         <!-- None placeholder (keeps name aligned with server rows) -->

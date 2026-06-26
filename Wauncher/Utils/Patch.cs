@@ -2,6 +2,7 @@
 using Newtonsoft.Json.Linq;
 using System.Collections.Concurrent;
 using System.Security.Cryptography;
+using System.Threading;
 
 namespace Wauncher.Utils
 {
@@ -83,7 +84,7 @@ namespace Wauncher.Utils
             return BitConverter.ToString(hash).Replace("-", "").ToLowerInvariant();
         }
 
-        public static async Task<Patches> ValidatePatches(bool validateAll = false, bool deleteOutdatedFiles = true)
+        public static async Task<Patches> ValidatePatches(bool validateAll = false, bool deleteOutdatedFiles = true, Action<int, int>? onProgress = null)
         {
             List<Patch> patches = await GetPatches(validateAll);
             List<Patch> missing = new();
@@ -192,8 +193,13 @@ namespace Wauncher.Utils
                     MaxDegreeOfParallelism = 4
                 };
 
+                int totalToCheck = patches.Count;
+                int checkedCount = 0;
+                onProgress?.Invoke(0, totalToCheck);
+
                 await Parallel.ForEachAsync(patches, parallelOptions, async (patch, cancellationToken) =>
                 {
+                    onProgress?.Invoke(Interlocked.Increment(ref checkedCount), totalToCheck);
                     string originalFileName = GetOriginalFileName(patch.File);
 
                     // skip dir file (we already checked it)

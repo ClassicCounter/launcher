@@ -9,6 +9,7 @@ namespace Wauncher.ViewModels
 
         public string Name { get; set; } = "";
         public string IpPort { get; set; } = "";
+        public string FlagUrl { get; set; } = "";
 
         private int _players;
         private int _maxPlayers;
@@ -68,9 +69,11 @@ namespace Wauncher.ViewModels
         public string Subtitle => IsNone ? "Play without selecting a server" : MapDisplay;
         public string MapImageUrl => (!IsNone && !string.IsNullOrEmpty(Map)) ? $"https://assets.classiccounter.cc/maps/gradient/{Map}.png" : "";
         public string Region => Name.StartsWith("EU", StringComparison.OrdinalIgnoreCase) ? "EU" :
-                                Name.StartsWith("NA", StringComparison.OrdinalIgnoreCase) ? "NA" : "";
+                                Name.StartsWith("NA", StringComparison.OrdinalIgnoreCase) ? "NA" :
+                                Name.StartsWith("RU", StringComparison.OrdinalIgnoreCase) ? "RU" : "";
         public bool IsEu => Region == "EU";
         public bool IsNa => Region == "NA";
+        public bool IsRu => Region == "RU";
 
         public string DisplayName
         {
@@ -96,7 +99,7 @@ namespace Wauncher.ViewModels
             }
         }
 
-        public string BadgeColor => Region == "NA" ? "#D32F2F" : "#1B6EA8";
+        public string BadgeColor => Region == "NA" ? "#D32F2F" : Region == "RU" ? "#C41E3A" : "#1B6EA8";
 
         private void Notify(params string[] names)
         {

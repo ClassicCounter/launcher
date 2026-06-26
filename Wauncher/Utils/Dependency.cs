@@ -87,7 +87,7 @@ namespace Wauncher.Utils
             }
         }
 
-        public async static Task<Boolean> Install(StatusContext ctx, Dependencies dependencies)
+        public async static Task<bool> Install(StatusContext ctx, Dependencies dependencies)
         {
             _process = new Process();
             bool success = false;

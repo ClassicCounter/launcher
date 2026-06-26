@@ -9,9 +9,6 @@ namespace Wauncher.ViewModels
         public static event Action<bool>?   DisableCarouselChanged;
 
         [ObservableProperty]
-        private bool _minimizeToTray = true;
-
-        [ObservableProperty]
         private bool _discordRpc = true;
 
         [ObservableProperty]
@@ -24,6 +21,9 @@ namespace Wauncher.ViewModels
         private bool _disableHardwareAcceleration = false;
 
         [ObservableProperty]
+        private bool _enableGc = false;
+
+        [ObservableProperty]
         private string _launchOptions = string.Empty;
 
         public SettingsWindowViewModel()
@@ -31,7 +31,6 @@ namespace Wauncher.ViewModels
             Load();
         }
 
-        partial void OnMinimizeToTrayChanged(bool value) => Save();
         partial void OnSkipUpdatesChanged(bool value) => Save();
         partial void OnLaunchOptionsChanged(string value) => Save();
         partial void OnDisableCarouselChanged(bool value)
@@ -40,6 +39,7 @@ namespace Wauncher.ViewModels
             DisableCarouselChanged?.Invoke(value);
         }
         partial void OnDisableHardwareAccelerationChanged(bool value) => Save();
+        partial void OnEnableGcChanged(bool value) => Save();
 
         partial void OnDiscordRpcChanged(bool value)
         {
@@ -65,11 +65,11 @@ namespace Wauncher.ViewModels
 
                     switch (key)
                     {
-                        case "MinimizeToTray": MinimizeToTray = value.Trim() == "true"; break;
                         case "DiscordRpc":     DiscordRpc     = value.Trim() == "true"; break;
                         case "SkipUpdates":    SkipUpdates    = value.Trim() == "true"; break;
                         case "DisableCarousel": DisableCarousel = value.Trim() == "true"; break;
                         case "DisableHardwareAcceleration": DisableHardwareAcceleration = value.Trim() == "true"; break;
+                        case "EnableGc":       EnableGc       = value.Trim() == "true"; break;
                         case "LaunchOptions":  LaunchOptions  = value; break;
                     }
                 }
@@ -86,18 +86,18 @@ namespace Wauncher.ViewModels
 
                 // Remove only the standard setting keys, preserving color_/appearance_ entries
                 lines.RemoveAll(l =>
-                    l.StartsWith("MinimizeToTray=") ||
                     l.StartsWith("DiscordRpc=") ||
                     l.StartsWith("SkipUpdates=") ||
                     l.StartsWith("DisableCarousel=") ||
                     l.StartsWith("DisableHardwareAcceleration=") ||
+                    l.StartsWith("EnableGc=") ||
                     l.StartsWith("LaunchOptions="));
 
-                lines.Add($"MinimizeToTray={MinimizeToTray.ToString().ToLower()}");
                 lines.Add($"DiscordRpc={DiscordRpc.ToString().ToLower()}");
                 lines.Add($"SkipUpdates={SkipUpdates.ToString().ToLower()}");
                 lines.Add($"DisableCarousel={DisableCarousel.ToString().ToLower()}");
                 lines.Add($"DisableHardwareAcceleration={DisableHardwareAcceleration.ToString().ToLower()}");
+                lines.Add($"EnableGc={EnableGc.ToString().ToLower()}");
                 lines.Add($"LaunchOptions={LaunchOptions}");
 
                 File.WriteAllLines(path, lines);
