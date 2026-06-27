@@ -1,7 +1,7 @@
 # Major Update - Game Coordinator Beta
 06/27/2026
 ## What's Changed
-- Added **🇷🇺 RU | ClassicCounter | PUG | 128 Tick** server (host located in Moscow)
+- Added **RU | ClassicCounter | PUG | 128 Tick** server (host located in Moscow)
 - Added **Game Coordinator** support
 - Added Spectral Knives (currently unobtainable to the public, may be used for planned future events)
 - Added ClassicCounter logo to in-game pause menu
