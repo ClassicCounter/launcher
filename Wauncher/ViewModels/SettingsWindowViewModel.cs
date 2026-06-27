@@ -7,6 +7,7 @@ namespace Wauncher.ViewModels
         // ── Static events — fire whenever these settings change on ANY instance ──
         public static event Action<bool>?   DiscordRpcChanged;
         public static event Action<bool>?   DisableCarouselChanged;
+        public static event Action<bool>?   SkipUpdatesChanged;
 
         [ObservableProperty]
         private bool _discordRpc = true;
@@ -31,7 +32,7 @@ namespace Wauncher.ViewModels
             Load();
         }
 
-        partial void OnSkipUpdatesChanged(bool value) => Save();
+        partial void OnSkipUpdatesChanged(bool value) { Save(); SkipUpdatesChanged?.Invoke(value); }
         partial void OnLaunchOptionsChanged(string value) => Save();
         partial void OnDisableCarouselChanged(bool value)
         {

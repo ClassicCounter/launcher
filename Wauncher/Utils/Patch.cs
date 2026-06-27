@@ -105,7 +105,7 @@ namespace Wauncher.Utils
                 if (File.Exists(pakDatPath))
                 {
                     string pakDatHash = await GetHash(pakDatPath);
-                    if (pakDatHash == pakDatPatch.Hash)
+                    if (pakDatHash.Equals(pakDatPatch.Hash, StringComparison.OrdinalIgnoreCase))
                     {
                         // pak_dat.vpk matches — also check pak01_dir.vpk before declaring up to date
                         var dirPatchFast = patches.FirstOrDefault(p => p.File.Contains("pak01_dir.vpk"));
@@ -116,7 +116,7 @@ namespace Wauncher.Utils
                             if (File.Exists(dirPathFast))
                             {
                                 string dirHash = await GetHash(dirPathFast);
-                                if (dirHash == dirPatchFast.Hash)
+                                if (dirHash.Equals(dirPatchFast.Hash, StringComparison.OrdinalIgnoreCase))
                                 {
                                     skipValidation = true;
                                     return new Patches(true, missing, outdated);
@@ -161,7 +161,7 @@ namespace Wauncher.Utils
                             Terminal.Debug("Checking hash for: csgo/pak01_dir.vpk");
 
                         string dirHash = await GetHash(dirPath);
-                        if (dirHash != dirPatch.Hash)
+                        if (!dirHash.Equals(dirPatch.Hash, StringComparison.OrdinalIgnoreCase))
                         {
                             if (Debug.Enabled())
                                 Terminal.Debug("csgo/pak01_dir.vpk is outdated!");
@@ -252,7 +252,7 @@ namespace Wauncher.Utils
                         Terminal.Debug($"Checking hash for: {originalFileName}{(isPak01File && validateAll ? " (full validation)" : "")}");
 
                     string hash = await GetHash(path);
-                    if (hash != patch.Hash)
+                    if (!hash.Equals(patch.Hash, StringComparison.OrdinalIgnoreCase))
                     {
                         if (Debug.Enabled())
                             Terminal.Debug($"Outdated: {originalFileName}");

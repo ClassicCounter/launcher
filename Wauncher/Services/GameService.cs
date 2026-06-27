@@ -30,18 +30,15 @@ namespace Wauncher.Services
                 QueueDeferredConnect(resolvedTarget);
             }
 
-            return await Task.Run(() => 
+            try
             {
-                try
-                {
-                    return Game.Launch();
-                }
-                catch (Exception ex)
-                {
-                    ErrorLogger.LogError("GameService.LaunchAsync", ex, $"Connect target: {connectTarget}, Launch options: {launchOptions}");
-                    throw;
-                }
-            });
+                return await Game.Launch();
+            }
+            catch (Exception ex)
+            {
+                ErrorLogger.LogError("GameService.LaunchAsync", ex, $"Connect target: {connectTarget}, Launch options: {launchOptions}");
+                throw;
+            }
         }
 
         public async Task MonitorAsync()

@@ -109,16 +109,19 @@ namespace Wauncher.ViewModels
             });
 
             var cts = _errorDismissCts;
-            _ = Task.Delay(4000, cts.Token).ContinueWith(_ =>
+            _ = Task.Run(async () =>
             {
-                if (!cts.IsCancellationRequested)
+                try
                 {
-                    Dispatcher.UIThread.Post(() =>
+                    await Task.Delay(4000, cts.Token);
+                    await Dispatcher.UIThread.InvokeAsync(async () =>
                     {
                         StatusBannerHeight = 0;
-                        Task.Delay(350).ContinueWith(_ => Dispatcher.UIThread.Post(() => IsStatusBannerVisible = false));
+                        await Task.Delay(350);
+                        IsStatusBannerVisible = false;
                     });
                 }
+                catch (OperationCanceledException) { }
             });
         }
 
@@ -133,10 +136,11 @@ namespace Wauncher.ViewModels
 
         private void HideStatusBanner()
         {
-            Dispatcher.UIThread.Post(() =>
+            _ = Dispatcher.UIThread.InvokeAsync(async () =>
             {
                 StatusBannerHeight = 0;
-                Task.Delay(350).ContinueWith(_ => Dispatcher.UIThread.Post(() => IsStatusBannerVisible = false));
+                await Task.Delay(350);
+                IsStatusBannerVisible = false;
             });
         }
 
@@ -163,21 +167,19 @@ namespace Wauncher.ViewModels
 
         public string StatusBannerText =>
             IsUpdateError ? FriendlyUpdateError :
-            _updateService.IsInstalling ?
-                (_updateService.IsExtracting ?
-                    (_updateService.UpdateProgress > 0 ? $"Installing {_updateService.UpdateProgress:F0}%" : "Installing...") :
-                 _updateService.UpdateIndeterminate ? "Installing..." :
-                 _updateService.UpdateProgress > 0 ? $"Downloading {_updateService.UpdateProgress:F0}%" :
-                 "Installing...") :
-            _updateService.IsUpdating ?
-                (_updateService.UpdateIndeterminate ? "Updating..." : $"Updating {_updateService.UpdateProgress:F0}%") :
+            _updateService.IsCheckingUpdates ? "Checking for updates..." :
+            !string.IsNullOrWhiteSpace(_updateService.UpdateStatusFile) &&
+            (_updateService.IsInstalling || _updateService.IsUpdating) ? _updateService.UpdateStatusFile :
+            _updateService.IsInstalling ? "Installing..." :
+            _updateService.IsUpdating ? "Updating..." :
             "";
 
         public string StatusBannerSpeed =>
-            IsUpdateError ? "" : _updateService.UpdateStatusSpeed;
+            IsUpdateError || _updateService.IsCheckingUpdates ? "" : _updateService.UpdateStatusSpeed;
 
         public string StatusBannerColor =>
             IsUpdateError ? "#D32F2F" :
+            _updateService.IsCheckingUpdates ? "#FFC107" :
             _updateService.IsInstalling ? "#2196F3" :
             _updateService.IsUpdating ? "#FFC107" :
             "#00000000";
@@ -211,7 +213,7 @@ namespace Wauncher.ViewModels
                 return;
             }
 
-            if (_updateService.IsUpdateAvailable)
+            if (_updateService.IsUpdateAvailable && !SettingsWindowViewModel.LoadGlobal().SkipUpdates)
             {
                 await ValidateFilesAsync();
                 return;
@@ -596,9 +598,9 @@ namespace Wauncher.ViewModels
 
                     if (IsUpdateError)
                         ShowErrorBanner();
-                    else if (IsUpdatingOrInstalling && !IsStatusBannerVisible)
+                    else if ((IsUpdatingOrInstalling || _updateService.IsCheckingUpdates) && !IsStatusBannerVisible)
                         ShowStatusBanner();
-                    else if (!IsUpdatingOrInstalling && !IsUpdateError && IsStatusBannerVisible)
+                    else if (!IsUpdatingOrInstalling && !_updateService.IsCheckingUpdates && !IsUpdateError && IsStatusBannerVisible)
                         HideStatusBanner();
                 };
             }

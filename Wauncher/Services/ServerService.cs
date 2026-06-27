@@ -17,7 +17,7 @@ namespace Wauncher.Services
         private DispatcherTimer? _serverRefreshTimer;
         private int _serverRefreshInProgress;
         private bool _started;
-        private readonly HttpClient _httpClient;
+        private readonly HttpClient _httpClient = HttpClientFactory.Shared;
         private const string SERVER_LIST_URL = "https://raw.githubusercontent.com/edd13s/ClassicCounter-Servers/refs/heads/main/servers.json";
 
         public bool IsOfflineMode => !System.Net.NetworkInformation.NetworkInterface.GetIsNetworkAvailable();
@@ -28,10 +28,7 @@ namespace Wauncher.Services
             new ServerInfo { Name = "None", IpPort = "", IsOnline = false }
         };
 
-        public ServerService()
-        {
-            _httpClient = new HttpClient();
-        }
+        public ServerService() { }
 
         public void Start()
         {

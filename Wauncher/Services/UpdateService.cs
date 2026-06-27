@@ -50,8 +50,22 @@ namespace Wauncher.Services
         [ObservableProperty]
         private bool _isExtracting;
 
+        public UpdateService()
+        {
+            ViewModels.SettingsWindowViewModel.SkipUpdatesChanged += skipUpdates =>
+            {
+                if (skipUpdates) IsUpdateAvailable = false;
+            };
+        }
+
         public async Task<bool> CheckForUpdatesAsync()
         {
+            if (ViewModels.SettingsWindowViewModel.LoadGlobal().SkipUpdates)
+            {
+                IsUpdateAvailable = false;
+                return false;
+            }
+
             if (IsCheckingUpdates || IsUpdating || IsInstalling)
                 return false;
 

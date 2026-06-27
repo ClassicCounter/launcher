@@ -45,14 +45,15 @@ namespace Wauncher.Views
         private readonly List<CancellationTokenSource?> _zoomCts = new();
 
         private bool _forceClose;
+        private bool _gameWasLaunched;
         private bool _isLoaded;
-        private int _carouselInitInProgress;
+        private volatile int _carouselInitInProgress;
         private Image[] _carouselImages = Array.Empty<Image>();
         private List<string> _carouselImageUrls = new();
         private DispatcherTimer? _carouselTimer;
         private int _currentCarouselIndex;
         private int _currentCarouselSlot;
-        private int _carouselRotateInProgress;
+        private volatile int _carouselRotateInProgress;
 
         public MainWindow()
         {
@@ -125,7 +126,10 @@ namespace Wauncher.Views
             Closing += (_, e) =>
             {
                 if (_forceClose)
+                {
+                    Dispatcher.UIThread.Post(() => Environment.Exit(0));
                     return;
+                }
 
                 _forceClose = true;
                 MemoryManager.StopBackgroundCleanup();
@@ -282,6 +286,7 @@ namespace Wauncher.Views
             if (!_forceClose &&
                 string.Equals(vm.GameStatus, "Running", StringComparison.OrdinalIgnoreCase))
             {
+                _gameWasLaunched = true;
                 Dispatcher.UIThread.Post(() =>
                 {
                     if (IsVisible)
@@ -291,7 +296,8 @@ namespace Wauncher.Views
                 return;
             }
 
-            if (string.Equals(vm.GameStatus, "Not Running", StringComparison.OrdinalIgnoreCase))
+            if (_gameWasLaunched &&
+                string.Equals(vm.GameStatus, "Not Running", StringComparison.OrdinalIgnoreCase))
             {
                 Dispatcher.UIThread.Post(() =>
                 {

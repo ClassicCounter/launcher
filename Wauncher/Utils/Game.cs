@@ -17,8 +17,8 @@ namespace Wauncher.Utils
         private static string _map = "main_menu";
         private static int _scoreCT = 0;
         private static int _scoreT = 0;
-        private static string? _pendingConnectTarget;
-        private static int _pendingNetConPort;
+        private static volatile string? _pendingConnectTarget;
+        private static volatile int _pendingNetConPort;
         private static int _pendingConnectTriggered;
 
         public static bool IsRunning()
@@ -107,11 +107,22 @@ namespace Wauncher.Utils
             _process.StartInfo.Arguments = string.Join(" ", arguments);
             _process.StartInfo.WorkingDirectory = directory;
 
-            if (_pendingNetConPort > 0)
+            if (!string.IsNullOrWhiteSpace(_pendingConnectTarget))
             {
-                _process.StartInfo.Arguments = string.IsNullOrWhiteSpace(_process.StartInfo.Arguments)
-                    ? $"-netconport {_pendingNetConPort}"
-                    : $"{_process.StartInfo.Arguments} -netconport {_pendingNetConPort}";
+                if (!enableGc && _pendingNetConPort > 0)
+                {
+                    // csgo.exe supports -netconport; poll and send connect via TCP console
+                    _process.StartInfo.Arguments = string.IsNullOrWhiteSpace(_process.StartInfo.Arguments)
+                        ? $"-netconport {_pendingNetConPort}"
+                        : $"{_process.StartInfo.Arguments} -netconport {_pendingNetConPort}";
+                }
+                else
+                {
+                    // cc.exe: pass +connect as a launch argument
+                    _process.StartInfo.Arguments = string.IsNullOrWhiteSpace(_process.StartInfo.Arguments)
+                        ? $"+connect {_pendingConnectTarget}"
+                        : $"{_process.StartInfo.Arguments} +connect {_pendingConnectTarget}";
+                }
             }
 
             if (!File.Exists(_process.StartInfo.FileName))
@@ -123,10 +134,7 @@ namespace Wauncher.Utils
 
             bool started = _process.Start();
 
-            // Start polling the netcon port immediately after game launch.
-            // This handles both the normal path (triggered after gamestate fires) and
-            // the fallback path (game DLL modified, gamestate integration broken).
-            if (started && !string.IsNullOrWhiteSpace(_pendingConnectTarget))
+            if (started && !enableGc && !string.IsNullOrWhiteSpace(_pendingConnectTarget))
                 _ = Task.Run(PollNetconUntilConnectedAsync);
 
             return started;
@@ -246,14 +254,11 @@ namespace Wauncher.Utils
 
         private static int GeneratePort()
         {
-            int port = new Random().Next(1024, 65536);
-
             IPGlobalProperties properties = IPGlobalProperties.GetIPGlobalProperties();
-            while (properties.GetActiveTcpConnections().Any(x => x.LocalEndPoint.Port == port))
-            {
-                port = new Random().Next(1024, 65536);
-            }
-
+            var usedPorts = new HashSet<int>(properties.GetActiveTcpConnections().Select(x => x.LocalEndPoint.Port));
+            int port;
+            do { port = Random.Shared.Next(1024, 65536); }
+            while (usedPorts.Contains(port));
             return port;
         }
 
@@ -309,8 +314,6 @@ namespace Wauncher.Utils
             }
         }
 
-        // Polls the netcon port every 3 seconds for up to 2 minutes until the game accepts
-        // the connect command. Works whether or not gamestate integration is functional.
         private static async Task PollNetconUntilConnectedAsync()
         {
             string? target = _pendingConnectTarget;
@@ -323,7 +326,6 @@ namespace Wauncher.Utils
 
             while (DateTime.UtcNow < deadline)
             {
-                // If gamestate already handled it, stop
                 if (string.IsNullOrWhiteSpace(_pendingConnectTarget))
                     return;
 
