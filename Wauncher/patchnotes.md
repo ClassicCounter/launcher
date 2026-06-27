@@ -1,3 +1,32 @@
+# Major Update - Game Coordinator Beta
+06/27/2026
+## What's Changed
+- Added **🇷🇺 RU | ClassicCounter | PUG | 128 Tick** server (host located in Moscow)
+- Added **Game Coordinator** support
+- Added Spectral Knives (currently unobtainable to the public, may be used for planned future events)
+- Added ClassicCounter logo to in-game pause menu
+- Added ability to view eddies.cc profiles via clicking players on the in-game scoreboard
+- Removed Herobrine
+- Fixed an issue with Weapon Cases not opening correctly
+- Fixed an issue with Sticker Capsules not opening correctly
+- Fixed an issue with Music Kit Boxes not opening correctly
+- Fixed an issue with scraping stickers
+- Fixed Trade Up Contracts not functioning
+- Fixed certain items failing to appear in Trade Up Contracts
+- Fixed all NOVAGANG Collection items' inspect models
+- Fixed all NOVAGANG Music Kit main menu music not playing in main menu
+- Fixed an issue where some weapon models wouldn't render properly in the inventory
+- Fixed main menu News tab failing to display ClassicCounter server list
+- Fixed missing assets from main menu carousel
+- Added new items to main menu carousel
+- Added launcher settings toggle for **Enable In-Game Inventory** (launches cc.exe with game coordinator)
+- Added error message in the case launcher fails to connect to update server
+- Fixed an issue with launcher failing to verify game files
+- Fixed launcher sometimes staying open as a background process after being closed
+- Fixed launcher not showing an "Update" button when detecting a new patch
+- Removed launcher system tray icon behavior
+- Updated appearance of installation and update progress bars in launcher
+
 # Launcher Update 3.2.1
 06/19/2026
 ## What's Changed
