@@ -1,6 +1,8 @@
 ﻿using Refit;
 using Newtonsoft.Json;
+using System.ComponentModel;
 using System.Net.Http;
+using System.Runtime.CompilerServices;
 
 namespace Wauncher.Utils
 {
@@ -43,10 +45,21 @@ namespace Wauncher.Utils
         Task<string> GetPatchNotesWauncher();
     }
 
-    public class FriendInfo
+    public class FriendInfo : INotifyPropertyChanged
     {
+        private string _steamId = "";
+        private string _username = "";
+        private string _avatarUrl = "";
+        private string _status = "Offline";
+        private string _quickJoinIpPort = "";
+        private string _quickJoinServerName = "";
+
         [JsonProperty("steamid")]
-        public string SteamId { get; set; } = "";
+        public string SteamId
+        {
+            get => _steamId;
+            set { _steamId = value; OnPropertyChanged(); }
+        }
 
         [JsonProperty("steamid2")]
         public string? SteamId2
@@ -59,49 +72,66 @@ namespace Wauncher.Utils
         }
 
         [JsonProperty("username")]
-        public string Username  { get; set; } = "";
+        public string Username
+        {
+            get => _username;
+            set { _username = value; OnPropertyChanged(); }
+        }
 
         [JsonProperty("avatar_url")]
-        public string AvatarUrl { get; set; } = "";
+        public string AvatarUrl
+        {
+            get => _avatarUrl;
+            set { _avatarUrl = value; OnPropertyChanged(); }
+        }
 
         [JsonProperty("avatar")]
         public string? Avatar
         {
-            set
-            {
-                if (!string.IsNullOrWhiteSpace(value))
-                    AvatarUrl = value;
-            }
+            set { if (!string.IsNullOrWhiteSpace(value)) AvatarUrl = value; }
         }
 
         [JsonProperty("custom_username")]
         public string? CustomUsername
         {
-            set
-            {
-                if (!string.IsNullOrWhiteSpace(value))
-                    Username = value;
-            }
+            set { if (!string.IsNullOrWhiteSpace(value)) Username = value; }
         }
 
         [JsonProperty("custom_avatar")]
         public string? CustomAvatar
         {
-            set
-            {
-                if (!string.IsNullOrWhiteSpace(value))
-                    AvatarUrl = value;
-            }
+            set { if (!string.IsNullOrWhiteSpace(value)) AvatarUrl = value; }
         }
 
         [JsonProperty("status")]
-        public string Status    { get; set; } = "Offline";
+        public string Status
+        {
+            get => _status;
+            set
+            {
+                _status = value;
+                OnPropertyChanged();
+                OnPropertyChanged(nameof(DotColor));
+                OnPropertyChanged(nameof(IsOffline));
+                OnPropertyChanged(nameof(AvatarOpacity));
+                OnPropertyChanged(nameof(StatusText));
+                OnPropertyChanged(nameof(StatusColor));
+            }
+        }
 
         [JsonIgnore]
-        public string QuickJoinIpPort { get; set; } = "";
+        public string QuickJoinIpPort
+        {
+            get => _quickJoinIpPort;
+            set { _quickJoinIpPort = value; OnPropertyChanged(); OnPropertyChanged(nameof(CanQuickJoin)); }
+        }
 
         [JsonIgnore]
-        public string QuickJoinServerName { get; set; } = "";
+        public string QuickJoinServerName
+        {
+            get => _quickJoinServerName;
+            set { _quickJoinServerName = value; OnPropertyChanged(); }
+        }
 
         [JsonIgnore]
         public bool CanQuickJoin => !string.IsNullOrWhiteSpace(QuickJoinIpPort);
@@ -122,7 +152,11 @@ namespace Wauncher.Utils
                     : Status;
             }
         }
-        public string StatusColor   => IsOffline ? "#666666" : "#999999";
+        public string StatusColor => IsOffline ? "#666666" : "#999999";
+
+        public event PropertyChangedEventHandler? PropertyChanged;
+        private void OnPropertyChanged([CallerMemberName] string? name = null)
+            => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
     }
 
     public class FriendsResponse

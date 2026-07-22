@@ -28,15 +28,15 @@
             </Transitions>
         </Border.Transitions>
 
-        <Grid MinHeight="415">
+        <Grid>
             <Grid.RowDefinitions>
                 <RowDefinition Height="44" />
                 <RowDefinition Height="1" />
-                <RowDefinition Height="*" />
+                <RowDefinition Height="369" />
             </Grid.RowDefinitions>
 
             <!-- Header -->
-            <Grid Grid.Row="0">
+            <Grid Grid.Row="0" Height="44">
                 <TextBlock
                     HorizontalAlignment="Center"
                     VerticalAlignment="Center"
@@ -61,10 +61,12 @@
             <Rectangle Grid.Row="1" Fill="{DynamicResource AppDivider}" />
 
             <!-- Server list -->
-            <ScrollViewer Grid.Row="2"
-                          Padding="20,8,20,16"
-                          HorizontalScrollBarVisibility="Disabled"
-                          VerticalScrollBarVisibility="Auto">
+            <ScrollViewer
+                Grid.Row="2"
+                Padding="20,8,20,16"
+                HorizontalScrollBarVisibility="Disabled"
+                VerticalScrollBarVisibility="Visible"
+                AllowAutoHide="False">
                 <ItemsControl ItemsSource="{Binding Servers}">
                     <ItemsControl.ItemsPanel>
                         <ItemsPanelTemplate>

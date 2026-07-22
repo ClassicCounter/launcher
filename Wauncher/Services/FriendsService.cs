@@ -220,19 +220,15 @@ namespace Wauncher.Services
 
                 Dispatcher.UIThread.Post(() =>
                 {
-                    var sorted = apiFriends;
+                    ApplyQuickJoinMetadata(apiFriends);
 
-                    ApplyQuickJoinMetadata(sorted);
-
-                    foreach (var f in sorted)
+                    foreach (var f in apiFriends)
                         f.AvatarUrl = AvatarCache.GetDisplaySource(f.AvatarUrl);
 
-                    var signature = BuildFriendsSignature(sorted);
+                    var signature = BuildFriendsSignature(apiFriends);
                     if (!string.Equals(signature, _lastRenderedFriendsSignature, StringComparison.Ordinal))
                     {
-                        Friends.Clear();
-                        foreach (var f in sorted)
-                            Friends.Add(f);
+                        ApplyFriendsDiff(Friends, apiFriends);
                         _lastRenderedFriendsSignature = signature;
                     }
 
@@ -299,9 +295,7 @@ namespace Wauncher.Services
                 var signature = BuildFriendsSignature(sorted);
                 if (!string.Equals(signature, _lastRenderedFriendsSignature, StringComparison.Ordinal))
                 {
-                    Friends.Clear();
-                    foreach (var f in sorted)
-                        Friends.Add(f);
+                    ApplyFriendsDiff(Friends, sorted);
                     _lastRenderedFriendsSignature = signature;
                 }
 
@@ -311,6 +305,35 @@ namespace Wauncher.Services
             });
 
             return true;
+        }
+
+        private static void ApplyFriendsDiff(ObservableCollection<FriendInfo> collection, List<FriendInfo> incoming)
+        {
+            for (int i = 0; i < incoming.Count; i++)
+            {
+                var src = incoming[i];
+                var existing = collection.FirstOrDefault(f => f.SteamId == src.SteamId);
+
+                if (existing != null)
+                {
+                    existing.Username = src.Username;
+                    existing.AvatarUrl = src.AvatarUrl;
+                    existing.Status = src.Status;
+                    existing.QuickJoinIpPort = src.QuickJoinIpPort;
+                    existing.QuickJoinServerName = src.QuickJoinServerName;
+
+                    int currentIndex = collection.IndexOf(existing);
+                    if (currentIndex != i)
+                        collection.Move(currentIndex, i);
+                }
+                else
+                {
+                    collection.Insert(i, src);
+                }
+            }
+
+            while (collection.Count > incoming.Count)
+                collection.RemoveAt(collection.Count - 1);
         }
 
         private static string BuildFriendsSignature(IEnumerable<FriendInfo> friends)

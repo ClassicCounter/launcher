@@ -80,6 +80,7 @@ namespace Wauncher.Views
                     {
                         DataContext = viewModel;
                         viewModel.PropertyChanged += ViewModel_PropertyChanged;
+                        MemoryManager.StartBackgroundCleanup();
                         if (_isLoaded)
                             _ = InitializeCarouselAsync();
                     });
