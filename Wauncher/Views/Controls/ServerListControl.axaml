@@ -12,16 +12,20 @@
     d:DesignHeight="415"
     x:DataType="vm:MainWindowViewModel">
 
+    <Grid IsHitTestVisible="{Binding IsDropdownOpen}">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
     <Border
+        Grid.Row="1"
         x:Name="ServerListPanel"
         MaxHeight="{Binding IsDropdownOpen, Converter={x:Static conv:BooleanToMaxHeightConverter.Instance}, ConverterParameter=415, FallbackValue=0}"
         HorizontalAlignment="Stretch"
-        VerticalAlignment="Bottom"
         Background="{DynamicResource AppMainBackground}"
         BorderBrush="{DynamicResource AppDivider}"
         BorderThickness="0,1,0,0"
-        ClipToBounds="True"
-        ZIndex="20">
+        ClipToBounds="True">
         <Border.Transitions>
             <Transitions>
                 <DoubleTransition Easing="CubicEaseOut" Property="MaxHeight" Duration="0:0:0.22" />
@@ -133,4 +137,5 @@
             </Border>
         </Grid>
     </Border>
+    </Grid>
 </UserControl>

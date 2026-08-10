@@ -43,9 +43,12 @@ namespace Wauncher
         {
             try
             {
-                // Update main background (used by all panels and server selector)
+                // Update main background — applies to all panels, title bar, bottom bar, right panel, server list
                 var brush = new Avalonia.Media.SolidColorBrush(Avalonia.Media.Color.Parse(theme.BgMain));
                 Resources["AppMainBackground"] = brush;
+                Resources["AppTitleBarBrush"] = brush;
+                Resources["AppRightPanelBg"] = brush;
+                Resources["AppServerListBg"] = brush;
 
                 // Update accent green (launch button, active tab border, etc.)
                 var accentBrush = new Avalonia.Media.SolidColorBrush(Avalonia.Media.Color.Parse(theme.AccentGreen));

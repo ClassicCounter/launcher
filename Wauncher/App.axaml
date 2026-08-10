@@ -23,7 +23,7 @@
 
     <Application.Resources>
         <ResourceDictionary>
-            <SolidColorBrush x:Key="AppTitleBarBrush">#CC3A3A3A</SolidColorBrush>
+            <SolidColorBrush x:Key="AppTitleBarBrush">#3A3A3A</SolidColorBrush>
             <SolidColorBrush x:Key="AppMainBackground">#3A3A3A</SolidColorBrush>
             <SolidColorBrush x:Key="AppAccentGreen">#4CAF50</SolidColorBrush>
             <SolidColorBrush x:Key="AppTextColor">White</SolidColorBrush>
@@ -41,7 +41,7 @@
             <SolidColorBrush x:Key="AppIconBtnHover">#99FFFFFF</SolidColorBrush>
             <SolidColorBrush x:Key="AppIconBtnPressed">#33FFFFFF</SolidColorBrush>
             <SolidColorBrush x:Key="AppIconBtnBorder">#22FFFFFF</SolidColorBrush>
-            <SolidColorBrush x:Key="AppRightPanelBg">#223A3A3A</SolidColorBrush>
+            <SolidColorBrush x:Key="AppRightPanelBg">#3A3A3A</SolidColorBrush>
             <SolidColorBrush x:Key="AppServerListBg">#FF3A3A3A</SolidColorBrush>
             <SolidColorBrush x:Key="AppGreetingName">White</SolidColorBrush>
             <SolidColorBrush x:Key="AppLinkText">#6CB5F5</SolidColorBrush>

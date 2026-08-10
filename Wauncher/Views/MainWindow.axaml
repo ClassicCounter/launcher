@@ -532,58 +532,82 @@
                     Grid.Row="0" />
 
                 <!-- Settings panel overlay (slides up over carousel) -->
-                <Border
+                <Grid
                     Grid.Row="0"
                     ZIndex="50"
-                    HorizontalAlignment="Stretch"
-                    VerticalAlignment="Bottom"
                     ClipToBounds="True"
-                    BorderBrush="{DynamicResource AppDivider}"
-                    BorderThickness="0,1,0,0"
-                    MaxHeight="{Binding IsSettingsPanelOpen, Converter={x:Static conv:BooleanToMaxHeightConverter.Instance}, ConverterParameter=415, FallbackValue=0}">
-                    <Border.Transitions>
-                        <Transitions>
-                            <DoubleTransition Property="MaxHeight" Duration="0:0:0.22" Easing="CubicEaseOut" />
-                        </Transitions>
-                    </Border.Transitions>
-                    <controls:SettingsPanel x:Name="SettingsPanelControl" />
-                </Border>
+                    IsHitTestVisible="{Binding IsSettingsPanelOpen}">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+                    <Border
+                        Grid.Row="1"
+                        HorizontalAlignment="Stretch"
+                        ClipToBounds="True"
+                        BorderBrush="{DynamicResource AppDivider}"
+                        BorderThickness="0,1,0,0"
+                        MaxHeight="{Binding IsSettingsPanelOpen, Converter={x:Static conv:BooleanToMaxHeightConverter.Instance}, ConverterParameter=415, FallbackValue=0}">
+                        <Border.Transitions>
+                            <Transitions>
+                                <DoubleTransition Property="MaxHeight" Duration="0:0:0.22" Easing="CubicEaseOut" />
+                            </Transitions>
+                        </Border.Transitions>
+                        <controls:SettingsPanel x:Name="SettingsPanelControl" />
+                    </Border>
+                </Grid>
 
                 <!-- Info panel overlay (slides up over carousel) -->
-                <Border
+                <Grid
                     Grid.Row="0"
                     ZIndex="50"
-                    HorizontalAlignment="Stretch"
-                    VerticalAlignment="Bottom"
                     ClipToBounds="True"
-                    BorderBrush="{DynamicResource AppDivider}"
-                    BorderThickness="0,1,0,0"
-                    MaxHeight="{Binding IsInfoPanelOpen, Converter={x:Static conv:BooleanToMaxHeightConverter.Instance}, ConverterParameter=415, FallbackValue=0}">
-                    <Border.Transitions>
-                        <Transitions>
-                            <DoubleTransition Property="MaxHeight" Duration="0:0:0.22" Easing="CubicEaseOut" />
-                        </Transitions>
-                    </Border.Transitions>
-                    <controls:InfoPanel x:Name="InfoPanelControl" />
-                </Border>
+                    IsHitTestVisible="{Binding IsInfoPanelOpen}">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+                    <Border
+                        Grid.Row="1"
+                        HorizontalAlignment="Stretch"
+                        ClipToBounds="True"
+                        BorderBrush="{DynamicResource AppDivider}"
+                        BorderThickness="0,1,0,0"
+                        MaxHeight="{Binding IsInfoPanelOpen, Converter={x:Static conv:BooleanToMaxHeightConverter.Instance}, ConverterParameter=415, FallbackValue=0}">
+                        <Border.Transitions>
+                            <Transitions>
+                                <DoubleTransition Property="MaxHeight" Duration="0:0:0.22" Easing="CubicEaseOut" />
+                            </Transitions>
+                        </Border.Transitions>
+                        <controls:InfoPanel x:Name="InfoPanelControl" />
+                    </Border>
+                </Grid>
 
                 <!-- Appearance panel overlay (slides up over carousel) -->
-                <Border
+                <Grid
                     Grid.Row="0"
                     ZIndex="50"
-                    HorizontalAlignment="Stretch"
-                    VerticalAlignment="Bottom"
                     ClipToBounds="True"
-                    BorderBrush="{DynamicResource AppDivider}"
-                    BorderThickness="0,1,0,0"
-                    MaxHeight="{Binding IsAppearancePanelOpen, Converter={x:Static conv:BooleanToMaxHeightConverter.Instance}, ConverterParameter=415, FallbackValue=0}">
-                    <Border.Transitions>
-                        <Transitions>
-                            <DoubleTransition Property="MaxHeight" Duration="0:0:0.22" Easing="CubicEaseOut" />
-                        </Transitions>
-                    </Border.Transitions>
-                    <controls:AppearancePanel x:Name="AppearancePanelControl" />
-                </Border>
+                    IsHitTestVisible="{Binding IsAppearancePanelOpen}">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+                    <Border
+                        Grid.Row="1"
+                        HorizontalAlignment="Stretch"
+                        ClipToBounds="True"
+                        BorderBrush="{DynamicResource AppDivider}"
+                        BorderThickness="0,1,0,0"
+                        MaxHeight="{Binding IsAppearancePanelOpen, Converter={x:Static conv:BooleanToMaxHeightConverter.Instance}, ConverterParameter=415, FallbackValue=0}">
+                        <Border.Transitions>
+                            <Transitions>
+                                <DoubleTransition Property="MaxHeight" Duration="0:0:0.22" Easing="CubicEaseOut" />
+                            </Transitions>
+                        </Border.Transitions>
+                        <controls:AppearancePanel x:Name="AppearancePanelControl" />
+                    </Border>
+                </Grid>
 
                 <!-- Update bar -->
                 <controls:UpdateBarControl

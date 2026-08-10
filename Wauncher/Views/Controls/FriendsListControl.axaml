@@ -12,7 +12,7 @@
     d:DesignHeight="400"
     x:DataType="vm:MainWindowViewModel">
 
-    <Grid>
+    <Grid Background="{DynamicResource AppMainBackground}">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
