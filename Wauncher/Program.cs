@@ -70,9 +70,18 @@ namespace Wauncher
                 if (args.Any(a => string.Equals(a, "--skip-updates", StringComparison.OrdinalIgnoreCase)))
                     return false;
 
-                // Was just relaunched by the updater; don't immediately re-check.
+                // Was just relaunched by the updater; clean up and don't re-check.
                 if (args.Any(a => string.Equals(a, "--updated", StringComparison.OrdinalIgnoreCase)))
+                {
+                    try
+                    {
+                        var staleUpdater = Path.Combine(Directory.GetCurrentDirectory(), "updater.exe");
+                        if (File.Exists(staleUpdater))
+                            File.Delete(staleUpdater);
+                    }
+                    catch { }
                     return false;
+                }
 
                 var latest = Wauncher.Utils.Version.GetLatestVersion().GetAwaiter().GetResult();
 

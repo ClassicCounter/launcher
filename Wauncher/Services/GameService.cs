@@ -12,10 +12,7 @@ namespace Wauncher.Services
         public async Task<bool> LaunchAsync(string? connectTarget = null, string? launchOptions = null)
         {
             ClearAdditionalArguments();
-            
-            // Add default arguments
-            AddArgument("-novid");
-            
+
             // Add custom launch options if provided
             if (!string.IsNullOrWhiteSpace(launchOptions))
             {
@@ -23,9 +20,10 @@ namespace Wauncher.Services
                     AddArgument(arg);
             }
 
-            // Add connect target if provided
+            // Add connect target if provided (also skip intro video when connecting to a server)
             if (!string.IsNullOrEmpty(connectTarget))
             {
+                AddArgument("-novid");
                 var resolvedTarget = await ResolveConnectTarget(connectTarget);
                 QueueDeferredConnect(resolvedTarget);
             }
