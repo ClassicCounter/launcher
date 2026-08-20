@@ -50,6 +50,15 @@
         <Style Selector="Button.compactActionBtn:disabled /template/ Border#PART_Border">
             <Setter Property="Background" Value="#686868" />
         </Style>
+        <Style Selector="Button.compactActionBtn.danger /template/ Border#PART_Border">
+            <Setter Property="Background" Value="#A82020" />
+        </Style>
+        <Style Selector="Button.compactActionBtn.danger:pointerover /template/ Border#PART_Border">
+            <Setter Property="Background" Value="#C93030" />
+        </Style>
+        <Style Selector="Button.compactActionBtn.danger:pressed /template/ Border#PART_Border">
+            <Setter Property="Background" Value="#8A1A1A" />
+        </Style>
     </UserControl.Styles>
 
     <Grid Background="{DynamicResource AppMainBackground}" MinHeight="415">
@@ -87,7 +96,10 @@
         <Rectangle Grid.Row="1" Fill="{DynamicResource AppDivider}" />
 
         <!-- Vertical list of settings -->
-        <StackPanel Grid.Row="2" VerticalAlignment="Center" Margin="40,10,40,10" Spacing="0">
+        <ScrollViewer Grid.Row="2"
+                      HorizontalScrollBarVisibility="Disabled"
+                      VerticalScrollBarVisibility="Auto">
+        <StackPanel VerticalAlignment="Center" Margin="40,10,40,10" Spacing="0">
 
             <!-- Enable In-Game Inventory -->
             <Grid ColumnDefinitions="*,Auto" MinHeight="44">
@@ -158,7 +170,20 @@
                         Classes="compactActionBtn" Click="AddToSteamButton_Click" Content="Add to Steam" />
             </Grid>
 
+            <Rectangle Height="1" Fill="{DynamicResource AppDivider}" />
+
+            <!-- Clear Download Cache -->
+            <Grid ColumnDefinitions="*,Auto" MinHeight="44">
+                <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                    <TextBlock FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource AppPrimaryText}" Text="Clear Download Cache" />
+                    <TextBlock FontSize="11" Foreground="{DynamicResource AppMutedText}" Text="Delete leftover .7z files if an update got stuck." Margin="0,2,0,0" />
+                </StackPanel>
+                <Button x:Name="ClearCacheButton" Grid.Column="1" VerticalAlignment="Center"
+                        Classes="compactActionBtn danger" Click="ClearCacheButton_Click" Content="Clear Cache" />
+            </Grid>
+
         </StackPanel>
+        </ScrollViewer>
 
         <Rectangle Grid.Row="3" Fill="{DynamicResource AppDivider}" />
 

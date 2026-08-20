@@ -133,7 +133,7 @@ namespace Wauncher.Services
                 if (!hasSteam || string.IsNullOrWhiteSpace(Steam.recentSteamID64))
                     return;
 
-                var rawSelfJson = await Api.Eddies.GetSelfInfo(Steam.recentSteamID64);
+                var rawSelfJson = await Api.Profiles.GetSelfInfo(Steam.recentSteamID64);
                 var self = Api.ParseSelfInfoPayload(rawSelfJson);
                 if (self == null)
                     return;
@@ -202,16 +202,18 @@ namespace Wauncher.Services
                     return;
                 }
 
-                string rawFriendsJson;
-                try
+                if (string.IsNullOrEmpty(Steam.recentSteamID64))
                 {
-                    rawFriendsJson = await Api.Eddies.GetFriends(Steam.recentSteamID64 ?? string.Empty);
+                    Dispatcher.UIThread.Post(() =>
+                    {
+                        ShowNoFriendsState = false;
+                        FriendsStatus = "Sign in to Steam to see friends.";
+                        FriendsShowStatus = true;
+                    });
+                    return;
                 }
-                catch (Exception ex)
-                {
-                    ErrorLogger.LogError("FriendsService.RefreshFriendsAsync.GetFriends", ex, "Failed to get friends via SteamID64, trying SteamID2 fallback");
-                    rawFriendsJson = await Api.Eddies.GetFriendsBySteamId2(Steam.recentSteamID2 ?? string.Empty);
-                }
+
+                var rawFriendsJson = await Api.Profiles.GetFriends(Steam.recentSteamID64);
                 var apiFriends = Api.ParseFriendsPayload(rawFriendsJson)
                     .OrderBy(f => f.Status == "Offline" ? 1 : 0)
                     .ToList();

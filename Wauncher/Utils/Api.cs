@@ -58,11 +58,23 @@ namespace Wauncher.Utils
         public string SteamId
         {
             get => _steamId;
-            set { _steamId = value; OnPropertyChanged(); }
+            // Only overwrite if new value is non-empty so steamid64 written first isn't erased
+            // by a subsequent empty "steamid" field in the same JSON object.
+            set { if (!string.IsNullOrWhiteSpace(value)) { _steamId = value; OnPropertyChanged(); } }
         }
 
         [JsonProperty("steamid2")]
         public string? SteamId2
+        {
+            set
+            {
+                if (!string.IsNullOrWhiteSpace(value) && string.IsNullOrWhiteSpace(SteamId))
+                    SteamId = value;
+            }
+        }
+
+        [JsonProperty("steamid64")]
+        public string? SteamId64
         {
             set
             {
@@ -164,18 +176,26 @@ namespace Wauncher.Utils
         public List<FriendInfo>? Friends { get; set; }
     }
 
-    public interface IEddies
+    public class CCFriendsResponse
+    {
+        [JsonProperty("response")]
+        public List<FriendInfo>? Response { get; set; }
+    }
+
+    public class CCPlayerResponse
+    {
+        [JsonProperty("response")]
+        public FriendInfo? Response { get; set; }
+    }
+
+    public interface IClassicCounterProfiles
     {
         [Headers("User-Agent: ClassicCounter Wauncher")]
-        [Get("/friendsapi.php")]
+        [Get("/friends")]
         Task<string> GetFriends([AliasAs("steamid64")] string steamId64);
 
         [Headers("User-Agent: ClassicCounter Wauncher")]
-        [Get("/friendsapi.php")]
-        Task<string> GetFriendsBySteamId2([AliasAs("steamid2")] string steamId2);
-
-        [Headers("User-Agent: ClassicCounter Wauncher")]
-        [Get("/selfinfo.php")]
+        [Get("/player")]
         Task<string> GetSelfInfo([AliasAs("steamid64")] string steamId64);
     }
 
@@ -204,7 +224,7 @@ namespace Wauncher.Utils
 
         public static IGitHub GitHub = RestService.For<IGitHub>(TimedClient("https://api.github.com", 8), _settings);
         public static IClassicCounter ClassicCounter = RestService.For<IClassicCounter>(TimedClient("https://classiccounter.cc/api"), _settings);
-        public static IEddies Eddies = RestService.For<IEddies>("https://eddies.cc/api", _settings);
+        public static IClassicCounterProfiles Profiles = RestService.For<IClassicCounterProfiles>(TimedClient("https://classiccounter.cc/api/profiles"), _settings);
 
         public static List<FriendInfo> ParseFriendsPayload(string? json)
         {
@@ -213,14 +233,19 @@ namespace Wauncher.Utils
 
             try
             {
+                var cc = JsonConvert.DeserializeObject<CCFriendsResponse>(json);
+                if (cc?.Response != null && cc.Response.Count > 0)
+                    return NormalizeFriends(cc.Response);
+            }
+            catch { }
+
+            try
+            {
                 var wrapped = JsonConvert.DeserializeObject<FriendsResponse>(json);
                 if (wrapped?.Friends != null && wrapped.Friends.Count > 0)
                     return NormalizeFriends(wrapped.Friends);
             }
-            catch
-            {
-                // Fall through to array parse.
-            }
+            catch { }
 
             try
             {
@@ -228,10 +253,7 @@ namespace Wauncher.Utils
                 if (flat != null)
                     return NormalizeFriends(flat);
             }
-            catch
-            {
-                // Ignore and return empty.
-            }
+            catch { }
 
             return new List<FriendInfo>();
         }
@@ -243,29 +265,47 @@ namespace Wauncher.Utils
 
             try
             {
-                var parsed = JsonConvert.DeserializeObject<FriendInfo>(json);
-                if (parsed == null)
-                    return null;
+                var cc = JsonConvert.DeserializeObject<CCPlayerResponse>(json);
+                if (cc?.Response != null)
+                    return NormalizeFriends(new[] { cc.Response }).FirstOrDefault();
+            }
+            catch { }
 
-                return NormalizeFriends(new[] { parsed }).FirstOrDefault();
-            }
-            catch
+            try
             {
-                return null;
+                var parsed = JsonConvert.DeserializeObject<FriendInfo>(json);
+                if (parsed != null)
+                    return NormalizeFriends(new[] { parsed }).FirstOrDefault();
             }
+            catch { }
+
+            return null;
         }
 
         private static List<FriendInfo> NormalizeFriends(IEnumerable<FriendInfo> friends)
         {
             var normalized = new List<FriendInfo>();
+            var usedKeys = new HashSet<string>(StringComparer.Ordinal);
+
             foreach (var f in friends)
             {
                 var username = string.IsNullOrWhiteSpace(f.Username) ? "Unknown" : f.Username;
                 var status = NormalizeStatus(f.Status);
 
+                // Fall back to username as identity key when the API omits steamid.
+                // Append an index suffix to guarantee uniqueness when two friends share a username.
+                string key = !string.IsNullOrWhiteSpace(f.SteamId) ? f.SteamId : username;
+                if (!usedKeys.Add(key))
+                {
+                    int n = 1;
+                    string unique;
+                    while (!usedKeys.Add(unique = $"{key}#{n}")) n++;
+                    key = unique;
+                }
+
                 normalized.Add(new FriendInfo
                 {
-                    SteamId = f.SteamId ?? string.Empty,
+                    SteamId = key,
                     Username = username,
                     AvatarUrl = f.AvatarUrl ?? string.Empty,
                     Status = status

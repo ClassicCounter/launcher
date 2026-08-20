@@ -60,14 +60,23 @@ namespace Wauncher.Services
 
         public async Task<bool> CheckForUpdatesAsync()
         {
+            if (IsCheckingUpdates || IsUpdating || IsInstalling)
+                return false;
+
+            // Always check for a missing game install regardless of SkipUpdates —
+            // SkipUpdates only skips the patch check, not the install detection.
+            string csgoExe = Path.Combine(WauncherDirectory, "csgo.exe");
+            if (!File.Exists(csgoExe))
+            {
+                IsNeedingInstall = true;
+                return true;
+            }
+
             if (ViewModels.SettingsWindowViewModel.LoadGlobal().SkipUpdates)
             {
                 IsUpdateAvailable = false;
                 return false;
             }
-
-            if (IsCheckingUpdates || IsUpdating || IsInstalling)
-                return false;
 
             IsCheckingUpdates = true;
             // Clear any stale error from a previous (e.g. offline) check so a successful
@@ -77,14 +86,6 @@ namespace Wauncher.Services
 
             try
             {
-                string csgoExe = Path.Combine(WauncherDirectory, "csgo.exe");
-                
-                if (!File.Exists(csgoExe))
-                {
-                    IsNeedingInstall = true;
-                    return true;
-                }
-
                 var patches = await GetPatchesAsync();
                 if (patches == null)
                     return false;

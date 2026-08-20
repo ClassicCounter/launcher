@@ -773,8 +773,10 @@ namespace Wauncher.Utils
             try
             {
                 string directory = WauncherDirectory;
-                var files = Directory.GetFiles(directory, "*.7z", SearchOption.AllDirectories)
-                    .Concat(Directory.GetFiles(directory, "*.7z.*", SearchOption.AllDirectories))
+
+                // Only target ClassicCounter split archives (ClassicCounter.7z.001, etc.)
+                // Never scan broadly — the game folder could live inside a Downloads folder.
+                var files = Directory.GetFiles(directory, "ClassicCounter.7z*", SearchOption.TopDirectoryOnly)
                     .Distinct(StringComparer.OrdinalIgnoreCase);
 
                 foreach (string file in files)
@@ -783,14 +785,16 @@ namespace Wauncher.Utils
                     {
                         File.Delete(file);
                         if (Debug.Enabled())
-                            Terminal.Debug($"Deleted .7z file: {file}");
+                            Terminal.Debug($"Deleted archive: {file}");
                     }
                     catch (Exception ex)
                     {
                         if (Debug.Enabled())
-                            Terminal.Debug($"Failed to delete .7z file {file}: {ex.Message}");
+                            Terminal.Debug($"Failed to delete archive {file}: {ex.Message}");
                     }
                 }
+
+                Delete7zaExecutable();
             }
             catch (Exception ex)
             {

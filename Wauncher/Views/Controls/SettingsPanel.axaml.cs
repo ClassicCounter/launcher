@@ -103,6 +103,31 @@ namespace Wauncher.Views.Controls
             }
         }
 
+        private async void ClearCacheButton_Click(object? sender, RoutedEventArgs e)
+        {
+            if (sender is not Button btn)
+                return;
+
+            btn.IsEnabled = false;
+            btn.Content = "Clearing...";
+
+            try
+            {
+                await Task.Run(DownloadManager.Cleanup7zFiles);
+                btn.Content = "Cleared!";
+            }
+            catch
+            {
+                btn.Content = "Failed";
+            }
+            finally
+            {
+                await Task.Delay(2000);
+                btn.Content = "Clear Cache";
+                btn.IsEnabled = true;
+            }
+        }
+
         private async Task RefreshSteamButtonStateAsync()
         {
             if (AddToSteamButton == null)
