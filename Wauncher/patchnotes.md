@@ -1,3 +1,25 @@
+# Hotfix
+08/20/2026
+## What's Changed
+- Fixed case opening sometimes throwing "unable to retrieve your item" mid-animation
+- Fixed items occasionally not appearing in your inventory after a match ends and you load into the next map
+- Fixed a rare case where opening a crate could fail to produce any item at all
+
+# Major Update - Game Coordinator Release (Again) ((Again))
+08/20/2026
+## What's Changed
+- Added missing flash files for Spectral Shiv
+- Added missing world model for Spectral Shiv
+- Fixed NOVAGANG Imp Paper Sticker model not appearing when applied to a weapon
+- 🇷🇺 RU PUG servers are back online again
+- Fixed all known issues with game coordinator (too many to list here)
+- Moved game coordinator hosting to EU server
+- Launcher version 3.2.7 release
+- Migrated to new profiles API
+- Added "Clear Download Cache" button in settings (fixes stuck 7z errors)
+- Fixed launcher not detecting missing game files when Skip Updates was enabled
+- Various bug fixes
+
 # Major Update - Game Coordinator Beta
 06/27/2026
 ## What's Changed
