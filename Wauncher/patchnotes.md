@@ -11,7 +11,7 @@
 - Added missing flash files for Spectral Shiv
 - Added missing world model for Spectral Shiv
 - Fixed NOVAGANG Imp Paper Sticker model not appearing when applied to a weapon
-- 🇷🇺 RU PUG servers are back online again
+- RU PUG servers are back online again
 - Fixed all known issues with game coordinator (too many to list here)
 - Moved game coordinator hosting to EU server
 - Launcher version 3.2.7 release
