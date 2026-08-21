@@ -2,10 +2,46 @@
 using Newtonsoft.Json.Linq;
 using System.Collections.Concurrent;
 using System.Security.Cryptography;
+using System.Text;
 using System.Threading;
 
 namespace Wauncher.Utils
 {
+    internal static class PatchManifestCache
+    {
+        private static string CachePath => Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+            "ClassicCounter", "Wauncher", "patch_manifest.hash");
+
+        public static string? Load()
+        {
+            try { return File.ReadAllText(CachePath).Trim(); }
+            catch { return null; }
+        }
+
+        public static void Save(string hash)
+        {
+            try
+            {
+                Directory.CreateDirectory(Path.GetDirectoryName(CachePath)!);
+                File.WriteAllText(CachePath, hash);
+            }
+            catch { }
+        }
+
+        public static void Clear()
+        {
+            try { File.Delete(CachePath); }
+            catch { }
+        }
+
+        public static string ComputeHash(string input)
+        {
+            var bytes = MD5.HashData(Encoding.UTF8.GetBytes(input));
+            return Convert.ToHexString(bytes).ToLowerInvariant();
+        }
+    }
+
     public class Patch
     {
         [JsonProperty(PropertyName = "file")]
@@ -40,22 +76,41 @@ namespace Wauncher.Utils
             return fileName.EndsWith(".7z") ? fileName[..^3] : fileName;
         }
 
-        private static async Task<List<Patch>> GetPatches(bool validateAll = false)
+        public static async Task<string> FetchPatchJsonAsync()
+        {
+            try
+            {
+                return await Api.ClassicCounter.GetPatches();
+            }
+            catch (Exception ex)
+            {
+                if (Debug.Enabled())
+                    Terminal.Debug($"Couldn't reach patch API: {ex.Message}");
+                throw new UpdateServerUnreachableException("Can't connect to update server", ex);
+            }
+        }
+
+        private static async Task<List<Patch>> GetPatches(string? rawJson = null)
         {
             List<Patch> patches = new List<Patch>();
 
             string responseString;
-            try
+            if (rawJson != null)
             {
-                responseString = await Api.ClassicCounter.GetPatches();
+                responseString = rawJson;
             }
-            catch (Exception ex)
+            else
             {
-                // Network failure / timeout / DNS — surface it instead of swallowing,
-                // so the UI can say "Can't connect to update server" rather than hang.
-                if (Debug.Enabled())
-                    Terminal.Debug($"Couldn't reach {(validateAll ? "full game" : "patch")} API: {ex.Message}");
-                throw new UpdateServerUnreachableException("Can't connect to update server", ex);
+                try
+                {
+                    responseString = await Api.ClassicCounter.GetPatches();
+                }
+                catch (Exception ex)
+                {
+                    if (Debug.Enabled())
+                        Terminal.Debug($"Couldn't reach patch API: {ex.Message}");
+                    throw new UpdateServerUnreachableException("Can't connect to update server", ex);
+                }
             }
 
             try
@@ -67,7 +122,6 @@ namespace Wauncher.Utils
             }
             catch (Exception ex)
             {
-                // Reachable but returned something we can't parse — treat as a server problem.
                 if (Debug.Enabled())
                     Terminal.Debug($"Update server returned invalid data: {ex.Message}");
                 throw new UpdateServerUnreachableException("Update server returned invalid data", ex);
@@ -84,9 +138,9 @@ namespace Wauncher.Utils
             return BitConverter.ToString(hash).Replace("-", "").ToLowerInvariant();
         }
 
-        public static async Task<Patches> ValidatePatches(bool validateAll = false, bool deleteOutdatedFiles = true, Action<int, int>? onProgress = null)
+        public static async Task<Patches> ValidatePatches(string? rawJson = null, bool validateAll = false, bool deleteOutdatedFiles = true, Action<int, int>? onProgress = null)
         {
-            List<Patch> patches = await GetPatches(validateAll);
+            List<Patch> patches = await GetPatches(rawJson);
             List<Patch> missing = new();
             List<Patch> outdated = new();
             Patch? dirPatch = null;

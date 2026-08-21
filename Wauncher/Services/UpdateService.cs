@@ -46,6 +46,7 @@ namespace Wauncher.Services
         private Patches? _cachedPatches;
         private bool _forceValidateAllOnce;
         private long _lastInstallProgressTick;
+        private string? _pendingManifestHash;
 
         [ObservableProperty]
         private bool _isExtracting;
@@ -230,6 +231,9 @@ namespace Wauncher.Services
                 {
                     // "Verify Game Files": always hash every file from scratch (ignore the
                     // fast-path and any cached result), reporting live progress.
+                    // Clear the cached manifest first so a fresh API fetch drives this check.
+                    PatchManifestCache.Clear();
+                    _pendingManifestHash = null;
                     currentPatches = await Task.Run(() => PatchManager.ValidatePatches(
                         validateAll: true,
                         onProgress: (done, total) => Dispatcher.UIThread.Post(() =>
@@ -299,6 +303,14 @@ namespace Wauncher.Services
                 UpdateStatusSpeed = "";
                 UpdateProgress = 100;
                 IsUpdateAvailable = false;
+
+                // Patch list is now applied — cache the manifest so the next launch skips validation.
+                if (_pendingManifestHash != null)
+                {
+                    PatchManifestCache.Save(_pendingManifestHash);
+                    _pendingManifestHash = null;
+                }
+
                 return true;
             }
             catch (Exception ex)
@@ -324,13 +336,32 @@ namespace Wauncher.Services
 
             try
             {
-                var patches = await PatchManager.ValidatePatches(deleteOutdatedFiles: false);
+                string rawJson = await PatchManager.FetchPatchJsonAsync();
+                string manifestHash = PatchManifestCache.ComputeHash(rawJson);
+                _pendingManifestHash = manifestHash;
+
+                // If the server's patch list hasn't changed since the last successful check,
+                // skip full per-file hashing — any API change (new file, new hash) changes this.
+                if (PatchManifestCache.Load() == manifestHash)
+                {
+                    _cachedPatches = new Patches(true, new List<Patch>(), new List<Patch>());
+                    return _cachedPatches;
+                }
+
+                var patches = await Task.Run(() => PatchManager.ValidatePatches(rawJson, deleteOutdatedFiles: false));
                 _cachedPatches = patches;
+
+                // Game already up to date — save manifest so next launch skips validation.
+                if (patches.Missing.Count == 0 && patches.Outdated.Count == 0)
+                {
+                    PatchManifestCache.Save(manifestHash);
+                    _pendingManifestHash = null;
+                }
+
                 return patches;
             }
             catch (UpdateServerUnreachableException ex)
             {
-                // Surface a clear, friendly message in the bottom bar instead of hanging/failing silently.
                 ErrorLogger.LogError("UpdateService.GetPatchesAsync", ex, "Update server unreachable");
                 UpdateStatusFile = "Error: Can't connect to update server";
                 return null;
