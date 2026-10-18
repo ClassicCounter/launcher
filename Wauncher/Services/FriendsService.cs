@@ -306,15 +306,20 @@ namespace Wauncher.Services
 
         private static void ApplyFriendsDiff(ObservableCollection<FriendInfo> collection, List<FriendInfo> incoming)
         {
-            var indexById = new Dictionary<string, int>(collection.Count);
-            for (int i = 0; i < collection.Count; i++)
-                indexById[collection[i].SteamId] = i;
-
             for (int i = 0; i < incoming.Count; i++)
             {
                 var src = incoming[i];
+                int currentIndex = -1;
+                for (int j = i; j < collection.Count; j++)
+                {
+                    if (string.Equals(collection[j].SteamId, src.SteamId, StringComparison.Ordinal))
+                    {
+                        currentIndex = j;
+                        break;
+                    }
+                }
 
-                if (indexById.TryGetValue(src.SteamId, out int currentIndex))
+                if (currentIndex >= 0)
                 {
                     var existing = collection[currentIndex];
                     existing.Username = src.Username;
@@ -324,21 +329,11 @@ namespace Wauncher.Services
                     existing.QuickJoinServerName = src.QuickJoinServerName;
 
                     if (currentIndex != i)
-                    {
                         collection.Move(currentIndex, i);
-                        // Rebuild index after move since positions shifted
-                        indexById.Clear();
-                        for (int j = 0; j < collection.Count; j++)
-                            indexById[collection[j].SteamId] = j;
-                    }
                 }
                 else
                 {
                     collection.Insert(i, src);
-                    // All elements at positions >= i shifted by +1; rebuild the full index.
-                    indexById.Clear();
-                    for (int j = 0; j < collection.Count; j++)
-                        indexById[collection[j].SteamId] = j;
                 }
             }
 
